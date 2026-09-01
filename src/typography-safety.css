@@ -1,0 +1,15 @@
+.mission h1[style]{font-size:clamp(26.4px,5.5vw,35.2px)!important}
+.panel-head,.metric-pair,.signal-meta,.deploy-actions,.actions{min-width:0}
+.panel-head,.metric-pair,.deploy-actions{flex-wrap:wrap}
+.ledger>div,.system-rows>div{align-items:flex-start}
+.ledger>div>span,.system-rows>div>*{min-width:0}
+.ledger>div>span{overflow-wrap:anywhere}
+.resource-list div,.location-copy,.member>div:last-child,.timeline-content{min-width:0}
+.date-rail button{min-width:0}
+.sync div{min-width:0}
+@media(max-width:430px){
+  .panel-head{row-gap:5px}
+  .deploy-actions{justify-content:flex-end}
+  .metric-pair>span{min-width:0}
+  .resource-list b,.resource-list small{max-width:100%}
+}
