@@ -1,0 +1,52 @@
+{
+  "trip": {
+    "id": "mumbai-2026-09",
+    "name": "Mumbai Trip",
+    "startDate": "2026-09-14",
+    "endDate": "2026-09-17",
+    "timezone": "Asia/Kolkata",
+    "status": "planning",
+    "notes": [
+      "Ganeshotsav period: crowd, road restriction and darshan timing assumptions must be re-verified close to travel.",
+      "Public site: sensitive PNRs, transaction IDs, booking numbers, ticket QR codes and identity documents are intentionally not stored."
+    ]
+  },
+  "members": [
+    {"id":"vyas","name":"Vyas Devgna","initials":"VD"},
+    {"id":"tirth","name":"Tirth Prajapati","initials":"TP"},
+    {"id":"nishit","name":"Nishit Rana","initials":"NR"},
+    {"id":"milan","name":"Milan Sharma","initials":"MS"},
+    {"id":"pratham","name":"Pratham Sukhadia","initials":"PS"}
+  ],
+  "places": [
+    {"id":"ahmedabad-jn","name":"Ahmedabad Junction","aliases":["ADI"],"latitude":23.0266,"longitude":72.6008,"category":"station","confidence":"high"},
+    {"id":"bandra-terminus","name":"Bandra Terminus","aliases":["BDTS"],"latitude":19.0623,"longitude":72.8412,"category":"station","confidence":"high"},
+    {"id":"taj-mahal-palace","name":"The Taj Mahal Palace, Mumbai","aliases":["Taj Mumbai"],"latitude":18.9217,"longitude":72.8331,"category":"hotel","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=The%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
+    {"id":"sea-lounge","name":"Sea Lounge, The Taj Mahal Palace","aliases":["Sea Lounge"],"latitude":18.9217,"longitude":72.8331,"category":"restaurant","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Sea%20Lounge%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
+    {"id":"dadar","name":"Dadar Railway Station","aliases":["DDR"],"latitude":19.0180,"longitude":72.8432,"category":"station","confidence":"high"},
+    {"id":"nadiad-jn","name":"Nadiad Junction","aliases":["ND"],"latitude":22.6916,"longitude":72.8634,"category":"station","confidence":"high"}
+  ],
+  "activities": [
+    {"id":"outbound-train","title":"Karnavati SF Express to Mumbai","placeId":"ahmedabad-jn","date":"2026-09-14","timing":{"type":"fixed","start":"05:00"},"duration":{"minMinutes":450,"targetMinutes":450,"maxMinutes":450},"participants":["vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Train 12934. Ahmedabad Jn 05:00 → Bandra Terminus 12:30.","Ticket details are held privately; no PNR or booking reference is published."],"fallbackIds":[],"sourceIds":["source-outbound-ticket"]},
+    {"id":"sep14-arrival-buffer","title":"Arrive, transfer, settle in South Mumbai","placeId":"bandra-terminus","date":"2026-09-14","timing":{"type":"window","earliest":"12:30","latest":"15:30"},"duration":{"minMinutes":90,"targetMinutes":150,"maxMinutes":180},"participants":["vyas","tirth","nishit","milan"],"priority":"high","bookingStatus":"none","status":"planned","notes":["Original group message indicates Taj / darshan / exploring / chill after arrival. Exact sequence remains provisional."],"fallbackIds":[],"sourceIds":["source-whatsapp-plan"]},
+    {"id":"sep15-rest-window","title":"Hotel check-in and recovery window","date":"2026-09-15","timing":{"type":"window","earliest":"08:00","latest":"12:00"},"duration":{"minMinutes":120,"targetMinutes":180,"maxMinutes":240},"participants":["vyas","tirth","nishit","milan","pratham"],"priority":"high","bookingStatus":"unknown","status":"provisional","notes":["Derived from group plan: morning hotel check-in and rest before more darshan/exploring."],"fallbackIds":[],"sourceIds":["source-whatsapp-plan"]},
+    {"id":"sea-lounge-booking","title":"Sea Lounge reservation","placeId":"sea-lounge","date":"2026-09-16","timing":{"type":"fixed","start":"11:45"},"duration":{"minMinutes":60,"targetMinutes":90,"maxMinutes":120},"participants":["pratham","vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Reservation for 5 guests under Pratham Sukhadia. Semi-formal. Booking number intentionally omitted from public repo."],"fallbackIds":[],"sourceIds":["source-sea-lounge-booking"]},
+    {"id":"return-train","title":"Gujarat SF Express home","placeId":"dadar","date":"2026-09-17","timing":{"type":"fixed","start":"05:52"},"duration":{"minMinutes":442,"targetMinutes":442,"maxMinutes":442},"participants":["vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Train 22953. Dadar 05:52 → Nadiad Junction 13:14.","Ticket details are held privately; no PNR or booking reference is published."],"fallbackIds":[],"sourceIds":["source-return-ticket"]}
+  ],
+  "travelLegs": [
+    {"id":"leg-outbound","fromPlaceId":"ahmedabad-jn","toPlaceId":"bandra-terminus","date":"2026-09-14","mode":"train","estimatedMinutes":450,"bufferMinutes":0,"status":"booked"},
+    {"id":"leg-return","fromPlaceId":"dadar","toPlaceId":"nadiad-jn","date":"2026-09-17","mode":"train","estimatedMinutes":442,"bufferMinutes":0,"status":"booked"}
+  ],
+  "branches": [],
+  "checkpoints": [],
+  "fallbacks": [],
+  "candidates": [],
+  "expenses": [],
+  "signals": [{"id":"ganeshotsav","type":"festival","label":"Ganeshotsav crowd conditions","status":"needs-refresh","lastVerifiedAt":null}],
+  "resources": [
+    {"id":"source-outbound-ticket","type":"private-ticket-metadata","label":"Outbound rail ticket screenshot","public":false},
+    {"id":"source-return-ticket","type":"private-ticket-metadata","label":"Return rail ticket screenshot","public":false},
+    {"id":"source-sea-lounge-booking","type":"private-booking-metadata","label":"Sea Lounge reservation screenshot","public":false},
+    {"id":"source-whatsapp-plan","type":"message-summary","label":"Group itinerary message","public":false}
+  ]
+}
