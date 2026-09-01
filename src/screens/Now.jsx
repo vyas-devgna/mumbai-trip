@@ -62,7 +62,8 @@ export default function Now({
     place = next?.placeId && byId(data.places, next.placeId);
   const tripStart = new Date(`${data.trip.startDate}T05:00:00+05:30`),
     hours = Math.max(0, Math.round((tripStart - now) / 3600000));
-  const spendPaise = expenses.reduce((sum, expense) => {
+  const paidExpenses = expenses.filter((expense) => expense.status === "paid"),
+    spendPaise = paidExpenses.reduce((sum, expense) => {
       if (!Number.isSafeInteger(expense.amountPaise)) return sum;
       return sum + expense.amountPaise;
     }, 0),
@@ -192,11 +193,11 @@ export default function Now({
 
       <DockAwarePanel className="panel metric">
         <div className="panel-head">
-          <span>02 / BUDGET</span>
-          <button onClick={() => setSheet("expense")}>+ expense</button>
+          <span>02 / ACTUAL SPEND</span>
+          <button onClick={() => setSheet("expense")}>+ draft</button>
         </div>
         <strong className="metric-number">{formatINR(spendPaise)}</strong>
-        <p>known trip spend · {Math.round(progress)}% of planning ceiling</p>
+        <p>confirmed paid spend · {Math.round(progress)}% of planning ceiling</p>
         <div className="progress">
           <i style={{ width: `${progress}%` }} />
         </div>
@@ -205,7 +206,7 @@ export default function Now({
             <b>{formatINR(data.trip.budget.targetPerPersonPaise)}</b> / person
           </span>
           <span>
-            <b>{data.expenses.length}</b> booked costs
+            <b>{paidExpenses.length}</b> paid costs
           </span>
         </div>
       </DockAwarePanel>
