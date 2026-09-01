@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useAnimationControls,
+  useReducedMotion,
+} from "framer-motion";
 import QRCode from "qrcode";
 import {
   CalendarDays,
@@ -14,7 +19,14 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { BASE, data, PRESS_SPRING, tripIsLive, vibrate } from "./lib.js";
+import {
+  BASE,
+  data,
+  PRESS_SPRING,
+  toPaise,
+  tripIsLive,
+  vibrate,
+} from "./lib.js";
 
 export function Topbar({ now, update }) {
   const start = new Date(`${data.trip.startDate}T05:00:00+05:30`),
@@ -98,15 +110,44 @@ export function SideNav({ active, onChange, onCommand, onInstall, installed }) {
 }
 
 export function DockAwarePanel({ className = "", children, ...props }) {
-  const probeRef = useRef(null),
+  const slotRef = useRef(null),
+    panelRef = useRef(null),
+    probeRef = useRef(null),
+    yieldingRef = useRef(false),
+    morphingRef = useRef(false),
+    lastYieldingRef = useRef(false),
+    yieldWidthRef = useRef(0),
+    baseHeightRef = useRef(0),
+    baseRadiusRef = useRef(14),
+    radiusMeasuredRef = useRef(false),
+    controls = useAnimationControls(),
     [yielding, setYielding] = useState(false),
-    [cut, setCut] = useState({ width: 72, height: 72 }),
+    [geometry, setGeometry] = useState({ fullWidth: 0, yieldWidth: 0 }),
+    [onScreen, setOnScreen] = useState(false),
+    [pageVisible, setPageVisible] = useState(
+      () => document.visibilityState === "visible",
+    ),
     reduced = useReducedMotion();
+
   useEffect(() => {
-    const probe = probeRef.current,
-      panel = probe?.parentElement,
+    yieldingRef.current = yielding;
+  }, [yielding]);
+
+  useEffect(() => {
+    const onVisibilityChange = () =>
+      setPageVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    const slot = slotRef.current,
+      panel = panelRef.current,
+      probe = probeRef.current,
       dock = document.querySelector(".side-nav");
     if (
+      !slot ||
       !probe ||
       !panel ||
       !dock ||
@@ -114,58 +155,162 @@ export function DockAwarePanel({ className = "", children, ...props }) {
       !("ResizeObserver" in window)
     )
       return;
-    let observer;
-    const measure = () => {
-      observer?.disconnect();
-      const dockRect = dock.getBoundingClientRect(),
-        panelRect = panel.getBoundingClientRect(),
-        gap = 10;
-      const width = Math.ceil(dockRect.width + gap),
-        height = Math.ceil(
-          Math.max(
-            12,
-            Math.min(dockRect.height + gap, Math.max(12, panelRect.height - 1)),
-          ),
-        );
-      setCut((current) =>
-        current.width === width && current.height === height
-          ? current
-          : { width, height },
-      );
-      const top = Math.max(0, Math.floor(dockRect.top - gap)),
-        left = Math.max(0, Math.floor(dockRect.left - gap));
-      observer = new IntersectionObserver(
-        ([entry]) => setYielding(entry.isIntersecting),
+    let exclusionObserver,
+      frame = 0,
+      rootKey = "";
+
+    const observeExclusion = (exclusion, viewportWidth, viewportHeight) => {
+      const nextRootKey = [
+        exclusion.top,
+        exclusion.right,
+        exclusion.bottom,
+        exclusion.left,
+        viewportWidth,
+        viewportHeight,
+      ].join(":");
+      if (nextRootKey === rootKey) return;
+      rootKey = nextRootKey;
+      exclusionObserver?.disconnect();
+      exclusionObserver = new IntersectionObserver(
+        ([entry]) =>
+          setYielding(entry.isIntersecting && yieldWidthRef.current > 0),
         {
           root: null,
-          rootMargin: `-${top}px 0px 0px -${left}px`,
+          rootMargin: `${-exclusion.top}px ${-(viewportWidth - exclusion.right)}px ${-(viewportHeight - exclusion.bottom)}px ${-exclusion.left}px`,
           threshold: 0,
         },
       );
-      observer.observe(probe);
+      exclusionObserver.observe(probe);
+    };
+
+    const measure = () => {
+      frame = 0;
+      const dockRect = dock.getBoundingClientRect(),
+        slotRect = slot.getBoundingClientRect(),
+        panelRect = panel.getBoundingClientRect(),
+        viewportWidth = document.documentElement.clientWidth,
+        viewportHeight = document.documentElement.clientHeight,
+        gap = 10,
+        exclusion = {
+          top: Math.max(0, Math.floor(dockRect.top - gap)),
+          right: Math.min(viewportWidth, Math.ceil(dockRect.right + gap)),
+          bottom: Math.min(viewportHeight, Math.ceil(dockRect.bottom + gap)),
+          left: Math.max(0, Math.floor(dockRect.left - gap)),
+        },
+        fullWidth = Math.max(0, Math.round(slotRect.width));
+
+      if (!baseHeightRef.current || (!yieldingRef.current && !morphingRef.current))
+        baseHeightRef.current = Math.ceil(panelRect.height);
+      if (!radiusMeasuredRef.current) {
+        const radius = Number.parseFloat(
+          getComputedStyle(panel).borderBottomRightRadius,
+        );
+        if (Number.isFinite(radius)) baseRadiusRef.current = radius;
+        radiusMeasuredRef.current = true;
+      }
+      probe.style.top = `${Math.max(0, baseHeightRef.current - 2)}px`;
+
+      const minimumPanelWidth = Math.min(180, fullWidth),
+        overlap = Math.max(0, Math.ceil(slotRect.right - exclusion.left)),
+        yieldWidth = Math.min(
+          Math.max(0, fullWidth - minimumPanelWidth),
+          overlap,
+        );
+      yieldWidthRef.current = yieldWidth;
+      setGeometry((current) =>
+        current.fullWidth === fullWidth && current.yieldWidth === yieldWidth
+          ? current
+          : { fullWidth, yieldWidth },
+      );
+      if (!yieldWidth) setYielding(false);
+      observeExclusion(exclusion, viewportWidth, viewportHeight);
+    };
+
+    const scheduleMeasure = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
     };
     measure();
-    const resize = new ResizeObserver(measure);
+    const resize = new ResizeObserver(() => {
+      if (!morphingRef.current) scheduleMeasure();
+    });
     resize.observe(dock);
     resize.observe(panel);
+    resize.observe(slot);
     resize.observe(document.documentElement);
+    const viewportObserver = new IntersectionObserver(
+      ([entry]) => setOnScreen(entry.isIntersecting),
+      { root: null, threshold: 0 },
+    );
+    viewportObserver.observe(slot);
+
+    addEventListener("resize", scheduleMeasure);
+    addEventListener("orientationchange", scheduleMeasure);
+    window.visualViewport?.addEventListener("resize", scheduleMeasure);
+    window.screen.orientation?.addEventListener("change", scheduleMeasure);
     return () => {
-      observer?.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+      exclusionObserver?.disconnect();
+      viewportObserver.disconnect();
       resize.disconnect();
+      removeEventListener("resize", scheduleMeasure);
+      removeEventListener("orientationchange", scheduleMeasure);
+      window.visualViewport?.removeEventListener("resize", scheduleMeasure);
+      window.screen.orientation?.removeEventListener("change", scheduleMeasure);
     };
   }, []);
-  const full = "polygon(0 0,100% 0,100% 100%,100% 100%,100% 100%,0 100%)";
-  const inset = `polygon(0 0,100% 0,100% calc(100% - ${cut.height}px),calc(100% - ${cut.width}px) calc(100% - ${cut.height}px),calc(100% - ${cut.width}px) 100%,0 100%)`;
+
+  useEffect(() => {
+    if (!geometry.fullWidth) return;
+    const target = {
+      width: Math.max(
+        0,
+        geometry.fullWidth - (yielding ? geometry.yieldWidth : 0),
+      ),
+      borderBottomRightRadius: yielding
+        ? baseRadiusRef.current + 10
+        : baseRadiusRef.current,
+    };
+    controls.stop();
+    const yieldStateChanged = lastYieldingRef.current !== yielding;
+    lastYieldingRef.current = yielding;
+    if (
+      reduced ||
+      !onScreen ||
+      !pageVisible ||
+      !yieldStateChanged
+    ) {
+      morphingRef.current = false;
+      controls.set(target);
+      return;
+    }
+    morphingRef.current = true;
+    controls.start(target, PRESS_SPRING).finally(() => {
+      morphingRef.current = false;
+    });
+    return () => controls.stop();
+  }, [controls, geometry, onScreen, pageVisible, reduced, yielding]);
+
+  const slotClasses = [
+    "dock-aware-slot",
+    className.split(/\s+/).includes("span2") ? "span2" : "",
+    className.split(/\s+/).includes("location-panel")
+      ? "dock-aware-location"
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
-    <motion.article
-      {...props}
-      className={`dock-aware ${className}`.trim()}
-      animate={{ clipPath: yielding ? inset : full }}
-      transition={reduced ? { duration: 0 } : PRESS_SPRING}
-    >
-      {children}
+    <div ref={slotRef} className={slotClasses}>
+      <motion.article
+        ref={panelRef}
+        {...props}
+        className={`dock-aware${yielding ? " dock-yielding" : ""} ${className}`.trim()}
+        animate={controls}
+      >
+        {children}
+      </motion.article>
       <span ref={probeRef} className="dock-probe" aria-hidden="true" />
-    </motion.article>
+    </div>
   );
 }
 
@@ -222,14 +367,24 @@ export function CommandSheet({
     finish("NOTE SAVED ON THIS PHONE");
   };
   const saveExpense = () => {
-    const value = Number(amount);
-    if (!(value > 0) || !label.trim() || !participants.length || !payerId)
+    let amountPaise;
+    try {
+      amountPaise = toPaise(amount);
+    } catch {
+      return;
+    }
+    if (
+      amountPaise <= 0 ||
+      !label.trim() ||
+      !participants.length ||
+      !payerId
+    )
       return;
     setLocalExpenses([
       ...localExpenses,
       {
         id: `local-${Date.now()}`,
-        amount: value,
+        amountPaise,
         label: label.trim(),
         participantIds: participants,
         payerId,
@@ -417,7 +572,7 @@ export function CommandSheet({
                   <button
                     onClick={() =>
                       copy(
-                        "Add this expense to the Mumbai TripOS shared ledger. Record the payerId for the person who actually paid, the participantIds for everyone sharing it, amount, date and category. If I have not said who paid, ask me for the payer before committing. Validate, commit to main and deploy: ",
+                        "Add this expense to the Mumbai TripOS shared ledger. Record the payerId for the person who actually paid, the participantIds for everyone sharing it, integer amountPaise, date and category. If I have not said who paid, ask me for the payer before committing. Validate, commit to main and deploy: ",
                       )
                     }
                   >

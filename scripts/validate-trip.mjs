@@ -4,6 +4,21 @@ const path = new URL("../src/data/trip.json", import.meta.url);
 const d = JSON.parse(fs.readFileSync(path, "utf8"));
 const errors = [];
 
+const splitPaise = (totalPaise, n) => {
+  if (!Number.isSafeInteger(totalPaise) || totalPaise < 0) return [];
+  if (!Number.isSafeInteger(n) || n <= 0) return [];
+  const divisor = BigInt(n),
+    exactTotal = BigInt(totalPaise),
+    base = Number(exactTotal / divisor),
+    remainder = Number(exactTotal % divisor);
+  return Array.from({ length: n }, (_, index) =>
+    index < remainder ? base + 1 : base,
+  );
+};
+
+const isPositivePaise = (value) =>
+  Number.isSafeInteger(value) && value > 0;
+
 const uniq = (arr = [], label) => {
   const set = new Set();
   for (const item of arr) {
@@ -26,6 +41,13 @@ uniq(d.candidates, "candidate");
 uniq(d.expenses, "expense");
 uniq(d.reimbursements, "reimbursement");
 uniq(d.signals, "signal");
+
+if (d.trip?.moneyModel?.unit !== "paise")
+  errors.push("trip money model: unit must be paise");
+if (!Number.isSafeInteger(d.trip?.budget?.targetPerPersonPaise))
+  errors.push("trip budget: targetPerPersonPaise must be integer paise");
+if (Object.prototype.hasOwnProperty.call(d.trip?.budget || {}, "targetPerPerson"))
+  errors.push("trip budget: legacy targetPerPerson field is not allowed");
 
 for (const a of d.activities ?? []) {
   if (a.placeId && !places.has(a.placeId))
@@ -72,8 +94,19 @@ for (const l of d.travelLegs ?? []) {
     errors.push(`travel leg ${l.id}: broken place reference`);
 }
 
+const ledger = Object.fromEntries(
+    [...members].map((memberId) => [
+      memberId,
+      { paidPaise: 0, sharePaise: 0 },
+    ]),
+  ),
+  settlementGroups = new Map();
+
 for (const e of d.expenses ?? []) {
-  if (!(Number(e.amount) >= 0)) errors.push(`expense ${e.id}: invalid amount`);
+  if (!isPositivePaise(e.amountPaise))
+    errors.push(`expense ${e.id}: amountPaise must be positive integer paise`);
+  if (Object.prototype.hasOwnProperty.call(e, "amount"))
+    errors.push(`expense ${e.id}: legacy amount field is not allowed`);
   if (!e.payerId) errors.push(`expense ${e.id}: missing payerId`);
   else if (!members.has(e.payerId))
     errors.push(`expense ${e.id}: unknown payer ${e.payerId}`);
@@ -82,13 +115,58 @@ for (const e of d.expenses ?? []) {
   for (const p of e.participantIds ?? [])
     if (!members.has(p))
       errors.push(`expense ${e.id}: unknown participant ${p}`);
+  if (new Set(e.participantIds || []).size !== (e.participantIds || []).length)
+    errors.push(`expense ${e.id}: duplicate participant`);
   if (e.sourceId && !resources.has(e.sourceId))
     errors.push(`expense ${e.id}: unknown source ${e.sourceId}`);
+
+  const participantIds = [...new Set(e.participantIds || [])]
+    .filter((memberId) => members.has(memberId))
+    .sort();
+  if (isPositivePaise(e.amountPaise) && participantIds.length) {
+    const shares = splitPaise(e.amountPaise, participantIds.length),
+      shareTotal = shares.reduce((sum, sharePaise) => sum + sharePaise, 0);
+    if (shareTotal !== e.amountPaise)
+      errors.push(
+        `expense ${e.id}: member shares ${shareTotal} do not equal ${e.amountPaise} paise`,
+      );
+
+    const groupId = e.settlementGroupId || e.id,
+      signature = `${e.payerId || ""}|${participantIds.join(",")}`,
+      current = settlementGroups.get(groupId);
+    if (current && current.signature !== signature) {
+      errors.push(
+        `settlement group ${groupId}: payer and participants must match`,
+      );
+    } else {
+      settlementGroups.set(groupId, {
+        signature,
+        payerId: e.payerId,
+        participantIds,
+        amountPaise: (current?.amountPaise || 0) + e.amountPaise,
+      });
+    }
+  }
+}
+
+for (const [groupId, group] of settlementGroups) {
+  if (!members.has(group.payerId) || !group.participantIds.length) continue;
+  ledger[group.payerId].paidPaise += group.amountPaise;
+  const shares = splitPaise(group.amountPaise, group.participantIds.length);
+  if (shares.reduce((sum, share) => sum + share, 0) !== group.amountPaise)
+    errors.push(`settlement group ${groupId}: shares do not balance`);
+  group.participantIds.forEach((memberId, index) => {
+    ledger[memberId].sharePaise += shares[index];
+  });
 }
 
 for (const payment of d.reimbursements ?? []) {
-  if (!(Number(payment.amount) > 0))
-    errors.push(`reimbursement ${payment.id}: invalid amount`);
+  if (!isPositivePaise(payment.amountPaise))
+    errors.push(
+      `reimbursement ${payment.id}: amountPaise must be positive integer paise`,
+    );
+  if (Object.prototype.hasOwnProperty.call(payment, "amount"))
+    errors.push(`reimbursement ${payment.id}: legacy amount field is not allowed`);
   if (!members.has(payment.fromMemberId))
     errors.push(
       `reimbursement ${payment.id}: unknown payer ${payment.fromMemberId}`,
@@ -104,6 +182,84 @@ for (const payment of d.reimbursements ?? []) {
       errors.push(
         `reimbursement ${payment.id}: unknown covered member ${memberId}`,
       );
+  if (
+    new Set(payment.coversMemberIds || []).size !==
+    (payment.coversMemberIds || []).length
+  )
+    errors.push(`reimbursement ${payment.id}: duplicate covered member`);
+
+  const coveredMemberIds = [...new Set(payment.coversMemberIds || [])]
+    .filter((memberId) => members.has(memberId))
+    .sort();
+  if (
+    isPositivePaise(payment.amountPaise) &&
+    members.has(payment.toMemberId) &&
+    coveredMemberIds.length
+  ) {
+    ledger[payment.toMemberId].paidPaise -= payment.amountPaise;
+    const shares = splitPaise(
+      payment.amountPaise,
+      coveredMemberIds.length,
+    );
+    coveredMemberIds.forEach((memberId, index) => {
+      ledger[memberId].paidPaise += shares[index];
+    });
+  }
+}
+
+const netByMember = Object.fromEntries(
+    Object.entries(ledger).map(([memberId, row]) => [
+      memberId,
+      row.paidPaise - row.sharePaise,
+    ]),
+  ),
+  netTotalPaise = Object.values(netByMember).reduce(
+    (sum, netPaise) => sum + netPaise,
+    0,
+  );
+if (netTotalPaise !== 0)
+  errors.push(`settlement: net balances total ${netTotalPaise} paise, expected 0`);
+
+const knownRailState = {
+    vyas: 41475,
+    tirth: 0,
+    nishit: 0,
+    milan: -41475,
+  },
+  railGroup = settlementGroups.get("rail-tickets"),
+  railPayment = (d.reimbursements || []).find(
+    (payment) => payment.id === "reimbursement-tirth-trains",
+  );
+if (!railGroup || !railPayment) {
+  errors.push("known rail settlement: group or reimbursement is missing");
+} else {
+  const railLedger = Object.fromEntries(
+    [...members].map((memberId) => [
+      memberId,
+      { paidPaise: 0, sharePaise: 0 },
+    ]),
+  );
+  railLedger[railGroup.payerId].paidPaise += railGroup.amountPaise;
+  splitPaise(railGroup.amountPaise, railGroup.participantIds.length).forEach(
+    (sharePaise, index) => {
+      railLedger[railGroup.participantIds[index]].sharePaise += sharePaise;
+    },
+  );
+  railLedger[railPayment.toMemberId].paidPaise -= railPayment.amountPaise;
+  const coveredMemberIds = [...railPayment.coversMemberIds].sort();
+  splitPaise(railPayment.amountPaise, coveredMemberIds.length).forEach(
+    (sharePaise, index) => {
+      railLedger[coveredMemberIds[index]].paidPaise += sharePaise;
+    },
+  );
+  for (const [memberId, expectedPaise] of Object.entries(knownRailState)) {
+    const actualPaise =
+      railLedger[memberId].paidPaise - railLedger[memberId].sharePaise;
+    if (actualPaise !== expectedPaise)
+      errors.push(
+        `known rail settlement: ${memberId} is ${actualPaise} paise, expected ${expectedPaise}`,
+      );
+  }
 }
 
 for (const r of d.resources ?? []) {

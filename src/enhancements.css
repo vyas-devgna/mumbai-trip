@@ -473,16 +473,48 @@
   color: var(--muted);
   line-height: 1.5;
 }
+.dock-aware-slot {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
 .dock-aware {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  transform-origin: left center;
+}
+.dock-aware > * {
+  min-width: 0;
+}
+.dock-aware.dock-yielding .panel-head {
+  flex-wrap: wrap;
+}
+.dock-aware.dock-yielding .mission-grid {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.dock-aware.dock-yielding.member {
+  grid-template-columns: 50px minmax(0, 1fr);
+}
+.dock-aware.dock-yielding .timeline-content,
+.dock-aware.dock-yielding .timeline-title > div,
+.dock-aware.dock-yielding .ledger span,
+.dock-aware.dock-yielding .settlement-transfer > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dock-aware.dock-yielding .settlement-transfer {
+  flex-wrap: wrap;
 }
 .dock-probe {
   position: absolute;
   right: 0;
-  bottom: 0;
+  top: 0;
   width: 2px;
   height: 2px;
   pointer-events: none;
+  opacity: 0;
 }
 .geo-reading {
   width: max-content;
@@ -711,8 +743,11 @@
   .location-panel {
     max-height: calc(56dvh + 37px);
     overflow: auto;
+  }
+  .dock-aware-location {
     position: sticky;
     top: 88px;
+    align-self: start;
   }
 }
 @media (max-width: 520px) {

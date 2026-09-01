@@ -1,58 +1,96 @@
 import React, { useMemo, useState } from "react";
-import { data, money, vibrate } from "../lib.js";
+import { data, formatINR, splitPaise, vibrate } from "../lib.js";
 import { DockAwarePanel } from "../ui.jsx";
 
 function buildSettlement(expenses) {
   const valid = new Set(data.members.map((m) => m.id)),
     ledger = Object.fromEntries(
-      data.members.map((m) => [m.id, { paid: 0, share: 0 }]),
-    );
-  let unassigned = 0;
+      data.members.map((m) => [m.id, { paidPaise: 0, sharePaise: 0 }]),
+    ),
+    settlementGroups = new Map();
+  let unassignedPaise = 0;
+  // Multiple receipts can form one logical split. Combining that explicit
+  // group allocates remainder paise once instead of biasing the same member on
+  // every receipt.
   for (const e of expenses) {
-    const amount = Math.round(Number(e.amount || 0) * 100),
-      participants = (e.participantIds || []).filter((id) => valid.has(id));
-    if (!amount || !participants.length) continue;
-    if (e.payerId && valid.has(e.payerId)) ledger[e.payerId].paid += amount;
-    else unassigned += amount;
-    const base = Math.floor(amount / participants.length),
-      remainder = amount % participants.length;
-    participants.forEach((id, index) => {
-      ledger[id].share += base + (index < remainder ? 1 : 0);
+    const amountPaise = e.amountPaise,
+      participants = [
+        ...new Set((e.participantIds || []).filter((id) => valid.has(id))),
+      ].sort();
+    if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0)
+      continue;
+    if (!participants.length) continue;
+    const groupId = e.settlementGroupId || e.id,
+      signature = `${e.payerId || ""}|${participants.join(",")}`,
+      current = settlementGroups.get(groupId);
+    if (current && current.signature !== signature) continue;
+    settlementGroups.set(groupId, {
+      signature,
+      payerId: e.payerId,
+      participants,
+      amountPaise: (current?.amountPaise || 0) + amountPaise,
+    });
+  }
+  for (const group of settlementGroups.values()) {
+    if (group.payerId && valid.has(group.payerId))
+      ledger[group.payerId].paidPaise += group.amountPaise;
+    else unassignedPaise += group.amountPaise;
+    const shares = splitPaise(group.amountPaise, group.participants.length);
+    group.participants.forEach((id, index) => {
+      ledger[id].sharePaise += shares[index];
     });
   }
   for (const payment of data.reimbursements || []) {
-    const amount = Math.round(Number(payment.amount || 0) * 100),
-      covered = (payment.coversMemberIds || []).filter((id) => valid.has(id));
-    if (!amount || !covered.length || !valid.has(payment.toMemberId)) continue;
-    ledger[payment.toMemberId].paid -= amount;
-    const base = Math.floor(amount / covered.length),
-      remainder = amount % covered.length;
+    const amountPaise = payment.amountPaise,
+      covered = [
+        ...new Set(
+          (payment.coversMemberIds || []).filter((id) => valid.has(id)),
+        ),
+      ].sort();
+    if (
+      !Number.isSafeInteger(amountPaise) ||
+      amountPaise <= 0 ||
+      !covered.length ||
+      !valid.has(payment.toMemberId)
+    )
+      continue;
+    ledger[payment.toMemberId].paidPaise -= amountPaise;
+    const shares = splitPaise(amountPaise, covered.length);
     covered.forEach((id, index) => {
-      ledger[id].paid += base + (index < remainder ? 1 : 0);
+      ledger[id].paidPaise += shares[index];
     });
   }
   const creditors = [],
     debtors = [];
   for (const [id, row] of Object.entries(ledger)) {
-    row.net = row.paid - row.share;
-    if (row.net > 0) creditors.push({ id, amount: row.net });
-    if (row.net < 0) debtors.push({ id, amount: -row.net });
+    row.netPaise = row.paidPaise - row.sharePaise;
+    if (row.netPaise > 0) creditors.push({ id, amountPaise: row.netPaise });
+    if (row.netPaise < 0) debtors.push({ id, amountPaise: -row.netPaise });
   }
-  creditors.sort((a, b) => b.amount - a.amount);
-  debtors.sort((a, b) => b.amount - a.amount);
+  const byAmountThenId = (a, b) =>
+    b.amountPaise - a.amountPaise || a.id.localeCompare(b.id);
+  creditors.sort(byAmountThenId);
+  debtors.sort(byAmountThenId);
   const transfers = [];
   let ci = 0,
     di = 0;
   while (ci < creditors.length && di < debtors.length) {
-    const amount = Math.min(creditors[ci].amount, debtors[di].amount);
-    if (amount > 0)
-      transfers.push({ from: debtors[di].id, to: creditors[ci].id, amount });
-    creditors[ci].amount -= amount;
-    debtors[di].amount -= amount;
-    if (creditors[ci].amount === 0) ci++;
-    if (debtors[di].amount === 0) di++;
+    const amountPaise = Math.min(
+      creditors[ci].amountPaise,
+      debtors[di].amountPaise,
+    );
+    if (amountPaise > 0)
+      transfers.push({
+        from: debtors[di].id,
+        to: creditors[ci].id,
+        amountPaise,
+      });
+    creditors[ci].amountPaise -= amountPaise;
+    debtors[di].amountPaise -= amountPaise;
+    if (creditors[ci].amountPaise === 0) ci++;
+    if (debtors[di].amountPaise === 0) di++;
   }
-  return { ledger, transfers, unassigned };
+  return { ledger, transfers, unassignedPaise };
 }
 
 export default function Group({ expenses }) {
@@ -61,7 +99,7 @@ export default function Group({ expenses }) {
   const copySettlement = async (transfer) => {
     const from = data.members.find((m) => m.id === transfer.from)?.name,
       to = data.members.find((m) => m.id === transfer.to)?.name,
-      text = `${from} pays ${to} ${money(transfer.amount / 100)} for the Mumbai trip settlement.`;
+      text = `${from} pays ${to} ${formatINR(transfer.amountPaise)} for the Mumbai trip settlement.`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(`${transfer.from}-${transfer.to}`);
@@ -95,12 +133,16 @@ export default function Group({ expenses }) {
                     ? "Sea Lounge reservation holder"
                     : "Rail group"}
                 </p>
-                <strong>{money(row.share / 100)}</strong>
+                <strong>{formatINR(row.sharePaise)}</strong>
                 <small>
-                  allocated · settled {money(row.paid / 100)} ·{" "}
-                  <b className={row.net >= 0 ? "net-positive" : "net-negative"}>
-                    {row.net >= 0 ? "+" : ""}
-                    {money(row.net / 100)} net
+                  allocated · settled {formatINR(row.paidPaise)} ·{" "}
+                  <b
+                    className={
+                      row.netPaise >= 0 ? "net-positive" : "net-negative"
+                    }
+                  >
+                    {row.netPaise >= 0 ? "+" : ""}
+                    {formatINR(row.netPaise)} net
                   </b>
                 </small>
               </div>
@@ -124,14 +166,16 @@ export default function Group({ expenses }) {
               <div className="settlement-row" key={m.id}>
                 <b>{m.name}</b>
                 <span
-                  className={row.net >= 0 ? "net-positive" : "net-negative"}
+                  className={
+                    row.netPaise >= 0 ? "net-positive" : "net-negative"
+                  }
                 >
-                  {row.net >= 0 ? "+" : ""}
-                  {money(row.net / 100)}
+                  {row.netPaise >= 0 ? "+" : ""}
+                  {formatINR(row.netPaise)}
                 </span>
                 <small>
-                  {money(row.paid / 100)} settled · {money(row.share / 100)}{" "}
-                  allocated
+                  {formatINR(row.paidPaise)} settled ·{" "}
+                  {formatINR(row.sharePaise)} allocated
                 </small>
               </div>
             );
@@ -150,7 +194,7 @@ export default function Group({ expenses }) {
                   {data.members.find((m) => m.id === payment.toMemberId)?.name}
                 </b>
                 <span>
-                  {money(payment.amount)} · covers{" "}
+                  {formatINR(payment.amountPaise)} · covers{" "}
                   {payment.coversMemberIds
                     .map(
                       (id) =>
@@ -175,7 +219,7 @@ export default function Group({ expenses }) {
                       {data.members.find((m) => m.id === t.from)?.name} pays{" "}
                       {data.members.find((m) => m.id === t.to)?.name}
                     </b>
-                    <strong>{money(t.amount / 100)}</strong>
+                    <strong>{formatINR(t.amountPaise)}</strong>
                   </div>
                   <button onClick={() => copySettlement(t)}>
                     {copied === key ? "Copied" : "Copy"}
@@ -187,10 +231,10 @@ export default function Group({ expenses }) {
         ) : (
           <p className="muted">No transfer is currently required.</p>
         )}
-        {settlement.unassigned > 0 && (
+        {settlement.unassignedPaise > 0 && (
           <p className="muted">
-            {money(settlement.unassigned / 100)} has no payer assigned, so that
-            amount is excluded from who-owes-whom settlement.
+            {formatINR(settlement.unassignedPaise)} has no payer assigned, so
+            that amount is excluded from who-owes-whom settlement.
           </p>
         )}
       </DockAwarePanel>

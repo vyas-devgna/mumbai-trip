@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { data, money, PRESS_SPRING } from "../lib.js";
+import { data, formatINR, PRESS_SPRING } from "../lib.js";
 import { DockAwarePanel } from "../ui.jsx";
 
 const fmtTime = (value) =>
@@ -23,7 +23,10 @@ export default function More({
   update,
   onReplayOnboarding,
 }) {
-  const total = expenses.reduce((s, e) => s + Number(e.amount || 0), 0),
+  const totalPaise = expenses.reduce((sum, expense) => {
+      if (!Number.isSafeInteger(expense.amountPaise)) return sum;
+      return sum + expense.amountPaise;
+    }, 0),
     sha = update.version
       ? update.version === "local-dev"
         ? "local-dev"
@@ -53,7 +56,9 @@ export default function More({
             <span>BUDGET LEDGER</span>
             <button onClick={() => setSheet("expense")}>Add</button>
           </div>
-          <strong className="metric-number small">{money(total)}</strong>
+          <strong className="metric-number small">
+            {formatINR(totalPaise)}
+          </strong>
           <p className="muted">
             Canonical booked costs plus local-only drafts on this phone.
           </p>
@@ -61,7 +66,7 @@ export default function More({
             {expenses.map((e) => (
               <div key={e.id}>
                 <span>{e.label}</span>
-                <b>{money(e.amount)}</b>
+                <b>{formatINR(e.amountPaise)}</b>
               </div>
             ))}
           </div>
@@ -84,7 +89,7 @@ export default function More({
                       )
                       .join(" + ")}
                   </span>
-                  <b>{money(payment.amount)}</b>
+                  <b>{formatINR(payment.amountPaise)}</b>
                 </div>
               ))}
             </div>

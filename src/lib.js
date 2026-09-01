@@ -6,12 +6,55 @@ export const BASE = import.meta.env.BASE_URL;
 export const DAYS = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17"];
 export const PRESS_SPRING = { type: "spring", stiffness: 300, damping: 30 };
 export const byId = (arr, id) => arr.find((x) => x.id === id);
-export const money = (value) =>
-  new Intl.NumberFormat("en-IN", {
+
+const assertPaise = (value, label = "paise") => {
+  if (!Number.isSafeInteger(value))
+    throw new TypeError(`${label} must be a safe integer`);
+  return value;
+};
+
+export function toPaise(value) {
+  const normalized = String(value ?? "")
+      .trim()
+      .replace(/[₹,\s]/g, ""),
+    match = /^([+-]?)(\d+)(?:\.(\d{0,2}))?$/.exec(normalized);
+  if (!match) throw new TypeError("INR value must have at most two decimals");
+  const whole = Number(match[2]),
+    fraction = Number((match[3] || "").padEnd(2, "0")),
+    absolutePaise = whole * 100 + fraction;
+  if (!Number.isSafeInteger(absolutePaise))
+    throw new RangeError("INR value exceeds safe integer paise");
+  return match[1] === "-" ? -absolutePaise : absolutePaise;
+}
+
+export const fromPaise = (paise) => assertPaise(paise) / 100;
+
+export function formatINR(paise) {
+  const exactPaise = assertPaise(paise),
+    showPaise = Math.abs(exactPaise) % 100 !== 0;
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: Number(value) % 1 ? 2 : 0,
-  }).format(Number(value) || 0);
+    minimumFractionDigits: showPaise ? 2 : 0,
+    maximumFractionDigits: showPaise ? 2 : 0,
+  }).format(fromPaise(exactPaise));
+}
+
+// Pair these shares with member ids sorted ascending. That stable order owns
+// the first totalPaise % n remainder shares and therefore the extra paisa.
+export function splitPaise(totalPaise, n) {
+  const total = assertPaise(totalPaise, "totalPaise");
+  if (total < 0) throw new RangeError("totalPaise cannot be negative");
+  if (!Number.isSafeInteger(n) || n <= 0)
+    throw new RangeError("n must be a positive integer");
+  const divisor = BigInt(n),
+    exactTotal = BigInt(total),
+    base = Number(exactTotal / divisor),
+    remainder = Number(exactTotal % divisor);
+  return Array.from({ length: n }, (_, index) =>
+    index < remainder ? base + 1 : base,
+  );
+}
 export const fmtDate = (date) =>
   new Intl.DateTimeFormat("en-IN", {
     weekday: "short",

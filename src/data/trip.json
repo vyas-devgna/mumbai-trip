@@ -7,13 +7,18 @@
     "timezone": "Asia/Kolkata",
     "status": "planning",
     "currency": "INR",
+    "moneyModel": {
+      "unit": "paise",
+      "schemaVersion": 2,
+      "migrationNote": "Every monetary field ending in Paise stores integer paise. Rupee decimals are invalid."
+    },
     "solar": {
       "latitude": 19.076,
       "longitude": 72.8777,
       "source": "SunCalc 1.9.0"
     },
     "budget": {
-      "targetPerPerson": 6000,
+      "targetPerPersonPaise": 600000,
       "groupSizeBudgeted": 5,
       "note": "Planning target; update when accommodation and local transport are finalized."
     },
@@ -227,7 +232,8 @@
   "expenses": [
     {
       "id": "expense-outbound-rail",
-      "amount": 859.5,
+      "amountPaise": 85950,
+      "settlementGroupId": "rail-tickets",
       "payerId": "vyas",
       "participantIds": ["vyas", "tirth", "nishit", "milan"],
       "category": "transport",
@@ -238,7 +244,8 @@
     },
     {
       "id": "expense-return-rail",
-      "amount": 799.5,
+      "amountPaise": 79950,
+      "settlementGroupId": "rail-tickets",
       "payerId": "vyas",
       "participantIds": ["vyas", "tirth", "nishit", "milan"],
       "category": "transport",
@@ -253,7 +260,7 @@
       "id": "reimbursement-tirth-trains",
       "fromMemberId": "tirth",
       "toMemberId": "vyas",
-      "amount": 829.5,
+      "amountPaise": 82950,
       "coversMemberIds": ["tirth", "nishit"],
       "category": "transport",
       "status": "received",

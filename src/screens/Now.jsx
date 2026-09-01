@@ -6,7 +6,7 @@ import {
   data,
   fmtDate,
   fmtShortDate,
-  money,
+  formatINR,
   PRESS_SPRING,
   timingLabel,
   vibrate,
@@ -62,10 +62,22 @@ export default function Now({
     place = next?.placeId && byId(data.places, next.placeId);
   const tripStart = new Date(`${data.trip.startDate}T05:00:00+05:30`),
     hours = Math.max(0, Math.round((tripStart - now) / 3600000));
-  const spend = expenses.reduce((s, e) => s + Number(e.amount || 0), 0),
-    ceiling =
-      data.trip.budget.targetPerPerson * data.trip.budget.groupSizeBudgeted;
-  const progress = Math.min(100, (spend / ceiling) * 100),
+  const spendPaise = expenses.reduce((sum, expense) => {
+      if (!Number.isSafeInteger(expense.amountPaise)) return sum;
+      return sum + expense.amountPaise;
+    }, 0),
+    ceilingPaise =
+      data.trip.budget.targetPerPersonPaise *
+      data.trip.budget.groupSizeBudgeted;
+  const progress = ceilingPaise
+      ? Math.min(
+          100,
+          Number(
+            (BigInt(spendPaise) * 100n + BigInt(ceilingPaise) / 2n) /
+              BigInt(ceilingPaise),
+          ),
+        )
+      : 0,
     canLocate =
       typeof navigator !== "undefined" &&
       Boolean(navigator.geolocation) &&
@@ -114,7 +126,6 @@ export default function Now({
     <section className="dash">
       <DockAwarePanel
         className="panel mission span2"
-        style={{ gridColumn: "1 / -1", width: "100%" }}
       >
         <div className="panel-head">
           <span>01 / NEXT ANCHOR</span>
@@ -184,14 +195,14 @@ export default function Now({
           <span>02 / BUDGET</span>
           <button onClick={() => setSheet("expense")}>+ expense</button>
         </div>
-        <strong className="metric-number">{money(spend)}</strong>
+        <strong className="metric-number">{formatINR(spendPaise)}</strong>
         <p>known trip spend · {Math.round(progress)}% of planning ceiling</p>
         <div className="progress">
           <i style={{ width: `${progress}%` }} />
         </div>
         <div className="metric-pair">
           <span>
-            <b>{money(data.trip.budget.targetPerPerson)}</b> / person
+            <b>{formatINR(data.trip.budget.targetPerPersonPaise)}</b> / person
           </span>
           <span>
             <b>{data.expenses.length}</b> booked costs

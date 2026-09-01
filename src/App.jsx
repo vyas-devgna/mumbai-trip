@@ -8,6 +8,7 @@ import {
 import {
   data,
   PRESS_SPRING,
+  toPaise,
   tripIsLive,
   useAutoUpdate,
   useStored,
@@ -46,6 +47,23 @@ const onboardingDone = () => {
     return false;
   }
 };
+
+function migrateLocalExpense(expense) {
+  const hasLegacyAmount = Object.prototype.hasOwnProperty.call(
+    expense,
+    "amount",
+  );
+  if (Number.isSafeInteger(expense.amountPaise) && !hasLegacyAmount)
+    return expense;
+  let amountPaise = 0;
+  try {
+    amountPaise = Number.isSafeInteger(expense.amountPaise)
+      ? expense.amountPaise
+      : toPaise(expense.amount);
+  } catch {}
+  const { amount: _legacyAmount, ...rest } = expense;
+  return { ...rest, amountPaise };
+}
 
 function readRoute() {
   const raw = location.hash.slice(1);
@@ -182,6 +200,20 @@ export default function App() {
     ),
     [showOnboarding, setShowOnboarding] = useState(() => !onboardingDone());
 
+  const migratedLocalExpenses = useMemo(
+    () => localExpenses.map(migrateLocalExpense),
+    [localExpenses],
+  );
+
+  useEffect(() => {
+    if (
+      migratedLocalExpenses.some(
+        (expense, index) => expense !== localExpenses[index],
+      )
+    )
+      setLocalExpenses(migratedLocalExpenses);
+  }, [localExpenses, migratedLocalExpenses, setLocalExpenses]);
+
   useEffect(() => {
     const restore = () => {
       const route = readRoute();
@@ -315,8 +347,8 @@ export default function App() {
   }, [now]);
 
   const expenses = useMemo(
-    () => [...data.expenses, ...localExpenses],
-    [localExpenses],
+    () => [...data.expenses, ...migratedLocalExpenses],
+    [migratedLocalExpenses],
   );
   const installApp = async () => {
     if (installed) return;
@@ -347,7 +379,7 @@ export default function App() {
     notes,
     setNotes,
     expenses,
-    localExpenses,
+    localExpenses: migratedLocalExpenses,
     setLocalExpenses,
     setResource,
     setSheet,
