@@ -1,42 +1,74 @@
 .ambient-bg {
   position: fixed;
-  inset: 0;
+  inset: calc(66px + env(safe-area-inset-top)) 0 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: -2;
+  z-index: 0;
+  background: #f3f0e7;
 }
-.ambient-node {
+.tide-sky {
   position: absolute;
-  width: 44vmax;
-  height: 44vmax;
-  border-radius: 50%;
-  filter: blur(72px);
-  opacity: 0.055;
+  inset: 0;
+  background:
+    radial-gradient(circle at 78% 16%, #f4dca15c 0, transparent 25%),
+    linear-gradient(180deg, #f8f4eb 0%, #edf1ed 48%, #e9e8df 100%);
+}
+.tide-labels {
+  position: absolute;
+  top: 15px;
+  left: max(18px, calc((100vw - 980px) / 2 + 18px));
+  right: max(18px, calc((100vw - 980px) / 2 + 18px));
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 6px;
+  letter-spacing: 0.18em;
+  color: #55717c5c;
+}
+.tide-wave {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  height: 48%;
   will-change: transform;
 }
-.ambient-a {
-  background: #164d8c;
-  left: -20vmax;
-  top: -16vmax;
+.tide-far {
+  top: 12%;
+  fill: #b9d2d04a;
 }
-.ambient-b {
-  background: #efa728;
-  right: -24vmax;
-  top: 28vh;
+.tide-mid {
+  top: 35%;
+  fill: #9ebfc052;
 }
-.ambient-c {
-  background: #3f7359;
-  left: 20vw;
-  bottom: -31vmax;
+.tide-near {
+  top: 58%;
+  fill: #7fa9ad3d;
 }
-.ambient-bg.live .ambient-a {
-  background: #b95f35;
+.tide-buoy {
+  position: absolute;
+  right: max(11%, calc((100vw - 980px) / 2 + 84px));
+  top: 54%;
+  width: 8px;
+  height: 18px;
+  border-radius: 5px 5px 3px 3px;
+  background: #9a4d35a8;
+  border: 2px solid #fbf8f0b8;
+  box-shadow: 0 8px 0 -3px #557b814f;
+  transform-origin: 50% 100%;
 }
-.ambient-bg.live .ambient-b {
-  background: #ef9a28;
+.ambient-bg.live .tide-sky {
+  background:
+    radial-gradient(circle at 78% 16%, #efb86c66 0, transparent 26%),
+    linear-gradient(180deg, #f6eee1 0%, #ece7dc 50%, #e7e1d6 100%);
 }
-.ambient-bg.live .ambient-c {
-  background: #a64a32;
+.ambient-bg.live .tide-far {
+  fill: #d3a67f4a;
+}
+.ambient-bg.live .tide-mid {
+  fill: #bd8d7252;
+}
+.ambient-bg.live .tide-near {
+  fill: #9f756d42;
 }
 .app-shell {
   padding-right: 13px;
@@ -44,6 +76,8 @@
 }
 .page-motion {
   min-height: calc(100dvh - 112px);
+  position: relative;
+  z-index: 1;
 }
 .side-nav {
   position: fixed;
@@ -775,6 +809,11 @@
     position: sticky;
     top: 88px;
     align-self: start;
+  }
+}
+@media (max-width: 720px) {
+  .ambient-bg {
+    inset: calc(92px + env(safe-area-inset-top)) 0 0;
   }
 }
 @media (max-width: 520px) {

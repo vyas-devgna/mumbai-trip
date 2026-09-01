@@ -117,51 +117,54 @@ function AmbientBackdrop({ live }) {
     return () => document.removeEventListener("visibilitychange", change);
   }, []);
   const active = !reduced && visible,
-    durations = live ? [15, 17, 20] : [28, 32, 36];
+    durations = live ? [24, 30, 38] : [52, 64, 76],
+    waveMotion = (distance, duration) => ({
+      animate: active ? { x: [0, -distance, 0] } : { x: 0 },
+      transition: active
+        ? { duration, repeat: Infinity, ease: "easeInOut" }
+        : { duration: 0 },
+    });
   return (
     <div className={`ambient-bg${live ? " live" : ""}`} aria-hidden="true">
+      <div className="tide-sky" />
+      <div className="tide-labels">
+        <span>ARABIAN SEA</span>
+        <span>{live ? "TRIP LIVE" : "PLANNING TIDE"}</span>
+      </div>
+      <motion.svg
+        className="tide-wave tide-far"
+        viewBox="0 0 2400 320"
+        preserveAspectRatio="none"
+        {...waveMotion(90, durations[2])}
+      >
+        <path d="M0 112C150 55 300 169 450 112S750 55 900 112s300 57 450 0 300-57 450 0 300 57 450 0 300-57 450 0v208H0Z" />
+      </motion.svg>
+      <motion.svg
+        className="tide-wave tide-mid"
+        viewBox="0 0 2400 320"
+        preserveAspectRatio="none"
+        {...waveMotion(145, durations[1])}
+      >
+        <path d="M0 126c120-62 255 52 390 0s270-52 405 0 270 52 405 0 270-52 405 0 270 52 405 0 270-52 405 0v194H0Z" />
+      </motion.svg>
+      <motion.svg
+        className="tide-wave tide-near"
+        viewBox="0 0 2400 320"
+        preserveAspectRatio="none"
+        {...waveMotion(210, durations[0])}
+      >
+        <path d="M0 145c105-48 210 48 315 0s210-48 315 0 210 48 315 0 210-48 315 0 210 48 315 0 210-48 315 0 210 48 315 0 210-48 315 0v175H0Z" />
+      </motion.svg>
       <motion.i
-        className="ambient-node ambient-a"
+        className="tide-buoy"
         animate={
           active
-            ? {
-                x: [0, 40, -15, 0],
-                y: [0, 28, 8, 0],
-                scale: [1, 1.08, 0.97, 1],
-              }
-            : { x: 0, y: 0, scale: 1 }
+            ? { y: [0, -7, 1, 0], rotate: [0, 2, -1, 0] }
+            : { y: 0, rotate: 0 }
         }
         transition={
           active
-            ? { duration: durations[0], repeat: Infinity, ease: "easeInOut" }
-            : { duration: 0 }
-        }
-      />
-      <motion.i
-        className="ambient-node ambient-b"
-        animate={
-          active
-            ? {
-                x: [0, -35, 10, 0],
-                y: [0, -24, 18, 0],
-                scale: [1, 0.94, 1.06, 1],
-              }
-            : { x: 0, y: 0, scale: 1 }
-        }
-        transition={
-          active
-            ? { duration: durations[1], repeat: Infinity, ease: "easeInOut" }
-            : { duration: 0 }
-        }
-      />
-      <motion.i
-        className="ambient-node ambient-c"
-        animate={
-          active ? { x: [0, 20, -25, 0], y: [0, -16, 14, 0] } : { x: 0, y: 0 }
-        }
-        transition={
-          active
-            ? { duration: durations[2], repeat: Infinity, ease: "easeInOut" }
+            ? { duration: live ? 4.5 : 7, repeat: Infinity, ease: "easeInOut" }
             : { duration: 0 }
         }
       />
@@ -421,7 +424,15 @@ export default function App() {
   return (
     <div className="app-shell">
       <AmbientBackdrop live={tripIsLive(now)} />
-      <Topbar now={now} update={update} />
+      <Topbar
+        now={now}
+        update={update}
+        day={day}
+        onDaySelect={(selectedDay) => {
+          setDay(selectedDay);
+          setTab("Plan");
+        }}
+      />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main className="page-motion" key={tab} {...pageMotion}>
           {screen}

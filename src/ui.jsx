@@ -22,16 +22,27 @@ import {
 import {
   BASE,
   data,
+  DAYS,
   PRESS_SPRING,
   toPaise,
   tripIsLive,
   vibrate,
 } from "./lib.js";
 
-export function Topbar({ now, update }) {
+export function Topbar({ now, update, day, onDaySelect }) {
   const start = new Date(`${data.trip.startDate}T05:00:00+05:30`),
     days = Math.max(0, Math.ceil((start - now) / 86400000)),
-    live = tripIsLive(now);
+    live = tripIsLive(now),
+    reduced = useReducedMotion(),
+    [visible, setVisible] = useState(
+      () => document.visibilityState === "visible",
+    );
+  useEffect(() => {
+    const change = () => setVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", change);
+    return () => document.removeEventListener("visibilitychange", change);
+  }, []);
+  const motionOff = reduced || !visible;
   return (
     <header className="topbar">
       <div className="brand">
@@ -41,6 +52,32 @@ export function Topbar({ now, update }) {
           <b>TRIP CONTROL</b>
         </div>
       </div>
+      <nav className="trip-horizon" aria-label="Trip day horizon">
+        {DAYS.map((tripDay, index) => {
+          const active = day === tripDay;
+          return (
+            <motion.button
+              type="button"
+              key={tripDay}
+              className={active ? "active" : ""}
+              whileTap={motionOff ? undefined : { scale: 0.94 }}
+              transition={motionOff ? { duration: 0 } : PRESS_SPRING}
+              onClick={() => onDaySelect(tripDay)}
+              aria-current={active ? "date" : undefined}
+              aria-label={`Open plan for September ${14 + index}`}
+            >
+              {active && (
+                <motion.i
+                  layoutId="trip-horizon-active"
+                  transition={motionOff ? { duration: 0 } : PRESS_SPRING}
+                />
+              )}
+              <span>DAY {String(index + 1).padStart(2, "0")}</span>
+              <b>{14 + index}</b>
+            </motion.button>
+          );
+        })}
+      </nav>
       <div className="sync">
         <i className={update.label.toLowerCase()} />
         <div>

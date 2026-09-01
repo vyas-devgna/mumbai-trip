@@ -9,28 +9,86 @@
   display:flex;
   align-items:center;
   justify-content:space-between;
-  background:color-mix(in srgb,var(--paper) 94%,transparent);
+  background:var(--panel);
   border-bottom:1px solid var(--line);
   box-shadow:0 8px 26px #2b281f0d;
-  backdrop-filter:blur(18px) saturate(1.06);
-  -webkit-backdrop-filter:blur(18px) saturate(1.06);
   z-index:70;
 }
 
 .topbar .brand,.topbar .sync{position:relative;z-index:1}
 .topbar .sync{margin-left:auto}
 
+.trip-horizon{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  width:min(278px,30vw);
+  padding:3px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#f3eee4;
+  gap:2px;
+}
+.trip-horizon button{
+  position:relative;
+  isolation:isolate;
+  min-width:0;
+  height:36px;
+  padding:4px 7px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:4px;
+  color:var(--muted);
+  cursor:pointer;
+}
+.trip-horizon button>i{
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:9px;
+  background:var(--blue);
+  box-shadow:0 5px 12px #164d8c20;
+}
+.trip-horizon span{
+  font-family:var(--mono);
+  font-size:5.5px;
+  letter-spacing:.05em;
+  text-align:left;
+}
+.trip-horizon b{
+  font-family:var(--mono);
+  font-size:10px;
+}
+.trip-horizon button.active{color:#fff}
+
 .app-shell{
   padding-top:calc(79px + env(safe-area-inset-top));
 }
 
-@media(max-width:520px){
+@media(max-width:720px){
   .topbar{
-    height:calc(62px + env(safe-area-inset-top));
+    height:calc(92px + env(safe-area-inset-top));
     padding-left:max(11px,env(safe-area-inset-left));
     padding-right:max(11px,env(safe-area-inset-right));
+    padding-bottom:31px;
   }
-  .app-shell{padding-top:calc(74px + env(safe-area-inset-top))}
+  .app-shell{padding-top:calc(104px + env(safe-area-inset-top))}
+  .trip-horizon{
+    top:auto;
+    bottom:7px;
+    width:calc(100% - max(22px,env(safe-area-inset-left) + env(safe-area-inset-right)));
+    transform:translateX(-50%);
+  }
+  .trip-horizon button{height:25px;padding:2px 8px}
+  .trip-horizon span{font-size:5px}
+  .trip-horizon b{font-size:8px}
   .topbar .brand img{width:36px;height:36px}
   .topbar .brand b{font-size:12px}
   .topbar .sync small{max-width:none}
