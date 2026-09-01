@@ -5,7 +5,6 @@ import {
   Download,
   Gauge,
   MapPinned,
-  MoreHorizontal,
   Users,
 } from "lucide-react";
 import { PRESS_SPRING } from "./lib.js";
@@ -26,7 +25,6 @@ export default function SideNav({
     ["Map", MapPinned],
     ["Group", Users],
     ["Finance", RupeeIcon],
-    ["More", MoreHorizontal],
   ];
   return (
     <nav className="side-nav" aria-label="Trip dashboard navigation">
