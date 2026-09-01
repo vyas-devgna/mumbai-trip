@@ -1,0 +1,110 @@
+.map-marker {
+  --marker: var(--blue);
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: var(--marker);
+  color: #fff;
+  box-shadow: 0 8px 20px #1d243033;
+  cursor: pointer;
+}
+.map-marker::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--marker);
+  filter: drop-shadow(0 2px 1px #1d24301f);
+}
+.map-marker-icon {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.map-marker-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+.map-marker:hover,
+.map-marker:focus-visible {
+  z-index: 4;
+  box-shadow: 0 10px 26px #1d24304a;
+}
+.map-marker-station { --marker: #164d8c; }
+.map-marker-temple,
+.map-marker-darshan { --marker: #a56f18; }
+.map-marker-hotel { --marker: #3f7359; }
+.map-marker-restaurant { --marker: #9a4d35; }
+.map-marker-beach { --marker: #28758a; }
+.map-marker-landmark { --marker: #59564f; }
+
+.maplibregl-popup-content {
+  border: 1px solid var(--line);
+  background: #fbf8f0f7;
+  box-shadow: 0 14px 36px #28231a2c;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.map-popup a {
+  margin-top: 4px;
+  color: var(--blue);
+  font-size: 7px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.location-icon {
+  position: relative;
+  display: grid !important;
+  place-items: center;
+  color: var(--blue);
+}
+.location-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.9;
+}
+.location-icon > small {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 13px;
+  height: 13px;
+  display: grid;
+  place-items: center;
+  padding: 0 2px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 5px;
+}
+.location-icon-temple,
+.location-icon-darshan { color: #a56f18; }
+.location-icon-hotel { color: #3f7359; }
+.location-icon-restaurant { color: #9a4d35; }
+.location-icon-beach { color: #28758a; }
+.location-icon-landmark { color: #59564f; }
+
+.maplibregl-ctrl-group {
+  border: 1px solid #d1c8b8;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px #2d271e20;
+}
+.maplibregl-ctrl-group button {
+  background: #fbf8f0ed;
+}
