@@ -715,6 +715,33 @@
 .map-frame {
   min-width: 0;
 }
+.map-fallback {
+  min-height: 250px;
+  padding: 24px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  text-align: center;
+  background:
+    linear-gradient(#7f76660d 1px, transparent 1px),
+    linear-gradient(90deg, #7f76660d 1px, transparent 1px),
+    #e5ded1;
+  background-size: 24px 24px;
+}
+.map-fallback span {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.09em;
+  color: var(--blue);
+}
+.map-fallback b {
+  font-size: 15px;
+}
+.map-fallback p {
+  margin: 0;
+  font-size: 8px;
+  color: var(--muted);
+}
 .bottom-nav {
   display: none !important;
 }

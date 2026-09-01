@@ -37,12 +37,24 @@ const mapsUrl = (p) =>
   p.googleMapsUrl ||
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.latitude},${p.longitude}`)}`;
 
+function hasWebGL2() {
+  try {
+    const canvas = document.createElement("canvas"),
+      context = canvas.getContext("webgl2");
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+    return Boolean(context);
+  } catch {
+    return false;
+  }
+}
+
 export default function MapScreen({ setDay }) {
   const el = useRef(null),
     mapRef = useRef(null),
     markers = useRef([]);
   const [mode, setMode] = useState("satellite"),
     [scope, setScope] = useState("mumbai"),
+    [mapUnavailable, setMapUnavailable] = useState(false),
     reduced = useReducedMotion();
   const coords = useMemo(() => {
     if (scope === "mumbai")
@@ -72,12 +84,22 @@ export default function MapScreen({ setDay }) {
 
   useEffect(() => {
     if (mapRef.current || !el.current) return;
-    const map = new maplibregl.Map({
-      container: el.current,
-      style: satellite,
-      center: [72.846, 19.015],
-      zoom: 11.2,
-    });
+    if (!hasWebGL2()) {
+      setMapUnavailable(true);
+      return;
+    }
+    let map;
+    try {
+      map = new maplibregl.Map({
+        container: el.current,
+        style: satellite,
+        center: [72.846, 19.015],
+        zoom: 11.2,
+      });
+    } catch {
+      setMapUnavailable(true);
+      return;
+    }
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     mapRef.current = map;
     markers.current = data.places
@@ -212,7 +234,15 @@ export default function MapScreen({ setDay }) {
       </div>
       <div className="map-layout">
         <div className="map-frame">
-          <div ref={el} className="map-canvas" />
+          {mapUnavailable ? (
+            <div className="map-canvas map-fallback">
+              <span>STATIC LOCATION BOARD</span>
+              <b>MAP RENDERER UNAVAILABLE</b>
+              <p>Use the indexed anchors. Map links stay live.</p>
+            </div>
+          ) : (
+            <div ref={el} className="map-canvas" />
+          )}
           <div className="map-legend">
             <span>
               <i /> planned sequence
