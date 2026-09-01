@@ -8,6 +8,7 @@ import './video-glass.css'
 import './performance.css'
 import './typography-safety.css'
 import './finance-group.css'
+import './interaction-fix.css'
 import {data} from './lib.js'
 import App from './App.jsx'
 
