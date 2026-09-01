@@ -15,13 +15,20 @@ import {
 import { byId, data, DAYS, dayItems, PRESS_SPRING } from "../lib.js";
 import { DockAwarePanel } from "../ui.jsx";
 
-const OPENFREE_STYLE = "https://tiles.openfreemap.org/styles/fiord";
-const MUMBAI_BOUNDS = {
-  south: 18.75,
-  north: 19.35,
-  west: 72.7,
-  east: 73.1,
+const street = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 14,
+      attribution: "© OpenStreetMap contributors",
+    },
+  },
+  layers: [{ id: "street", type: "raster", source: "osm" }],
 };
+
 const satellite = {
   version: 8,
   sources: {
@@ -31,7 +38,7 @@ const satellite = {
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
-      maxzoom: 18,
+      maxzoom: 14,
       attribution: "Tiles © Esri",
     },
   },
@@ -47,6 +54,7 @@ const markerIcon = (category) => {
     case "station":
       return Train;
     case "temple":
+    case "landmark":
       return Landmark;
     case "darshan":
       return Sparkles;
@@ -56,8 +64,6 @@ const markerIcon = (category) => {
       return Utensils;
     case "beach":
       return Waves;
-    case "landmark":
-      return Landmark;
     default:
       return MapPin;
   }
@@ -67,16 +73,6 @@ const categoryClass = (category) =>
   String(category || "place")
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-");
-
-const validPlace = (p) =>
-  Number.isFinite(p?.latitude) && Number.isFinite(p?.longitude);
-
-const inMumbai = (p) =>
-  validPlace(p) &&
-  p.latitude > MUMBAI_BOUNDS.south &&
-  p.latitude < MUMBAI_BOUNDS.north &&
-  p.longitude > MUMBAI_BOUNDS.west &&
-  p.longitude < MUMBAI_BOUNDS.east;
 
 function hasWebGL2() {
   try {
@@ -94,44 +90,49 @@ export default function MapScreen({ setDay }) {
     mapRef = useRef(null),
     markers = useRef([]),
     markerRoots = useRef([]);
-  const [mode, setMode] = useState("vector"),
+  const [mode, setMode] = useState("satellite"),
     [scope, setScope] = useState("mumbai"),
     [mapUnavailable, setMapUnavailable] = useState(false),
     reduced = useReducedMotion();
 
-  const visiblePlaces = useMemo(() => {
-    if (scope === "mumbai") return data.places.filter(inMumbai);
+  const coords = useMemo(() => {
+    if (scope === "mumbai")
+      return data.places
+        .filter(
+          (p) =>
+            p.latitude > 18.75 &&
+            p.latitude < 19.35 &&
+            p.longitude > 72.7 &&
+            p.longitude < 73.1,
+        )
+        .map((p) => [p.longitude, p.latitude]);
 
-    const ids = new Set();
+    const out = [];
     for (const activity of dayItems(scope)) {
-      if (activity.placeId) ids.add(activity.placeId);
+      const place = activity.placeId && byId(data.places, activity.placeId);
+      if (
+        place &&
+        !out.some(
+          (coordinate) =>
+            coordinate[0] === place.longitude && coordinate[1] === place.latitude,
+        )
+      )
+        out.push([place.longitude, place.latitude]);
     }
-    for (const leg of data.travelLegs.filter((item) => item.date === scope)) {
-      if (leg.fromPlaceId) ids.add(leg.fromPlaceId);
-      if (leg.toPlaceId) ids.add(leg.toPlaceId);
-    }
-    return data.places.filter((place) => ids.has(place.id) && validPlace(place));
+    for (const leg of data.travelLegs.filter((item) => item.date === scope))
+      for (const id of [leg.fromPlaceId, leg.toPlaceId]) {
+        const place = byId(data.places, id);
+        if (
+          place &&
+          !out.some(
+            (coordinate) =>
+              coordinate[0] === place.longitude && coordinate[1] === place.latitude,
+          )
+        )
+          out.push([place.longitude, place.latitude]);
+      }
+    return out;
   }, [scope]);
-
-  const markerGroups = useMemo(() => {
-    const grouped = new Map();
-    for (const place of visiblePlaces) {
-      const key = `${place.latitude.toFixed(5)},${place.longitude.toFixed(5)}`;
-      const current = grouped.get(key) || {
-        latitude: place.latitude,
-        longitude: place.longitude,
-        places: [],
-      };
-      current.places.push(place);
-      grouped.set(key, current);
-    }
-    return [...grouped.values()];
-  }, [visiblePlaces]);
-
-  const coords = useMemo(
-    () => markerGroups.map((group) => [group.longitude, group.latitude]),
-    [markerGroups],
-  );
 
   useEffect(() => {
     if (mapRef.current || !el.current) return;
@@ -144,21 +145,49 @@ export default function MapScreen({ setDay }) {
     try {
       map = new maplibregl.Map({
         container: el.current,
-        style: OPENFREE_STYLE,
-        center: [72.852, 19.0],
-        zoom: 10.6,
-        attributionControl: true,
+        style: satellite,
+        center: [72.846, 19.015],
+        zoom: 11.2,
       });
     } catch {
       setMapUnavailable(true);
       return;
     }
 
-    map.addControl(
-      new maplibregl.NavigationControl({ visualizePitch: true }),
-      "bottom-right",
-    );
+    map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     mapRef.current = map;
+
+    markers.current = data.places
+      .filter((p) => p.latitude && p.longitude)
+      .map((p) => {
+        const node = document.createElement("button"),
+          iconHost = document.createElement("span"),
+          Icon = markerIcon(p.category),
+          root = createRoot(iconHost),
+          category = categoryClass(p.category),
+          url = mapsUrl(p);
+
+        node.type = "button";
+        node.className = `map-marker map-marker-${category}`;
+        node.title = p.name;
+        node.setAttribute("aria-label", p.name);
+        iconHost.className = "map-marker-icon";
+        node.append(iconHost);
+        root.render(<Icon aria-hidden="true" />);
+        markerRoots.current.push(root);
+
+        const pop = new maplibregl.Popup({
+          offset: 18,
+          closeButton: false,
+        }).setHTML(
+          `<div class="map-popup"><b>${p.name}</b><span>${p.category}</span>${p.address ? `<small>${p.address}</small>` : ""}<a href="${url}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
+        );
+
+        return new maplibregl.Marker({ element: node, anchor: "bottom" })
+          .setLngLat([p.longitude, p.latitude])
+          .setPopup(pop)
+          .addTo(map);
+      });
 
     return () => {
       markerRoots.current.forEach((root) => root.unmount());
@@ -173,68 +202,7 @@ export default function MapScreen({ setDay }) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    markerRoots.current.forEach((root) => root.unmount());
-    markerRoots.current = [];
-    markers.current.forEach((marker) => marker.remove());
-    markers.current = [];
-
-    markerGroups.forEach((group) => {
-      const primary = group.places[0],
-        node = document.createElement("button"),
-        iconHost = document.createElement("span"),
-        Icon = markerIcon(primary.category),
-        root = createRoot(iconHost),
-        category = categoryClass(primary.category);
-
-      node.type = "button";
-      node.className = `map-marker map-marker-${category}`;
-      node.title = group.places.map((place) => place.name).join(" · ");
-      node.setAttribute("aria-label", node.title);
-      iconHost.className = "map-marker-icon";
-      node.append(iconHost);
-      root.render(<Icon aria-hidden="true" />);
-      markerRoots.current.push(root);
-
-      if (group.places.length > 1) {
-        const count = document.createElement("small");
-        count.className = "map-marker-count";
-        count.textContent = String(group.places.length);
-        node.append(count);
-      }
-
-      const popupBody = group.places
-        .map(
-          (place) =>
-            `<div class="map-popup-place"><b>${place.name}</b><span>${place.category}</span>${place.address ? `<small>${place.address}</small>` : ""}<a href="${mapsUrl(place)}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
-        )
-        .join("");
-      const pop = new maplibregl.Popup({
-        offset: 22,
-        closeButton: false,
-        maxWidth: "270px",
-      }).setHTML(`<div class="map-popup">${popupBody}</div>`);
-
-      markers.current.push(
-        new maplibregl.Marker({ element: node, anchor: "bottom" })
-          .setLngLat([group.longitude, group.latitude])
-          .setPopup(pop)
-          .addTo(map),
-      );
-    });
-
-    return () => {
-      markerRoots.current.forEach((root) => root.unmount());
-      markerRoots.current = [];
-      markers.current.forEach((marker) => marker.remove());
-      markers.current = [];
-    };
-  }, [markerGroups]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    map.setStyle(mode === "satellite" ? satellite : OPENFREE_STYLE);
+    map.setStyle(mode === "satellite" ? satellite : street);
   }, [mode]);
 
   useEffect(() => {
@@ -244,8 +212,7 @@ export default function MapScreen({ setDay }) {
     const draw = () => {
       if (map.getLayer("route")) map.removeLayer("route");
       if (map.getSource("route")) map.removeSource("route");
-
-      if (scope !== "mumbai" && coords.length > 1) {
+      if (coords.length > 1) {
         map.addSource("route", {
           type: "geojson",
           data: {
@@ -266,31 +233,22 @@ export default function MapScreen({ setDay }) {
           },
         });
       }
-
-      if (!coords.length) return;
-      if (coords.length === 1) {
-        map.easeTo({
-          center: coords[0],
-          zoom: 13,
-          duration: reduced ? 0 : 450,
+      if (coords.length) {
+        const bounds = coords.reduce(
+          (current, coordinate) => current.extend(coordinate),
+          new maplibregl.LngLatBounds(coords[0], coords[0]),
+        );
+        map.fitBounds(bounds, {
+          padding: 60,
+          maxZoom: 14,
+          duration: reduced ? 0 : 500,
         });
-        return;
       }
-
-      const bounds = coords.reduce(
-        (current, coordinate) => current.extend(coordinate),
-        new maplibregl.LngLatBounds(coords[0], coords[0]),
-      );
-      map.fitBounds(bounds, {
-        padding: scope === "mumbai" ? 72 : 56,
-        maxZoom: scope === "mumbai" ? 11.4 : 13.5,
-        duration: reduced ? 0 : 500,
-      });
     };
 
     if (map.isStyleLoaded()) draw();
     else map.once("style.load", draw);
-  }, [coords, mode, reduced, scope]);
+  }, [coords, mode, reduced]);
 
   return (
     <section className="map-page">
@@ -300,19 +258,6 @@ export default function MapScreen({ setDay }) {
           <h1>Map</h1>
         </div>
         <div className="segment">
-          <button
-            className={mode === "vector" ? "active" : ""}
-            onClick={() => setMode("vector")}
-          >
-            {mode === "vector" && (
-              <motion.span
-                className="segment-indicator"
-                layoutId="map-mode-indicator"
-                transition={reduced ? { duration: 0 } : PRESS_SPRING}
-              />
-            )}
-            <b>Map</b>
-          </button>
           <button
             className={mode === "satellite" ? "active" : ""}
             onClick={() => setMode("satellite")}
@@ -325,6 +270,19 @@ export default function MapScreen({ setDay }) {
               />
             )}
             <b>Satellite</b>
+          </button>
+          <button
+            className={mode === "street" ? "active" : ""}
+            onClick={() => setMode("street")}
+          >
+            {mode === "street" && (
+              <motion.span
+                className="segment-indicator"
+                layoutId="map-mode-indicator"
+                transition={reduced ? { duration: 0 } : PRESS_SPRING}
+              />
+            )}
+            <b>Street</b>
           </button>
         </div>
       </div>
@@ -363,11 +321,9 @@ export default function MapScreen({ setDay }) {
           )}
           <div className="map-legend">
             <span>
-              <i /> {scope === "mumbai" ? "trip anchors" : "planned sequence"}
+              <i /> planned sequence
             </span>
-            <span>
-              {mode === "vector" ? "OpenFreeMap · Fiord vector" : "Esri satellite"}
-            </span>
+            <span>anchor tiles prefetched · live detail online</span>
           </div>
         </div>
 
