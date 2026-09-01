@@ -1,0 +1,66 @@
+/* Performance budget: keep glass refraction on large surfaces, not every nested row. */
+.gradient-blob{
+  filter:none!important;
+}
+.gradient-backdrop.motion-paused .gradient-blob{
+  animation-play-state:paused!important;
+  will-change:auto!important;
+}
+
+/* Expensive full-surface filters are limited to the primary glass planes. */
+.topbar{
+  backdrop-filter:blur(12px) saturate(1.10)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(1.10)!important;
+}
+.trip-horizon{
+  backdrop-filter:blur(7px) saturate(1.06)!important;
+  -webkit-backdrop-filter:blur(7px) saturate(1.06)!important;
+}
+.panel,.date-rail,.segment,.map-days,.sheet,.side-nav,.install,.onboarding,.viewer header{
+  backdrop-filter:blur(9px) saturate(1.08)!important;
+  -webkit-backdrop-filter:blur(9px) saturate(1.08)!important;
+}
+.mission{
+  backdrop-filter:blur(8px) saturate(1.10)!important;
+  -webkit-backdrop-filter:blur(8px) saturate(1.10)!important;
+}
+
+/* Nested glass reads through tint, edge highlight and shadow instead of another blur pass. */
+.mission .actions a,.mission .actions button,
+.anchor,.resource-list>button,.ledger>div,.system-rows>div,.settlement-row,.settlement-transfer,.payment-log>div,.location-list a,.sheet-menu button,.install-step,.form input,.form textarea,.form .save,.payer-select button,.participant-select button,.deploy-check,.signal-action,.notes>div,.timeline-item,.people-chips>span,.viewer-actions button,.boarding-destination,.sheet-success,.maplibregl-popup-content{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* These areas are opaque enough already; blurring the whole viewport/map is wasted GPU work. */
+.sheet-bg,.onboarding-bg,.viewer,.map-frame,.map-legend,.local-qr,.maplibregl-popup-content{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+
+/* Cheaper nested elevation while preserving the layered look. */
+.anchor,.resource-list>button,.ledger>div,.system-rows>div,.settlement-row,.settlement-transfer,.payment-log>div,.location-list a,.sheet-menu button,.install-step,.form input,.form textarea,.form .save,.payer-select button,.participant-select button,.deploy-check,.signal-action,.notes>div,.timeline-item,.people-chips>span,.viewer-actions button,.boarding-destination{
+  box-shadow:0 4px 12px rgba(45,39,31,.045),inset 0 1px 0 rgba(255,255,255,.72)!important;
+}
+
+/* Avoid retaining compositor layers when motion is intentionally off. */
+@media(prefers-reduced-motion:reduce){
+  .gradient-blob{animation:none!important;will-change:auto!important}
+}
+
+/* Phones pay the strictest GPU budget; visual hierarchy stays the same. */
+@media(max-width:720px){
+  .topbar{
+    backdrop-filter:blur(9px) saturate(1.08)!important;
+    -webkit-backdrop-filter:blur(9px) saturate(1.08)!important;
+  }
+  .trip-horizon{
+    backdrop-filter:blur(5px) saturate(1.04)!important;
+    -webkit-backdrop-filter:blur(5px) saturate(1.04)!important;
+  }
+  .panel,.date-rail,.segment,.map-days,.sheet,.side-nav,.install,.onboarding,.viewer header,.mission{
+    backdrop-filter:blur(7px) saturate(1.06)!important;
+    -webkit-backdrop-filter:blur(7px) saturate(1.06)!important;
+  }
+  .gradient-blob{width:58vmax;height:58vmax}
+}
