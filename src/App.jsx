@@ -19,17 +19,18 @@ import Now from "./screens/Now.jsx";
 import Plan from "./screens/Plan.jsx";
 import MapScreen from "./screens/Map.jsx";
 import Group from "./screens/Group.jsx";
+import Finance from "./screens/Finance.jsx";
 import More from "./screens/More.jsx";
+import SideNav from "./navigation.jsx";
 import {
   CommandSheet,
   OnboardingOverlay,
   ResourceViewer,
-  SideNav,
   Topbar,
 } from "./ui.jsx";
 
 const MAP_PREFETCH_ZOOMS = [11, 13, 14];
-const TABS = new Set(["Now", "Plan", "Map", "Group", "More"]);
+const TABS = new Set(["Now", "Plan", "Map", "Group", "Finance", "More"]);
 const isStandalone = () =>
   window.matchMedia?.("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
@@ -404,6 +405,8 @@ export default function App() {
       <MapScreen {...ctx} />
     ) : tab === "Group" ? (
       <Group {...ctx} />
+    ) : tab === "Finance" ? (
+      <Finance {...ctx} />
     ) : (
       <More {...ctx} />
     );
