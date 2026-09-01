@@ -1,6 +1,6 @@
 const SHELL_CACHE = "mumbai-tripos-shell-v5";
 const RUNTIME_CACHE = "mumbai-tripos-runtime-v5";
-const MAP_CACHE = "mumbai-tripos-map-v2";
+const MAP_CACHE = "mumbai-tripos-map-v3";
 const BASE = "/mumbai-trip/";
 const PRECACHE = [
   BASE,
@@ -78,9 +78,9 @@ async function mapTile(request) {
     if (response && (response.ok || response.type === "opaque")) {
       await cache.put(request, response.clone());
       const keys = await cache.keys();
-      if (keys.length > 180)
+      if (keys.length > 260)
         await Promise.all(
-          keys.slice(0, keys.length - 160).map((key) => cache.delete(key)),
+          keys.slice(0, keys.length - 220).map((key) => cache.delete(key)),
         );
     }
     return response;
@@ -167,7 +167,8 @@ self.addEventListener("fetch", (event) => {
 
   if (
     url.hostname.includes("openstreetmap.org") ||
-    url.hostname.includes("arcgisonline.com")
+    url.hostname.includes("arcgisonline.com") ||
+    url.hostname.includes("openfreemap.org")
   ) {
     event.respondWith(mapTile(event.request));
   }
