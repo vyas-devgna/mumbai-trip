@@ -49,7 +49,9 @@ for (const l of d.travelLegs ?? []) {
 
 for (const e of d.expenses ?? []) {
   if (!(Number(e.amount) >= 0)) errors.push(`expense ${e.id}: invalid amount`)
-  if (e.payerId && !members.has(e.payerId)) errors.push(`expense ${e.id}: unknown payer ${e.payerId}`)
+  if (!e.payerId) errors.push(`expense ${e.id}: missing payerId`)
+  else if (!members.has(e.payerId)) errors.push(`expense ${e.id}: unknown payer ${e.payerId}`)
+  if (!(e.participantIds?.length > 0)) errors.push(`expense ${e.id}: missing participants`)
   for (const p of e.participantIds ?? []) if (!members.has(p)) errors.push(`expense ${e.id}: unknown participant ${p}`)
   if (e.sourceId && !resources.has(e.sourceId)) errors.push(`expense ${e.id}: unknown source ${e.sourceId}`)
 }

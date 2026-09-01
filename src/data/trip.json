@@ -25,12 +25,12 @@
     {"id":"pratham","name":"Pratham Sukhadia","initials":"PS"}
   ],
   "places": [
-    {"id":"ahmedabad-jn","name":"Ahmedabad Junction","aliases":["ADI"],"latitude":23.0266,"longitude":72.6008,"address":"Kalupur, Ahmedabad, Gujarat","category":"station","confidence":"high"},
-    {"id":"bandra-terminus","name":"Bandra Terminus","aliases":["BDTS"],"latitude":19.0623,"longitude":72.8412,"address":"Bandra East, Mumbai, Maharashtra","category":"station","confidence":"high"},
+    {"id":"ahmedabad-jn","name":"Ahmedabad Junction","aliases":["ADI"],"latitude":23.0266,"longitude":72.6008,"address":"Kalupur, Ahmedabad, Gujarat","category":"station","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Ahmedabad%20Junction%20ADI","confidence":"high"},
+    {"id":"bandra-terminus","name":"Bandra Terminus","aliases":["BDTS"],"latitude":19.0623,"longitude":72.8412,"address":"Bandra East, Mumbai, Maharashtra","category":"station","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Bandra%20Terminus%20BDTS","confidence":"high"},
     {"id":"taj-mahal-palace","name":"The Taj Mahal Palace, Mumbai","aliases":["Taj Mumbai"],"latitude":18.9217,"longitude":72.8331,"address":"Apollo Bunder, Mumbai, Maharashtra 400001","category":"hotel","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=The%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
     {"id":"sea-lounge","name":"Sea Lounge, The Taj Mahal Palace","aliases":["Sea Lounge"],"latitude":18.9217,"longitude":72.8331,"address":"Apollo Bunder, Mumbai, Maharashtra 400001","category":"restaurant","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Sea%20Lounge%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
-    {"id":"dadar","name":"Dadar Railway Station","aliases":["DDR"],"latitude":19.018,"longitude":72.8432,"address":"Dadar, Mumbai, Maharashtra","category":"station","confidence":"high"},
-    {"id":"nadiad-jn","name":"Nadiad Junction","aliases":["ND"],"latitude":22.6916,"longitude":72.8634,"address":"Nadiad, Gujarat","category":"station","confidence":"high"}
+    {"id":"dadar","name":"Dadar Railway Station","aliases":["DDR"],"latitude":19.018,"longitude":72.8432,"address":"Dadar, Mumbai, Maharashtra","category":"station","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Dadar%20Railway%20Station%20DDR","confidence":"high"},
+    {"id":"nadiad-jn","name":"Nadiad Junction","aliases":["ND"],"latitude":22.6916,"longitude":72.8634,"address":"Nadiad, Gujarat","category":"station","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Nadiad%20Junction%20ND","confidence":"high"}
   ],
   "activities": [
     {"id":"outbound-train","title":"Karnavati SF Express to Mumbai","placeId":"ahmedabad-jn","date":"2026-09-14","timing":{"type":"fixed","start":"05:00"},"duration":{"minMinutes":450,"targetMinutes":450,"maxMinutes":450},"participants":["vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Train 12934 · Ahmedabad Jn 05:00 → Bandra Terminus 12:30.","Confirmed seats D2/55–58."],"fallbackIds":[],"sourceIds":["resource-outbound-ticket"]},
@@ -48,8 +48,8 @@
   "fallbacks": [],
   "candidates": [],
   "expenses": [
-    {"id":"expense-outbound-rail","amount":859.5,"payerId":null,"participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-25","label":"Karnavati SF Express ticket","status":"paid","sourceId":"resource-outbound-ticket"},
-    {"id":"expense-return-rail","amount":799.5,"payerId":null,"participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-31","label":"Gujarat SF Express ticket","status":"paid","sourceId":"resource-return-ticket"}
+    {"id":"expense-outbound-rail","amount":859.5,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-25","label":"Karnavati SF Express ticket","status":"paid","sourceId":"resource-outbound-ticket"},
+    {"id":"expense-return-rail","amount":799.5,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-31","label":"Gujarat SF Express ticket","status":"paid","sourceId":"resource-return-ticket"}
   ],
   "signals": [
     {"id":"ganeshotsav","type":"festival","label":"Ganeshotsav crowd + road conditions need a fresh check","severity":"attention","status":"needs-refresh","lastVerifiedAt":null},

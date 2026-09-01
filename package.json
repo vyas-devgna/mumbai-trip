@@ -14,7 +14,9 @@
     "vite": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "maplibre-gl": "latest"
+    "maplibre-gl": "latest",
+    "framer-motion": "latest",
+    "lucide-react": "latest"
   },
   "devDependencies": {}
 }

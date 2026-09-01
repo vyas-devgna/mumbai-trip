@@ -1,6 +1,6 @@
-const SHELL_CACHE = 'mumbai-tripos-shell-v3'
-const RUNTIME_CACHE = 'mumbai-tripos-runtime-v3'
-const MAP_CACHE = 'mumbai-tripos-map-v1'
+const SHELL_CACHE = 'mumbai-tripos-shell-v4'
+const RUNTIME_CACHE = 'mumbai-tripos-runtime-v4'
+const MAP_CACHE = 'mumbai-tripos-map-v2'
 const BASE = '/mumbai-trip/'
 const PRECACHE = [
   BASE,
@@ -71,6 +71,35 @@ async function mapTile(request) {
   }
 }
 
+function tileFor(longitude, latitude, zoom) {
+  const n = 2 ** zoom
+  const lat = Math.max(-85.0511, Math.min(85.0511, latitude)) * Math.PI / 180
+  return {
+    x: Math.floor((longitude + 180) / 360 * n),
+    y: Math.floor((1 - Math.asinh(Math.tan(lat)) / Math.PI) / 2 * n)
+  }
+}
+
+async function prefetchAnchorTiles(coordinates, zoom = 11) {
+  const cache = await caches.open(MAP_CACHE), urls = new Set()
+  for (const coordinate of coordinates || []) {
+    const [longitude, latitude] = coordinate || []
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) continue
+    const {x,y} = tileFor(longitude, latitude, zoom)
+    urls.add(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`)
+    urls.add(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`)
+  }
+  let cached = 0
+  await Promise.all([...urls].map(async url => {
+    try {
+      if (await cache.match(url)) { cached++; return }
+      const response = await fetch(url)
+      if (response && (response.ok || response.type === 'opaque')) { await cache.put(url, response.clone()); cached++ }
+    } catch {}
+  }))
+  return { ok: urls.size > 0 && cached === urls.size, cached, requested: urls.size, zoom }
+}
+
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return
   const url = new URL(event.request.url)
@@ -97,4 +126,10 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+  if (event.data?.type === 'PREFETCH_MAP_ANCHORS') {
+    event.waitUntil((async()=>{
+      const result = await prefetchAnchorTiles(event.data.coordinates, Number(event.data.zoom) || 11)
+      event.ports?.[0]?.postMessage(result)
+    })())
+  }
 })

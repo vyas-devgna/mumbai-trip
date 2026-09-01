@@ -26,27 +26,39 @@ export function useTripClock(React){
 }
 
 export function useAutoUpdate(React){
-  const {useEffect,useState}=React
-  const [state,setState]=useState({label:navigator.onLine?'Checking':'Offline'})
-  useEffect(()=>{
-    let reg,stopped=false
-    const check=async()=>{
-      if(stopped||!navigator.onLine){setState({label:'Offline'});return}
-      try{
-        if('serviceWorker'in navigator){reg=reg||await navigator.serviceWorker.register(`${BASE}sw.js`,{updateViaCache:'none'});await reg.update().catch(()=>{})}
-        const r=await fetch(`${BASE}version.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('version')
-        const latest=await r.json(), previous=localStorage.getItem('tripos-build')
-        if(previous&&previous!==latest.version&&latest.version!=='local-dev'){
-          localStorage.setItem('tripos-build',latest.version);setState({label:'Updating'});setTimeout(()=>location.reload(),300);return
-        }
-        if(latest.version)localStorage.setItem('tripos-build',latest.version)
-        setState({label:'Current',version:latest.version})
-      }catch{setState({label:navigator.onLine?'Retrying':'Offline'})}
+  const {useCallback,useEffect,useRef,useState}=React
+  const [state,setState]=useState({label:navigator.onLine?'Checking':'Offline',version:null,builtAt:null,confirmedAt:null})
+  const regRef=useRef(null),stoppedRef=useRef(false)
+
+  const check=useCallback(async()=>{
+    if(stoppedRef.current)return
+    if(!navigator.onLine){setState(prev=>({...prev,label:'Offline'}));return}
+    setState(prev=>({...prev,label:'Checking'}))
+    try{
+      if('serviceWorker'in navigator){regRef.current=regRef.current||await navigator.serviceWorker.register(`${BASE}sw.js`,{updateViaCache:'none'});await regRef.current.update().catch(()=>{})}
+      const r=await fetch(`${BASE}version.json?t=${Date.now()}`,{cache:'no-store'})
+      if(!r.ok)throw new Error('version')
+      const latest=await r.json(),previous=localStorage.getItem('tripos-build'),confirmedAt=new Date().toISOString()
+      if(previous&&previous!==latest.version&&latest.version!=='local-dev'){
+        localStorage.setItem('tripos-build',latest.version)
+        setState({label:'Updating',version:latest.version,builtAt:latest.builtAt||null,confirmedAt})
+        setTimeout(()=>location.reload(),300)
+        return
+      }
+      if(latest.version)localStorage.setItem('tripos-build',latest.version)
+      setState({label:'Current',version:latest.version||null,builtAt:latest.builtAt||null,confirmedAt})
+    }catch{
+      setState(prev=>({...prev,label:navigator.onLine?'Retrying':'Offline'}))
     }
-    const visible=()=>document.visibilityState==='visible'&&check(), online=()=>check(), offline=()=>setState({label:'Offline'})
+  },[])
+
+  useEffect(()=>{
+    stoppedRef.current=false
+    const visible=()=>document.visibilityState==='visible'&&check(),online=()=>check(),offline=()=>setState(prev=>({...prev,label:'Offline'}))
     addEventListener('online',online);addEventListener('offline',offline);document.addEventListener('visibilitychange',visible);check()
     const timer=setInterval(check,60000)
-    return()=>{stopped=true;clearInterval(timer);removeEventListener('online',online);removeEventListener('offline',offline);document.removeEventListener('visibilitychange',visible)}
-  },[])
-  return state
+    return()=>{stoppedRef.current=true;clearInterval(timer);removeEventListener('online',online);removeEventListener('offline',offline);document.removeEventListener('visibilitychange',visible)}
+  },[check])
+
+  return {...state,check}
 }
