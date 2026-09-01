@@ -74,6 +74,16 @@ const categoryClass = (category) =>
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-");
 
+const validPlace = (place) =>
+  Number.isFinite(place?.latitude) && Number.isFinite(place?.longitude);
+
+const inMumbaiMap = (place) =>
+  validPlace(place) &&
+  place.latitude > 18.75 &&
+  place.latitude < 19.35 &&
+  place.longitude > 72.7 &&
+  place.longitude < 73.1;
+
 function hasWebGL2() {
   try {
     const canvas = document.createElement("canvas"),
@@ -95,23 +105,24 @@ export default function MapScreen({ setDay }) {
     [mapUnavailable, setMapUnavailable] = useState(false),
     reduced = useReducedMotion();
 
-  const coords = useMemo(() => {
-    if (scope === "mumbai")
-      return data.places
-        .filter(
-          (p) =>
-            p.latitude > 18.75 &&
-            p.latitude < 19.35 &&
-            p.longitude > 72.7 &&
-            p.longitude < 73.1,
-        )
-        .map((p) => [p.longitude, p.latitude]);
+  const visiblePlaces = useMemo(() => {
+    if (scope === "mumbai") return data.places.filter(inMumbaiMap);
 
-    const out = [];
+    const ids = new Set();
     for (const activity of dayItems(scope)) {
-      const place = activity.placeId && byId(data.places, activity.placeId);
+      if (activity.placeId) ids.add(activity.placeId);
+    }
+    for (const leg of data.travelLegs.filter((item) => item.date === scope)) {
+      if (leg.fromPlaceId) ids.add(leg.fromPlaceId);
+      if (leg.toPlaceId) ids.add(leg.toPlaceId);
+    }
+    return data.places.filter((place) => ids.has(place.id) && validPlace(place));
+  }, [scope]);
+
+  const coords = useMemo(() => {
+    const out = [];
+    for (const place of visiblePlaces) {
       if (
-        place &&
         !out.some(
           (coordinate) =>
             coordinate[0] === place.longitude && coordinate[1] === place.latitude,
@@ -119,20 +130,8 @@ export default function MapScreen({ setDay }) {
       )
         out.push([place.longitude, place.latitude]);
     }
-    for (const leg of data.travelLegs.filter((item) => item.date === scope))
-      for (const id of [leg.fromPlaceId, leg.toPlaceId]) {
-        const place = byId(data.places, id);
-        if (
-          place &&
-          !out.some(
-            (coordinate) =>
-              coordinate[0] === place.longitude && coordinate[1] === place.latitude,
-          )
-        )
-          out.push([place.longitude, place.latitude]);
-      }
     return out;
-  }, [scope]);
+  }, [visiblePlaces]);
 
   useEffect(() => {
     if (mapRef.current || !el.current) return;
@@ -157,47 +156,58 @@ export default function MapScreen({ setDay }) {
     map.addControl(new maplibregl.NavigationControl(), "bottom-right");
     mapRef.current = map;
 
-    markers.current = data.places
-      .filter((p) => p.latitude && p.longitude)
-      .map((p) => {
-        const node = document.createElement("button"),
-          iconHost = document.createElement("span"),
-          Icon = markerIcon(p.category),
-          root = createRoot(iconHost),
-          category = categoryClass(p.category),
-          url = mapsUrl(p);
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+  }, []);
 
-        node.type = "button";
-        node.className = `map-marker map-marker-${category}`;
-        node.title = p.name;
-        node.setAttribute("aria-label", p.name);
-        iconHost.className = "map-marker-icon";
-        node.append(iconHost);
-        root.render(<Icon aria-hidden="true" />);
-        markerRoots.current.push(root);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
 
-        const pop = new maplibregl.Popup({
-          offset: 18,
-          closeButton: false,
-        }).setHTML(
-          `<div class="map-popup"><b>${p.name}</b><span>${p.category}</span>${p.address ? `<small>${p.address}</small>` : ""}<a href="${url}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
-        );
+    markerRoots.current.forEach((root) => root.unmount());
+    markerRoots.current = [];
+    markers.current.forEach((marker) => marker.remove());
+    markers.current = [];
 
-        return new maplibregl.Marker({ element: node, anchor: "bottom" })
-          .setLngLat([p.longitude, p.latitude])
-          .setPopup(pop)
-          .addTo(map);
-      });
+    markers.current = visiblePlaces.map((place) => {
+      const node = document.createElement("button"),
+        iconHost = document.createElement("span"),
+        Icon = markerIcon(place.category),
+        root = createRoot(iconHost),
+        category = categoryClass(place.category),
+        url = mapsUrl(place);
+
+      node.type = "button";
+      node.className = `map-marker map-marker-${category}`;
+      node.title = place.name;
+      node.setAttribute("aria-label", place.name);
+      iconHost.className = "map-marker-icon";
+      node.append(iconHost);
+      root.render(<Icon aria-hidden="true" />);
+      markerRoots.current.push(root);
+
+      const pop = new maplibregl.Popup({
+        offset: 18,
+        closeButton: false,
+      }).setHTML(
+        `<div class="map-popup"><b>${place.name}</b><span>${place.category}</span>${place.address ? `<small>${place.address}</small>` : ""}<a href="${url}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
+      );
+
+      return new maplibregl.Marker({ element: node, anchor: "bottom" })
+        .setLngLat([place.longitude, place.latitude])
+        .setPopup(pop)
+        .addTo(map);
+    });
 
     return () => {
       markerRoots.current.forEach((root) => root.unmount());
       markerRoots.current = [];
       markers.current.forEach((marker) => marker.remove());
       markers.current = [];
-      map.remove();
-      mapRef.current = null;
     };
-  }, []);
+  }, [visiblePlaces]);
 
   useEffect(() => {
     const map = mapRef.current;
