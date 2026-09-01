@@ -1,7 +1,3 @@
-.map-canvas {
-  background: #cfd5d0;
-}
-
 .map-marker {
   --marker: var(--blue);
   position: relative;
@@ -41,25 +37,6 @@
   height: 16px;
   stroke-width: 2;
 }
-.map-marker-count {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  z-index: 2;
-  min-width: 15px;
-  height: 15px;
-  display: grid;
-  place-items: center;
-  padding: 0 3px;
-  border: 1.5px solid #f5f1e8;
-  border-radius: 999px;
-  background: #262923;
-  color: #fff;
-  font-family: var(--mono);
-  font-size: 6px;
-  line-height: 1;
-  box-shadow: 0 3px 8px #1d24302b;
-}
 .map-marker:hover,
 .map-marker:focus-visible {
   z-index: 4;
@@ -73,26 +50,6 @@
 .map-marker-beach { --marker: #28758a; }
 .map-marker-landmark { --marker: #59564f; }
 
-.maplibregl-popup-content {
-  border: 1px solid #c9c2b5;
-  background: #ece9dfef;
-  color: var(--ink);
-  box-shadow: 0 14px 36px #28231a36;
-  backdrop-filter: blur(16px) saturate(1.04);
-  -webkit-backdrop-filter: blur(16px) saturate(1.04);
-}
-.map-popup {
-  display: grid;
-  gap: 8px;
-}
-.map-popup-place {
-  display: grid;
-  gap: 2px;
-}
-.map-popup-place + .map-popup-place {
-  padding-top: 8px;
-  border-top: 1px solid #c9c2b5;
-}
 .map-popup a {
   margin-top: 4px;
   color: var(--blue);
@@ -134,13 +91,3 @@
 .location-icon-restaurant { color: #9a4d35; }
 .location-icon-beach { color: #28758a; }
 .location-icon-landmark { color: #59564f; }
-
-.maplibregl-ctrl-group {
-  border: 1px solid #bdb7aa;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 8px 22px #2d271e26;
-}
-.maplibregl-ctrl-group button {
-  background: #e9e5daed;
-}
