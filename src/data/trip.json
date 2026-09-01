@@ -24,6 +24,7 @@
     },
     "notes": [
       "Ganeshotsav period: crowd, road restriction and darshan timing assumptions must be re-verified close to travel.",
+      "Hotel strategy: no hotel on the night of 14 Sep; use luggage storage, stay out through sunrise, check in early on 15 Sep for recovery, sleep properly on 15 Sep night, and check out on 16 Sep morning.",
       "The deployed Pages site is public. Ticket files are included because the group requested offline access; treat the URL as share-sensitive."
     ]
   },
@@ -55,6 +56,39 @@
       "address": "Bandra East, Mumbai, Maharashtra",
       "category": "station",
       "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Bandra%20Terminus%20BDTS",
+      "confidence": "high"
+    },
+    {
+      "id": "lalbaugcha-raja",
+      "name": "Lalbaugcha Raja",
+      "aliases": ["Lalbaug Raja", "Lalbaugcha Raja Sarvajanik Ganeshotsav Mandal"],
+      "latitude": 18.99056,
+      "longitude": 72.83667,
+      "address": "Shree Ganesh Nagar, Dr Babasaheb Ambedkar Road, Lalbaug Market, Mumbai 400012",
+      "category": "darshan",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Lalbaugcha%20Raja%20Mumbai",
+      "confidence": "high"
+    },
+    {
+      "id": "siddhivinayak",
+      "name": "Shree Siddhivinayak Ganapati Temple",
+      "aliases": ["Siddhivinayak", "Siddhivinayak Temple"],
+      "latitude": 19.01688,
+      "longitude": 72.8304,
+      "address": "SK Bole Marg, Prabhadevi, Mumbai, Maharashtra",
+      "category": "temple",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Shree%20Siddhivinayak%20Ganapati%20Temple%20Mumbai",
+      "confidence": "high"
+    },
+    {
+      "id": "gateway-of-india",
+      "name": "Gateway of India",
+      "aliases": ["Gateway"],
+      "latitude": 18.92196,
+      "longitude": 72.83456,
+      "address": "Apollo Bandar, Colaba, Mumbai, Maharashtra",
+      "category": "landmark",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Gateway%20of%20India%20Mumbai",
       "confidence": "high"
     },
     {
@@ -126,38 +160,171 @@
       "sourceIds": ["resource-outbound-ticket"]
     },
     {
-      "id": "sep14-arrival-buffer",
-      "title": "Arrival + transfer buffer",
-      "placeId": "bandra-terminus",
+      "id": "sep14-arrival-storage",
+      "title": "Arrival → Dadar luggage storage",
+      "placeId": "dadar",
       "date": "2026-09-14",
-      "timing": { "type": "window", "earliest": "12:30", "latest": "15:30" },
-      "duration": { "minMinutes": 90, "targetMinutes": 150, "maxMinutes": 180 },
+      "timing": { "type": "window", "earliest": "12:30", "latest": "14:15" },
+      "duration": { "minMinutes": 60, "targetMinutes": 90, "maxMinutes": 105 },
       "participants": ["vyas", "tirth", "nishit", "milan"],
       "priority": "high",
       "bookingStatus": "none",
       "status": "provisional",
       "notes": [
-        "Keep this elastic for luggage, traffic, food and the actual stay location."
+        "Eat if needed, transfer from Bandra Terminus to Dadar, and leave the backpacks before darshan. Storage operating details must be re-verified before travel."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep14-lalbaug-primary",
+      "title": "Lalbaugcha Raja · first attempt",
+      "placeId": "lalbaugcha-raja",
+      "date": "2026-09-14",
+      "timing": { "type": "window", "earliest": "14:15", "latest": "19:30" },
+      "duration": { "minMinutes": 90, "targetMinutes": 180, "maxMinutes": 315 },
+      "participants": ["vyas", "tirth", "nishit", "milan"],
+      "priority": "must",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Primary arrival-day plan: attempt Lalbaug immediately after dropping the bags. If crowd/access makes it impractical, switch to Siddhivinayak on 14 Sep and make Lalbaug the must-do darshan on 15 Sep afternoon."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep14-night-explore",
+      "title": "Mumbai night exploration",
+      "date": "2026-09-14",
+      "timing": { "type": "window", "earliest": "19:30", "latest": "23:59" },
+      "duration": { "minMinutes": 180, "targetMinutes": 300, "maxMinutes": 600 },
+      "participants": ["vyas", "tirth", "nishit", "milan"],
+      "priority": "medium",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "No hotel tonight. Keep exploring at an easy pace and work toward South Mumbai before the sunrise block rather than forcing a packed checklist."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep15-sunrise",
+      "title": "Gateway sunrise",
+      "placeId": "gateway-of-india",
+      "date": "2026-09-15",
+      "timing": { "type": "window", "earliest": "05:45", "latest": "07:00" },
+      "duration": { "minMinutes": 45, "targetMinutes": 60, "maxMinutes": 75 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "high",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Reach before sunrise and keep the harbour-side morning relaxed; exact sunrise time remains dynamic in TripOS and should be checked close to travel."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep15-bags-to-hotel",
+      "title": "Collect bags → early hotel check-in",
+      "placeId": "dadar",
+      "date": "2026-09-15",
+      "timing": { "type": "window", "earliest": "07:00", "latest": "09:30" },
+      "duration": { "minMinutes": 90, "targetMinutes": 120, "maxMinutes": 150 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "high",
+      "bookingStatus": "unknown",
+      "status": "provisional",
+      "notes": [
+        "Collect the stored backpacks after sunrise, then go straight to the hotel. Early check-in must be explicitly confirmed before relying on this block."
       ],
       "fallbackIds": [],
       "sourceIds": []
     },
     {
       "id": "sep15-rest-window",
-      "title": "Hotel check-in + recovery",
+      "title": "Hotel recovery",
       "date": "2026-09-15",
-      "timing": { "type": "window", "earliest": "08:00", "latest": "12:00" },
+      "timing": { "type": "window", "earliest": "09:00", "latest": "14:00" },
       "duration": {
-        "minMinutes": 120,
-        "targetMinutes": 180,
-        "maxMinutes": 240
+        "minMinutes": 240,
+        "targetMinutes": 270,
+        "maxMinutes": 300
       },
       "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
       "priority": "high",
       "bookingStatus": "unknown",
       "status": "provisional",
       "notes": [
-        "Deliberately protected recovery time before a heavier afternoon/evening."
+        "Protect roughly 4–5 hours for sleep, showers, food, charging and recovery after the overnight stretch."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep15-darshan-afternoon",
+      "title": "Siddhivinayak darshan · default",
+      "placeId": "siddhivinayak",
+      "date": "2026-09-15",
+      "timing": { "type": "window", "earliest": "15:00", "latest": "19:00" },
+      "duration": { "minMinutes": 60, "targetMinutes": 120, "maxMinutes": 240 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "must",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Default if Lalbaug was completed on 14 Sep. If Lalbaug was not possible on arrival day, Siddhivinayak becomes the 14 Sep fallback and this entire afternoon block becomes Lalbaugcha Raja for sure."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep15-evening-explore",
+      "title": "Evening exploration → hotel",
+      "date": "2026-09-15",
+      "timing": { "type": "window", "earliest": "19:00", "latest": "23:30" },
+      "duration": { "minMinutes": 180, "targetMinutes": 240, "maxMinutes": 270 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "medium",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Explore after darshan, but preserve the hotel night as the trip's proper recovery sleep rather than stretching this block unnecessarily."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep15-hotel-sleep",
+      "title": "Proper hotel sleep",
+      "date": "2026-09-15",
+      "timing": { "type": "fixed", "start": "23:30" },
+      "duration": { "minMinutes": 450, "targetMinutes": 510, "maxMinutes": 540 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "high",
+      "bookingStatus": "unknown",
+      "status": "provisional",
+      "notes": [
+        "This is the only full normal sleep block; target waking around 08:00 on 16 Sep."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep16-checkout-storage",
+      "title": "Wake → checkout → Dadar storage",
+      "placeId": "dadar",
+      "date": "2026-09-16",
+      "timing": { "type": "window", "earliest": "08:00", "latest": "10:15" },
+      "duration": { "minMinutes": 90, "targetMinutes": 120, "maxMinutes": 135 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "high",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Wake around 08:00, get ready, check out and store the backpacks at Dadar so the rest of the trip stays luggage-free and the bags are already at the return station."
       ],
       "fallbackIds": [],
       "sourceIds": []
@@ -181,6 +348,56 @@
       "sourceIds": ["resource-sea-lounge"]
     },
     {
+      "id": "sep16-open-exploration",
+      "title": "Open exploration · no hotel deadline",
+      "date": "2026-09-16",
+      "timing": { "type": "window", "earliest": "13:30", "latest": "23:59" },
+      "duration": { "minMinutes": 360, "targetMinutes": 600, "maxMinutes": 630 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "medium",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Use this as the longest free exploration block. There is no hotel return; gradually work the route back toward central Mumbai late at night."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep17-late-night-return",
+      "title": "Late-night loop → Dadar",
+      "placeId": "dadar",
+      "date": "2026-09-17",
+      "timing": { "type": "window", "earliest": "00:00", "latest": "04:30" },
+      "duration": { "minMinutes": 180, "targetMinutes": 240, "maxMinutes": 270 },
+      "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "priority": "high",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Stay awake and keep exploring, but bias the final hours toward Dadar so there is no risky long transfer before the train."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
+      "id": "sep17-collect-bags",
+      "title": "Collect bags + boarding buffer",
+      "placeId": "dadar",
+      "date": "2026-09-17",
+      "timing": { "type": "window", "earliest": "04:30", "latest": "05:15" },
+      "duration": { "minMinutes": 30, "targetMinutes": 45, "maxMinutes": 45 },
+      "participants": ["vyas", "tirth", "nishit", "milan"],
+      "priority": "must",
+      "bookingStatus": "none",
+      "status": "provisional",
+      "notes": [
+        "Collect stored luggage, use washrooms, refill water and locate the platform well before departure. Re-verify cloak-room early-morning access before the trip."
+      ],
+      "fallbackIds": [],
+      "sourceIds": []
+    },
+    {
       "id": "return-train",
       "title": "Gujarat SF Express home",
       "placeId": "dadar",
@@ -196,7 +413,7 @@
       "bookingStatus": "booked",
       "status": "planned",
       "notes": [
-        "Train 22953 · Dadar 05:52 → Nadiad Junction 13:14.",
+        "Train 22953 · Dadar 05:52 → Nadiad Junction 13:14. Sleep on the train after boarding.",
         "Confirmed seats D1/37–40."
       ],
       "fallbackIds": [],
@@ -255,13 +472,23 @@
       "sourceId": "resource-return-ticket"
     },
     {
-      "id": "expense-railway-cloak-room",
+      "id": "expense-storage-sep14",
+      "amountPaise": 20000,
+      "payerId": "vyas",
+      "participantIds": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "category": "storage",
+      "date": "2026-09-14",
+      "label": "Planned railway storage · 14→15 Sep · 4–5 backpacks",
+      "status": "planned"
+    },
+    {
+      "id": "expense-storage-sep16",
       "amountPaise": 20000,
       "payerId": "vyas",
       "participantIds": ["vyas", "tirth", "nishit", "milan", "pratham"],
       "category": "storage",
       "date": "2026-09-16",
-      "label": "Railway cloak room · 4–5 backpacks · up to 24h",
+      "label": "Planned railway storage · 16→17 Sep · 4–5 backpacks",
       "status": "planned"
     }
   ],
@@ -290,6 +517,14 @@
       "id": "rail-timings",
       "type": "travel",
       "label": "Re-check train timings before boarding",
+      "severity": "attention",
+      "status": "needs-refresh",
+      "lastVerifiedAt": null
+    },
+    {
+      "id": "cloak-room-access",
+      "type": "travel",
+      "label": "Re-check Dadar cloak-room acceptance and early-morning retrieval before relying on both storage blocks",
       "severity": "attention",
       "status": "needs-refresh",
       "lastVerifiedAt": null
