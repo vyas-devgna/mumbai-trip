@@ -23,10 +23,21 @@ export default function More({
   update,
   onReplayOnboarding,
 }) {
-  const totalPaise = expenses.reduce((sum, expense) => {
+  const paidExpenses = expenses.filter((expense) => expense.status === "paid"),
+    plannedExpenses = data.expenses.filter(
+      (expense) => expense.status === "planned",
+    ),
+    localDrafts = expenses.filter((expense) => expense.status === "local-only"),
+    actualPaise = paidExpenses.reduce((sum, expense) => {
       if (!Number.isSafeInteger(expense.amountPaise)) return sum;
       return sum + expense.amountPaise;
     }, 0),
+    plannedPaise = plannedExpenses.reduce((sum, expense) => {
+      if (!Number.isSafeInteger(expense.amountPaise)) return sum;
+      return sum + expense.amountPaise;
+    }, 0),
+    ceilingPaise =
+      data.trip.budget.targetPerPersonPaise * data.trip.budget.groupSizeBudgeted,
     sha = update.version
       ? update.version === "local-dev"
         ? "local-dev"
@@ -41,7 +52,8 @@ export default function More({
         <span>SYSTEM + VAULT</span>
         <h1>More</h1>
         <p>
-          Offline resources, budget ledger, personal notes and deployment state.
+          Finance planning, paid ledger, offline resources, personal notes and
+          deployment state.
         </p>
       </div>
       {!installed && (
@@ -53,48 +65,110 @@ export default function More({
       <div className="more-grid">
         <DockAwarePanel className="panel">
           <div className="panel-head">
-            <span>BUDGET LEDGER</span>
-            <button onClick={() => setSheet("expense")}>Add</button>
+            <span>FINANCE PLAN</span>
+            <b>ESTIMATE ONLY</b>
           </div>
           <strong className="metric-number small">
-            {formatINR(totalPaise)}
+            {formatINR(plannedPaise)}
           </strong>
           <p className="muted">
-            Canonical booked costs plus local-only drafts on this phone.
+            Planned costs are not assigned to anyone and never affect settlement
+            until an actual payment is reported.
+          </p>
+          <div className="system-rows">
+            <div>
+              <b>Planning ceiling</b>
+              <span>{formatINR(ceilingPaise)} group</span>
+            </div>
+            <div>
+              <b>Target</b>
+              <span>{formatINR(data.trip.budget.targetPerPersonPaise)} / person</span>
+            </div>
+            <div>
+              <b>Planned now</b>
+              <span>{plannedExpenses.length} estimate{plannedExpenses.length === 1 ? "" : "s"}</span>
+            </div>
+          </div>
+          {plannedExpenses.length ? (
+            <div className="ledger">
+              {plannedExpenses.map((e) => (
+                <div key={e.id}>
+                  <span>
+                    {e.label}
+                    <small>planned · not split</small>
+                  </span>
+                  <b>{formatINR(e.amountPaise)}</b>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="muted">No planned costs yet.</p>
+          )}
+        </DockAwarePanel>
+
+        <DockAwarePanel className="panel">
+          <div className="panel-head">
+            <span>ACTUAL LEDGER · PAID</span>
+            <button onClick={() => setSheet("expense")}>Draft</button>
+          </div>
+          <strong className="metric-number small">
+            {formatINR(actualPaise)}
+          </strong>
+          <p className="muted">
+            Only confirmed payments count here and feed the per-person account.
+            For now this is the paid train ledger only.
           </p>
           <div className="ledger">
-            {expenses.map((e) => (
+            {paidExpenses.map((e) => (
               <div key={e.id}>
                 <span>{e.label}</span>
                 <b>{formatINR(e.amountPaise)}</b>
               </div>
             ))}
           </div>
-          {(data.reimbursements || []).length > 0 && (
+          {(data.reimbursements || []).filter(
+            (payment) => payment.status === "received",
+          ).length > 0 && (
             <div className="ledger reimbursements">
-              {data.reimbursements.map((payment) => (
-                <div key={payment.id}>
+              {data.reimbursements
+                .filter((payment) => payment.status === "received")
+                .map((payment) => (
+                  <div key={payment.id}>
+                    <span>
+                      {
+                        data.members.find((m) => m.id === payment.fromMemberId)
+                          ?.name
+                      }{" "}
+                      paid ·{" "}
+                      {payment.coversMemberIds
+                        .map(
+                          (id) =>
+                            data.members
+                              .find((m) => m.id === id)
+                              ?.name.split(" ")[0],
+                        )
+                        .join(" + ")}
+                    </span>
+                    <b>{formatINR(payment.amountPaise)}</b>
+                  </div>
+                ))}
+            </div>
+          )}
+          {localDrafts.length > 0 && (
+            <div className="ledger">
+              {localDrafts.map((e) => (
+                <div key={e.id}>
                   <span>
-                    {
-                      data.members.find((m) => m.id === payment.fromMemberId)
-                        ?.name
-                    }{" "}
-                    paid ·{" "}
-                    {payment.coversMemberIds
-                      .map(
-                        (id) =>
-                          data.members
-                            .find((m) => m.id === id)
-                            ?.name.split(" ")[0],
-                      )
-                      .join(" + ")}
+                    {e.label}
+                    <small>device draft · excluded from accounts</small>
                   </span>
-                  <b>{formatINR(payment.amountPaise)}</b>
+                  <b>{formatINR(e.amountPaise)}</b>
                 </div>
               ))}
             </div>
           )}
         </DockAwarePanel>
+
         <DockAwarePanel className="panel">
           <div className="panel-head">
             <span>OFFLINE FILES</span>
