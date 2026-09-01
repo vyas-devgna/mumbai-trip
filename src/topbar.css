@@ -1,0 +1,37 @@
+.topbar{
+  position:fixed;
+  inset:0 0 auto 0;
+  width:100vw;
+  max-width:none;
+  height:calc(66px + env(safe-area-inset-top));
+  margin:0;
+  padding:env(safe-area-inset-top) max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left));
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:color-mix(in srgb,var(--paper) 94%,transparent);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 8px 26px #2b281f0d;
+  backdrop-filter:blur(18px) saturate(1.06);
+  -webkit-backdrop-filter:blur(18px) saturate(1.06);
+  z-index:70;
+}
+
+.topbar .brand,.topbar .sync{position:relative;z-index:1}
+.topbar .sync{margin-left:auto}
+
+.app-shell{
+  padding-top:calc(79px + env(safe-area-inset-top));
+}
+
+@media(max-width:520px){
+  .topbar{
+    height:calc(62px + env(safe-area-inset-top));
+    padding-left:max(11px,env(safe-area-inset-left));
+    padding-right:max(11px,env(safe-area-inset-right));
+  }
+  .app-shell{padding-top:calc(74px + env(safe-area-inset-top))}
+  .topbar .brand img{width:36px;height:36px}
+  .topbar .brand b{font-size:12px}
+  .topbar .sync small{max-width:none}
+}
