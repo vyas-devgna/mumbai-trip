@@ -81,15 +81,15 @@
       "confidence": "high"
     },
     {
-      "id": "gateway-of-india",
-      "name": "Gateway of India",
-      "aliases": ["Gateway"],
-      "latitude": 18.92196,
-      "longitude": 72.83456,
-      "address": "Apollo Bandar, Colaba, Mumbai, Maharashtra",
-      "category": "landmark",
-      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Gateway%20of%20India%20Mumbai",
-      "confidence": "high"
+      "id": "danda-beach-uran",
+      "name": "Danda Beach, Uran",
+      "aliases": ["Danda Beach", "Ranwad Danda Beach"],
+      "latitude": 18.88086,
+      "longitude": 72.91351,
+      "address": "VWJ7+8CQ, Uran, Ranwad, Maharashtra 400702",
+      "category": "beach",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=VWJ7%2B8CQ%20Uran%20Ranwad%20Maharashtra%20400702",
+      "confidence": "medium"
     },
     {
       "id": "taj-mahal-palace",
@@ -204,24 +204,24 @@
       "bookingStatus": "none",
       "status": "provisional",
       "notes": [
-        "No hotel tonight. Keep exploring at an easy pace and work toward South Mumbai before the sunrise block rather than forcing a packed checklist."
+        "No hotel tonight. Keep exploring at an easy pace; later in the night leave enough time for the pre-dawn road transfer toward Uran rather than forcing a packed checklist."
       ],
       "fallbackIds": [],
       "sourceIds": []
     },
     {
       "id": "sep15-sunrise",
-      "title": "Gateway sunrise",
-      "placeId": "gateway-of-india",
+      "title": "Danda Beach sunrise",
+      "placeId": "danda-beach-uran",
       "date": "2026-09-15",
-      "timing": { "type": "window", "earliest": "05:45", "latest": "07:00" },
-      "duration": { "minMinutes": 45, "targetMinutes": 60, "maxMinutes": 75 },
+      "timing": { "type": "window", "earliest": "05:40", "latest": "07:00" },
+      "duration": { "minMinutes": 45, "targetMinutes": 60, "maxMinutes": 80 },
       "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
       "priority": "high",
       "bookingStatus": "none",
       "status": "provisional",
       "notes": [
-        "Reach before sunrise and keep the harbour-side morning relaxed; exact sunrise time remains dynamic in TripOS and should be checked close to travel."
+        "Use the small, quiet Danda Beach at Ranwad for sunrise instead of repeating the Gateway/Sea Lounge area. It is isolated and has few facilities, so pre-arrange the ride, carry water, verify access close to travel and avoid arriving excessively early."
       ],
       "fallbackIds": [],
       "sourceIds": []
@@ -238,7 +238,7 @@
       "bookingStatus": "unknown",
       "status": "provisional",
       "notes": [
-        "Collect the stored backpacks after sunrise, then go straight to the hotel. Early check-in must be explicitly confirmed before relying on this block."
+        "Return from Uran after sunrise, collect the stored backpacks at Dadar, then go straight to the hotel. Early check-in must be explicitly confirmed before relying on this block."
       ],
       "fallbackIds": [],
       "sourceIds": []
@@ -525,6 +525,14 @@
       "id": "cloak-room-access",
       "type": "travel",
       "label": "Re-check Dadar cloak-room acceptance and early-morning retrieval before relying on both storage blocks",
+      "severity": "attention",
+      "status": "needs-refresh",
+      "lastVerifiedAt": null
+    },
+    {
+      "id": "danda-sunrise-access",
+      "type": "travel",
+      "label": "Re-check Danda Beach pre-dawn road access, ride availability and local conditions before the sunrise run",
       "severity": "attention",
       "status": "needs-refresh",
       "lastVerifiedAt": null
