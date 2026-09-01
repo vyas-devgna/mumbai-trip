@@ -8,9 +8,12 @@ import {
   MoreHorizontal,
   Plus,
   Users,
-  WalletCards,
 } from "lucide-react";
 import { PRESS_SPRING } from "./lib.js";
+
+function RupeeIcon() {
+  return <span className="dock-rupee" aria-hidden="true">₹</span>;
+}
 
 export default function SideNav({
   active,
@@ -24,7 +27,7 @@ export default function SideNav({
     ["Plan", CalendarDays],
     ["Map", MapPinned],
     ["Group", Users],
-    ["Finance", WalletCards],
+    ["Finance", RupeeIcon],
     ["More", MoreHorizontal],
   ];
   return (
@@ -51,6 +54,7 @@ export default function SideNav({
           transition={PRESS_SPRING}
           onClick={() => onChange(tab)}
           aria-current={active === tab ? "page" : undefined}
+          aria-label={tab}
         >
           <Icon />
           <b>{tab}</b>
