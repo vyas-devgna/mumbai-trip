@@ -5,18 +5,68 @@ import './styles.css'
 import './enhancements.css'
 import './topbar.css'
 import './video-glass.css'
-import {BACKGROUND_VIDEO} from './backgroundVideo.js'
+import {data} from './lib.js'
 import App from './App.jsx'
 
-function mountVideoBackdrop(){
-  if(document.getElementById('trip-video-backdrop'))return
-  const layer=document.createElement('div'),video=document.createElement('video'),reduced=matchMedia('(prefers-reduced-motion: reduce)')
-  layer.id='trip-video-backdrop';layer.className='video-backdrop';layer.setAttribute('aria-hidden','true')
-  video.src=BACKGROUND_VIDEO;video.muted=true;video.loop=true;video.autoplay=true;video.playsInline=true;video.preload='auto';video.disablePictureInPicture=true
-  layer.appendChild(video);document.body.prepend(layer)
-  const sync=()=>{if(reduced.matches||document.hidden){video.pause();return}video.play().catch(()=>{})}
-  document.addEventListener('visibilitychange',sync);reduced.addEventListener?.('change',sync);video.addEventListener('canplay',sync,{once:true});sync()
+function mountGradientBackdrop(){
+  if(document.getElementById('trip-gradient-backdrop'))return
+  const layer=document.createElement('div')
+  layer.id='trip-gradient-backdrop'
+  layer.className='gradient-backdrop'
+  layer.setAttribute('aria-hidden','true')
+  layer.innerHTML='<i class="gradient-blob gradient-a"></i><i class="gradient-blob gradient-b"></i><i class="gradient-blob gradient-c"></i>'
+  document.body.prepend(layer)
 }
 
-mountVideoBackdrop()
+function mountTripProgress(){
+  const start=new Date(`${data.trip.startDate}T05:00:00+05:30`)
+  const end=new Date(`${data.trip.endDate}T23:59:59+05:30`)
+  const approachWindow=30*86400000
+  let timer=0
+
+  const formatCountdown=remaining=>{
+    const totalMinutes=Math.max(0,Math.floor(remaining/60000))
+    const days=Math.floor(totalMinutes/1440)
+    const hours=Math.floor((totalMinutes%1440)/60)
+    const minutes=totalMinutes%60
+    if(days>0)return `${days}D ${hours}H TO DEPARTURE`
+    if(hours>0)return `${hours}H ${minutes}M TO DEPARTURE`
+    return `${minutes}M TO DEPARTURE`
+  }
+
+  const bind=()=>{
+    const rail=document.querySelector('.trip-horizon')
+    if(!rail){requestAnimationFrame(bind);return}
+    const update=()=>{
+      const now=new Date()
+      let progress=0,label='',phase='planning'
+      if(now<start){
+        const remaining=start-now
+        progress=Math.max(0,Math.min(1,1-remaining/approachWindow))
+        label=formatCountdown(remaining)
+      }else if(now<=end){
+        phase='live'
+        progress=Math.max(0,Math.min(1,(now-start)/(end-start)))
+        const day=Math.min(4,Math.max(1,Math.floor((now-new Date(`${data.trip.startDate}T00:00:00+05:30`))/86400000)+1))
+        label=`LIVE · DAY ${String(day).padStart(2,'0')} · ${Math.round(progress*100)}%`
+      }else{
+        phase='complete'
+        progress=1
+        label='TRIP COMPLETE'
+      }
+      rail.style.setProperty('--trip-progress',`${(progress*100).toFixed(2)}%`)
+      rail.dataset.countdown=label
+      rail.dataset.phase=phase
+      rail.setAttribute('aria-label',`Trip day horizon, ${label}`)
+    }
+    update()
+    timer=window.setInterval(update,30000)
+  }
+
+  bind()
+  addEventListener('pagehide',()=>clearInterval(timer),{once:true})
+}
+
+mountGradientBackdrop()
 createRoot(document.getElementById('root')).render(<App/>)
+mountTripProgress()
