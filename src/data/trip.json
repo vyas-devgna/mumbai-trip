@@ -253,6 +253,16 @@
       "label": "Gujarat SF Express ticket",
       "status": "paid",
       "sourceId": "resource-return-ticket"
+    },
+    {
+      "id": "expense-railway-cloak-room",
+      "amountPaise": 20000,
+      "payerId": "vyas",
+      "participantIds": ["vyas", "tirth", "nishit", "milan", "pratham"],
+      "category": "storage",
+      "date": "2026-09-16",
+      "label": "Railway cloak room · 4–5 backpacks · up to 24h",
+      "status": "planned"
     }
   ],
   "reimbursements": [
