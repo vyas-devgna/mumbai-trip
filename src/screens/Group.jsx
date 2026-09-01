@@ -9,10 +9,11 @@ function buildSettlement(expenses) {
     ),
     settlementGroups = new Map();
   let unassignedPaise = 0;
-  // Multiple receipts can form one logical split. Combining that explicit
-  // group allocates remainder paise once instead of biasing the same member on
-  // every receipt.
+  // Only confirmed paid expenses belong in the per-person account. Planned
+  // estimates and device-local drafts stay outside settlement until payment is
+  // actually reported.
   for (const e of expenses) {
+    if (e.status !== "paid") continue;
     const amountPaise = e.amountPaise,
       participants = [
         ...new Set((e.participantIds || []).filter((id) => valid.has(id))),
@@ -41,6 +42,7 @@ function buildSettlement(expenses) {
     });
   }
   for (const payment of data.reimbursements || []) {
+    if (payment.status !== "received") continue;
     const amountPaise = payment.amountPaise,
       covered = [
         ...new Set(
@@ -113,8 +115,8 @@ export default function Group({ expenses }) {
         <span>PARTICIPATION BOARD</span>
         <h1>Group</h1>
         <p>
-          Shared plan state is GitHub-backed. Personal drafts and notes stay on
-          each phone.
+          Only confirmed paid expenses affect balances. Planning estimates and
+          device drafts stay outside the per-person account until payment is made.
         </p>
       </div>
       <div className="group-grid">
@@ -152,7 +154,7 @@ export default function Group({ expenses }) {
       </div>
       <DockAwarePanel className="panel">
         <div className="panel-head">
-          <span>SETTLEMENT</span>
+          <span>SETTLEMENT · PAID ONLY</span>
           <b>
             {settlement.transfers.length
               ? `${settlement.transfers.length} TRANSFER${settlement.transfers.length === 1 ? "" : "S"}`
@@ -181,31 +183,33 @@ export default function Group({ expenses }) {
             );
           })}
         </div>
-        {(data.reimbursements || []).length > 0 && (
+        {(data.reimbursements || []).filter((payment) => payment.status === "received").length > 0 && (
           <div className="payment-log">
-            {data.reimbursements.map((payment) => (
-              <div key={payment.id}>
-                <b>
-                  {
-                    data.members.find((m) => m.id === payment.fromMemberId)
-                      ?.name
-                  }{" "}
-                  →{" "}
-                  {data.members.find((m) => m.id === payment.toMemberId)?.name}
-                </b>
-                <span>
-                  {formatINR(payment.amountPaise)} · covers{" "}
-                  {payment.coversMemberIds
-                    .map(
-                      (id) =>
-                        data.members
-                          .find((m) => m.id === id)
-                          ?.name.split(" ")[0],
-                    )
-                    .join(" + ")}
-                </span>
-              </div>
-            ))}
+            {data.reimbursements
+              .filter((payment) => payment.status === "received")
+              .map((payment) => (
+                <div key={payment.id}>
+                  <b>
+                    {
+                      data.members.find((m) => m.id === payment.fromMemberId)
+                        ?.name
+                    }{" "}
+                    →{" "}
+                    {data.members.find((m) => m.id === payment.toMemberId)?.name}
+                  </b>
+                  <span>
+                    {formatINR(payment.amountPaise)} · covers{" "}
+                    {payment.coversMemberIds
+                      .map(
+                        (id) =>
+                          data.members
+                            .find((m) => m.id === id)
+                            ?.name.split(" ")[0],
+                      )
+                      .join(" + ")}
+                  </span>
+                </div>
+              ))}
           </div>
         )}
         {settlement.transfers.length ? (
@@ -241,11 +245,11 @@ export default function Group({ expenses }) {
       <DockAwarePanel className="panel">
         <div className="panel-head">
           <span>GROUP RULE</span>
-          <b>STATIC SHARED STATE</b>
+          <b>PAYMENT CREATES ACCOUNTING</b>
         </div>
         <p className="system-copy">
-          No fake realtime editing. A shared change goes ChatGPT → GitHub →
-          Pages; installed clients detect the new deployment and refresh.
+          Estimates can be planned freely. A member balance changes only after
+          an actual payment is confirmed and recorded in the canonical ledger.
         </p>
       </DockAwarePanel>
     </section>
