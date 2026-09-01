@@ -6,7 +6,6 @@ import {
   Gauge,
   MapPinned,
   MoreHorizontal,
-  Plus,
   Users,
 } from "lucide-react";
 import { PRESS_SPRING } from "./lib.js";
@@ -18,7 +17,6 @@ function RupeeIcon() {
 export default function SideNav({
   active,
   onChange,
-  onCommand,
   onInstall,
   installed,
 }) {
@@ -32,19 +30,6 @@ export default function SideNav({
   ];
   return (
     <nav className="side-nav" aria-label="Trip dashboard navigation">
-      <motion.button
-        layoutId="command-surface"
-        className="quick"
-        whileTap={{ scale: 0.92 }}
-        whileHover={{ scale: 1.04 }}
-        transition={PRESS_SPRING}
-        onClick={onCommand}
-        aria-label="Add or change trip"
-      >
-        <Plus />
-        <b>Add</b>
-      </motion.button>
-      <div className="side-nav-sep" />
       {tabs.map(([tab, Icon]) => (
         <motion.button
           key={tab}
