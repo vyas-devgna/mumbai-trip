@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1200" role="img" aria-label="Sea Lounge booking confirmation">
+  <rect width="720" height="1200" fill="#f5f1e8"/><rect x="55" y="50" width="610" height="1100" rx="18" fill="#fff" stroke="#d8d0c3"/>
+  <rect x="85" y="80" width="550" height="230" rx="14" fill="#d7dfd2"/>
+  <path d="M85 310h550" stroke="#c7aa63" stroke-width="8"/>
+  <g font-family="Georgia,serif" fill="#272622"><text x="90" y="365" font-size="30">BOOKING DETAIL</text></g>
+  <g font-family="Arial,sans-serif" font-size="22" fill="#37352f">
+    <text x="90" y="415"><tspan fill="#ad8b34">Name:</tspan> Mr Pratham Sukhadia</text>
+    <text x="90" y="455"><tspan fill="#ad8b34">No. of Guests:</tspan> 5</text>
+    <text x="90" y="495"><tspan fill="#ad8b34">Booking Date:</tspan> Wed, 16th Sep 2026</text>
+    <text x="90" y="535"><tspan fill="#ad8b34">Time:</tspan> 11:45 AM</text>
+    <text x="90" y="575"><tspan fill="#ad8b34">Booking Number:</tspan> 4007028</text>
+  </g>
+  <path d="M90 615h540" stroke="#c9c9c6" stroke-width="3"/>
+  <g font-family="Georgia,serif" fill="#272622"><text x="90" y="665" font-size="30">SEA LOUNGE</text></g>
+  <g font-family="Arial,sans-serif" font-size="21" fill="#4a4842">
+    <text x="90" y="710">The Taj Mahal Palace, Mumbai</text><text x="90" y="750">Apollo Bunder, Mumbai, Maharashtra 400001</text>
+    <text x="90" y="790">Indian Street Food, Continental</text><text x="90" y="830">Semi-Formal</text><text x="90" y="870">+91 22 6665 3285</text>
+  </g>
+  <g font-family="Arial,sans-serif" fill="#37352f"><text x="90" y="930" font-size="18" font-weight="bold">NOTE</text>
+    <text x="90" y="970" font-size="17">Tables are held for 15 minutes. Call ahead if delayed.</text>
+    <text x="90" y="1005" font-size="17">For cancellation, notify the venue at least 3 hours before the slot.</text>
+    <text x="90" y="1040" font-size="17">The hotel reserves the right to admission.</text>
+  </g>
+  <rect x="240" y="1080" width="240" height="55" rx="8" fill="#b48b2b"/><text x="360" y="1117" font-family="Arial,sans-serif" text-anchor="middle" fill="#fff" font-size="22" font-weight="bold">CONFIRMED</text>
+</svg>

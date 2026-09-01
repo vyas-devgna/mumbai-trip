@@ -1,0 +1,14 @@
+{
+  "name": "Mumbai TripOS",
+  "short_name": "Mumbai",
+  "start_url": "/mumbai-trip/",
+  "scope": "/mumbai-trip/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2eee4",
+  "theme_color": "#f2eee4",
+  "description": "Offline-first Mumbai trip dashboard",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

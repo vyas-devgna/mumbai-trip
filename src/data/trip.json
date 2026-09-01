@@ -1,0 +1,63 @@
+{
+  "trip": {
+    "id": "mumbai-2026-09",
+    "name": "Mumbai Trip",
+    "startDate": "2026-09-14",
+    "endDate": "2026-09-17",
+    "timezone": "Asia/Kolkata",
+    "status": "planning",
+    "currency": "INR",
+    "budget": {
+      "targetPerPerson": 6000,
+      "groupSizeBudgeted": 5,
+      "note": "Planning target; update when accommodation and local transport are finalized."
+    },
+    "notes": [
+      "Ganeshotsav period: crowd, road restriction and darshan timing assumptions must be re-verified close to travel.",
+      "The deployed Pages site is public. Ticket files are included because the group requested offline access; treat the URL as share-sensitive."
+    ]
+  },
+  "members": [
+    {"id":"vyas","name":"Vyas Devgna","initials":"VD"},
+    {"id":"tirth","name":"Tirth Prajapati","initials":"TP"},
+    {"id":"nishit","name":"Nishit Rana","initials":"NR"},
+    {"id":"milan","name":"Milan Sharma","initials":"MS"},
+    {"id":"pratham","name":"Pratham Sukhadia","initials":"PS"}
+  ],
+  "places": [
+    {"id":"ahmedabad-jn","name":"Ahmedabad Junction","aliases":["ADI"],"latitude":23.0266,"longitude":72.6008,"address":"Kalupur, Ahmedabad, Gujarat","category":"station","confidence":"high"},
+    {"id":"bandra-terminus","name":"Bandra Terminus","aliases":["BDTS"],"latitude":19.0623,"longitude":72.8412,"address":"Bandra East, Mumbai, Maharashtra","category":"station","confidence":"high"},
+    {"id":"taj-mahal-palace","name":"The Taj Mahal Palace, Mumbai","aliases":["Taj Mumbai"],"latitude":18.9217,"longitude":72.8331,"address":"Apollo Bunder, Mumbai, Maharashtra 400001","category":"hotel","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=The%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
+    {"id":"sea-lounge","name":"Sea Lounge, The Taj Mahal Palace","aliases":["Sea Lounge"],"latitude":18.9217,"longitude":72.8331,"address":"Apollo Bunder, Mumbai, Maharashtra 400001","category":"restaurant","googleMapsUrl":"https://www.google.com/maps/search/?api=1&query=Sea%20Lounge%20Taj%20Mahal%20Palace%20Mumbai","confidence":"high"},
+    {"id":"dadar","name":"Dadar Railway Station","aliases":["DDR"],"latitude":19.018,"longitude":72.8432,"address":"Dadar, Mumbai, Maharashtra","category":"station","confidence":"high"},
+    {"id":"nadiad-jn","name":"Nadiad Junction","aliases":["ND"],"latitude":22.6916,"longitude":72.8634,"address":"Nadiad, Gujarat","category":"station","confidence":"high"}
+  ],
+  "activities": [
+    {"id":"outbound-train","title":"Karnavati SF Express to Mumbai","placeId":"ahmedabad-jn","date":"2026-09-14","timing":{"type":"fixed","start":"05:00"},"duration":{"minMinutes":450,"targetMinutes":450,"maxMinutes":450},"participants":["vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Train 12934 · Ahmedabad Jn 05:00 → Bandra Terminus 12:30.","Confirmed seats D2/55–58."],"fallbackIds":[],"sourceIds":["resource-outbound-ticket"]},
+    {"id":"sep14-arrival-buffer","title":"Arrival + transfer buffer","placeId":"bandra-terminus","date":"2026-09-14","timing":{"type":"window","earliest":"12:30","latest":"15:30"},"duration":{"minMinutes":90,"targetMinutes":150,"maxMinutes":180},"participants":["vyas","tirth","nishit","milan"],"priority":"high","bookingStatus":"none","status":"provisional","notes":["Keep this elastic for luggage, traffic, food and the actual stay location."],"fallbackIds":[],"sourceIds":[]},
+    {"id":"sep15-rest-window","title":"Hotel check-in + recovery","date":"2026-09-15","timing":{"type":"window","earliest":"08:00","latest":"12:00"},"duration":{"minMinutes":120,"targetMinutes":180,"maxMinutes":240},"participants":["vyas","tirth","nishit","milan","pratham"],"priority":"high","bookingStatus":"unknown","status":"provisional","notes":["Deliberately protected recovery time before a heavier afternoon/evening."],"fallbackIds":[],"sourceIds":[]},
+    {"id":"sea-lounge-booking","title":"Sea Lounge reservation","placeId":"sea-lounge","date":"2026-09-16","timing":{"type":"fixed","start":"11:45"},"duration":{"minMinutes":60,"targetMinutes":90,"maxMinutes":120},"participants":["pratham","vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Reservation for 5 guests under Pratham Sukhadia · semi-formal.","Table is held for 15 minutes; call ahead if delayed."],"fallbackIds":[],"sourceIds":["resource-sea-lounge"]},
+    {"id":"return-train","title":"Gujarat SF Express home","placeId":"dadar","date":"2026-09-17","timing":{"type":"fixed","start":"05:52"},"duration":{"minMinutes":442,"targetMinutes":442,"maxMinutes":442},"participants":["vyas","tirth","nishit","milan"],"priority":"must","bookingStatus":"booked","status":"planned","notes":["Train 22953 · Dadar 05:52 → Nadiad Junction 13:14.","Confirmed seats D1/37–40."],"fallbackIds":[],"sourceIds":["resource-return-ticket"]}
+  ],
+  "travelLegs": [
+    {"id":"leg-outbound","fromPlaceId":"ahmedabad-jn","toPlaceId":"bandra-terminus","date":"2026-09-14","mode":"train","estimatedMinutes":450,"bufferMinutes":0,"status":"booked"},
+    {"id":"leg-return","fromPlaceId":"dadar","toPlaceId":"nadiad-jn","date":"2026-09-17","mode":"train","estimatedMinutes":442,"bufferMinutes":0,"status":"booked"}
+  ],
+  "branches": [],
+  "checkpoints": [],
+  "fallbacks": [],
+  "candidates": [],
+  "expenses": [
+    {"id":"expense-outbound-rail","amount":859.5,"payerId":null,"participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-25","label":"Karnavati SF Express ticket","status":"paid","sourceId":"resource-outbound-ticket"},
+    {"id":"expense-return-rail","amount":799.5,"payerId":null,"participantIds":["vyas","tirth","nishit","milan"],"category":"transport","date":"2026-08-31","label":"Gujarat SF Express ticket","status":"paid","sourceId":"resource-return-ticket"}
+  ],
+  "signals": [
+    {"id":"ganeshotsav","type":"festival","label":"Ganeshotsav crowd + road conditions need a fresh check","severity":"attention","status":"needs-refresh","lastVerifiedAt":null},
+    {"id":"rail-timings","type":"travel","label":"Re-check train timings before boarding","severity":"attention","status":"needs-refresh","lastVerifiedAt":null}
+  ],
+  "resources": [
+    {"id":"resource-outbound-ticket","type":"pdf","label":"Outbound · Karnavati SF Express","path":"/mumbai-trip/resources/outbound-karnavati.pdf","public":true,"sensitive":true,"offline":true,"date":"2026-09-14","meta":"ADI 05:00 → BDTS 12:30 · 4 passengers"},
+    {"id":"resource-return-ticket","type":"pdf","label":"Return · Gujarat SF Express","path":"/mumbai-trip/resources/return-gujarat.pdf","public":true,"sensitive":true,"offline":true,"date":"2026-09-17","meta":"DDR 05:52 → ND 13:14 · 4 passengers"},
+    {"id":"resource-sea-lounge","type":"image","label":"Sea Lounge booking confirmation","path":"/mumbai-trip/resources/sea-lounge-booking.svg","public":true,"sensitive":true,"offline":true,"date":"2026-09-16","meta":"11:45 AM · 5 guests · semi-formal"}
+  ]
+}
