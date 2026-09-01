@@ -7,6 +7,7 @@ import './topbar.css'
 import './video-glass.css'
 import './performance.css'
 import './typography-safety.css'
+import './finance-group.css'
 import {data} from './lib.js'
 import App from './App.jsx'
 
