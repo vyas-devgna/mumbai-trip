@@ -1,3 +1,14 @@
+.dock-rupee {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 500;
+}
+
 .finance-grid,
 .group-fit-grid {
   display: grid;
