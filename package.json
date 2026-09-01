@@ -16,7 +16,9 @@
     "react-dom": "latest",
     "maplibre-gl": "latest",
     "framer-motion": "13.1.1",
-    "lucide-react": "1.38.0"
+    "lucide-react": "1.38.0",
+    "qrcode": "1.5.4",
+    "suncalc": "1.9.0"
   },
   "devDependencies": {}
 }
