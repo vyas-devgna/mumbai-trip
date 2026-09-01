@@ -1,0 +1,11 @@
+{
+  "name": "Mumbai TripOS",
+  "short_name": "TripOS",
+  "start_url": "/mumbai-trip/",
+  "scope": "/mumbai-trip/",
+  "display": "standalone",
+  "background_color": "#f5f1e8",
+  "theme_color": "#f5f1e8",
+  "description": "Shared Mumbai trip operating system",
+  "icons": [{ "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
