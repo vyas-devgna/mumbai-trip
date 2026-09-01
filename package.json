@@ -15,8 +15,8 @@
     "react": "latest",
     "react-dom": "latest",
     "maplibre-gl": "latest",
-    "framer-motion": "latest",
-    "lucide-react": "latest"
+    "framer-motion": "13.1.1",
+    "lucide-react": "1.38.0"
   },
   "devDependencies": {}
 }

@@ -3,8 +3,8 @@ import * as maplibregl from 'maplibre-gl'
 import {ExternalLink} from 'lucide-react'
 import {byId,data,DAYS,dayItems} from '../lib.js'
 
-const street={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'street',type:'raster',source:'osm'}]}
-const satellite={version:8,sources:{sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Tiles © Esri'}},layers:[{id:'satellite',type:'raster',source:'sat'}]}
+const street={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,maxzoom:14,attribution:'© OpenStreetMap contributors'}},layers:[{id:'street',type:'raster',source:'osm'}]}
+const satellite={version:8,sources:{sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:14,attribution:'Tiles © Esri'}},layers:[{id:'satellite',type:'raster',source:'sat'}]}
 const mapsUrl=p=>p.googleMapsUrl||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.latitude},${p.longitude}`)}`
 
 export default function MapScreen({setDay}){

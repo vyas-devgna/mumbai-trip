@@ -1,6 +1,6 @@
-import React,{useState} from 'react'
+import React,{useEffect,useRef,useState} from 'react'
 import {motion} from 'framer-motion'
-import {CalendarDays,Download,FilePlus2,Gauge,MapPinned,Maximize2,Minimize2,MoreHorizontal,Plus,Share2,Users,X} from 'lucide-react'
+import {CalendarDays,Download,Gauge,MapPinned,Maximize2,Minimize2,MoreHorizontal,Plus,Share2,Users,X} from 'lucide-react'
 import {BASE,data} from './lib.js'
 
 export function Topbar({now,update}){
@@ -8,9 +8,9 @@ export function Topbar({now,update}){
   return <header className="topbar"><div className="brand"><img src={`${BASE}icon.svg`} alt=""/><div><span>MUMBAI / 14—17 SEP</span><b>TRIP CONTROL</b></div></div><div className="sync"><i className={update.label.toLowerCase()}/><div><b>{live?'LIVE':`${days}D`}</b><small>{update.label}</small></div></div></header>
 }
 
-export function SideNav({active,onChange,onCommand,onInstall}){
+export function SideNav({active,onChange,onCommand,onInstall,installed}){
   const tabs=[['Now',Gauge],['Plan',CalendarDays],['Map',MapPinned],['Group',Users],['More',MoreHorizontal]]
-  return <nav className="side-nav" aria-label="Trip dashboard navigation"><motion.button className="quick" whileTap={{scale:.92}} whileHover={{scale:1.04}} onClick={onCommand} aria-label="Add or change trip"><Plus/><b>Add</b></motion.button><div className="side-nav-sep"/>{tabs.map(([tab,Icon])=><motion.button key={tab} className={active===tab?'active':''} whileTap={{scale:.92}} whileHover={{x:-2}} onClick={()=>onChange(tab)} aria-current={active===tab?'page':undefined}><Icon/><b>{tab}</b></motion.button>)}<div className="side-nav-sep"/><motion.button className="install-nav" whileTap={{scale:.92}} whileHover={{scale:1.03}} onClick={onInstall} aria-label="Install TripOS"><Download/><b>Install</b></motion.button></nav>
+  return <nav className="side-nav" aria-label="Trip dashboard navigation"><motion.button className="quick" whileTap={{scale:.92}} whileHover={{scale:1.04}} onClick={onCommand} aria-label="Add or change trip"><Plus/><b>Add</b></motion.button><div className="side-nav-sep"/>{tabs.map(([tab,Icon])=><motion.button key={tab} className={active===tab?'active':''} whileTap={{scale:.92}} whileHover={{x:-2}} onClick={()=>onChange(tab)} aria-current={active===tab?'page':undefined}><Icon/><b>{tab}</b></motion.button>)}{!installed&&<><div className="side-nav-sep"/><motion.button className="install-nav" whileTap={{scale:.92}} whileHover={{scale:1.03}} onClick={onInstall} aria-label="Install TripOS"><Download/><b>Install</b></motion.button></>}</nav>
 }
 
 export function CommandSheet({mode,onClose,notes,setNotes,localExpenses,setLocalExpenses}){
@@ -27,7 +27,29 @@ async function shareResource(resource){
 }
 
 export function ResourceViewer({resource,onClose}){
-  const [boarding,setBoarding]=useState(Boolean(resource.boarding))
+  const [boarding,setBoarding]=useState(Boolean(resource.boarding)),wakeLockRef=useRef(null)
   const source=resource.type==='pdf'?`${resource.path}#toolbar=0&navpanes=0&scrollbar=0&view=Fit` : resource.path
+
+  useEffect(()=>{
+    if(!boarding||!navigator.wakeLock?.request)return
+    let active=true
+    const acquire=async()=>{
+      if(!active||document.visibilityState!=='visible'||(wakeLockRef.current&&!wakeLockRef.current.released))return
+      try{
+        const lock=await navigator.wakeLock.request('screen')
+        if(!active){await lock.release().catch(()=>{});return}
+        wakeLockRef.current=lock
+        lock.addEventListener('release',()=>{if(wakeLockRef.current===lock)wakeLockRef.current=null},{once:true})
+      }catch{}
+    }
+    const onVisibility=()=>{if(document.visibilityState==='visible')acquire()}
+    acquire();document.addEventListener('visibilitychange',onVisibility)
+    return()=>{
+      active=false;document.removeEventListener('visibilitychange',onVisibility)
+      const lock=wakeLockRef.current;wakeLockRef.current=null
+      if(lock&&!lock.released)lock.release().catch(()=>{})
+    }
+  },[boarding])
+
   return <div className={`viewer${boarding?' boarding':''}`}><header><div><span>{boarding?'BOARDING MODE':'OFFLINE VAULT'}</span><b>{resource.label}</b><small>{resource.meta}</small></div><div className="viewer-actions"><button onClick={()=>setBoarding(v=>!v)}>{boarding?<><Minimize2 size={14}/> Exit</>:<><Maximize2 size={14}/> Boarding</>}</button>{!boarding&&<button onClick={()=>shareResource(resource)}><Share2 size={14}/> Share</button>}<button onClick={onClose}><X size={14}/> Close</button></div></header><div className="viewer-body">{resource.type==='pdf'?<object data={source} type="application/pdf" aria-label={resource.label}><iframe src={source} title={resource.label}/></object>:<img src={resource.path} alt={resource.label}/>}</div>{!boarding&&<footer>Cached after a successful online load. This Pages site is public; these copies contain booking information.</footer>}</div>
 }

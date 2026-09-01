@@ -80,14 +80,17 @@ function tileFor(longitude, latitude, zoom) {
   }
 }
 
-async function prefetchAnchorTiles(coordinates, zoom = 11) {
+async function prefetchAnchorTiles(coordinates, zooms = [11,13,14]) {
   const cache = await caches.open(MAP_CACHE), urls = new Set()
+  const levels = [...new Set((Array.isArray(zooms) ? zooms : [zooms]).map(Number).filter(z => Number.isInteger(z) && z >= 0 && z <= 22))]
   for (const coordinate of coordinates || []) {
     const [longitude, latitude] = coordinate || []
     if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) continue
-    const {x,y} = tileFor(longitude, latitude, zoom)
-    urls.add(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`)
-    urls.add(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`)
+    for (const zoom of levels) {
+      const {x,y} = tileFor(longitude, latitude, zoom)
+      urls.add(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`)
+      urls.add(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`)
+    }
   }
   let cached = 0
   await Promise.all([...urls].map(async url => {
@@ -97,7 +100,7 @@ async function prefetchAnchorTiles(coordinates, zoom = 11) {
       if (response && (response.ok || response.type === 'opaque')) { await cache.put(url, response.clone()); cached++ }
     } catch {}
   }))
-  return { ok: urls.size > 0 && cached === urls.size, cached, requested: urls.size, zoom }
+  return { ok: urls.size > 0 && cached === urls.size, cached, requested: urls.size, zooms: levels }
 }
 
 self.addEventListener('fetch', event => {
@@ -128,7 +131,7 @@ self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
   if (event.data?.type === 'PREFETCH_MAP_ANCHORS') {
     event.waitUntil((async()=>{
-      const result = await prefetchAnchorTiles(event.data.coordinates, Number(event.data.zoom) || 11)
+      const result = await prefetchAnchorTiles(event.data.coordinates, event.data.zooms)
       event.ports?.[0]?.postMessage(result)
     })())
   }
