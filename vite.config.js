@@ -8,7 +8,12 @@ function scaleTripTypography() {
     name: 'tripos-font-scale',
     enforce: 'pre',
     transform(code, id) {
-      if (!id.includes('/src/') || !id.endsWith('.css')) return null
+      if (
+        !id.includes('/src/') ||
+        !id.endsWith('.css') ||
+        id.endsWith('/typography-safety.css')
+      )
+        return null
       const scaled = code.replace(
         /font-size\s*:\s*(\d*\.?\d+)px/gi,
         (_, raw) => {
