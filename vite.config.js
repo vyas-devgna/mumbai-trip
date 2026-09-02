@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const FONT_SCALE = 1.1
+const BUILD_SHA = process.env.GITHUB_SHA || process.env.VITE_BUILD_SHA || 'local-dev'
 
 function scaleTripTypography() {
   return {
@@ -29,5 +30,8 @@ function scaleTripTypography() {
 export default defineConfig({
   plugins: [react(), scaleTripTypography()],
   base: '/mumbai-trip/',
-  build: { sourcemap: true }
+  define: {
+    __TRIPOS_BUILD__: JSON.stringify(BUILD_SHA),
+  },
+  build: { sourcemap: true },
 })
