@@ -1,6 +1,5 @@
 .map-marker {
   --marker: var(--blue);
-  position: relative;
   width: 32px;
   height: 32px;
   display: grid;
