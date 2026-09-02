@@ -1,4 +1,5 @@
-const SHELL_CACHE = "mumbai-tripos-shell-v5";
+const BUILD_VERSION = "__TRIPOS_BUILD_SHA__";
+const SHELL_CACHE = `mumbai-tripos-shell-v6-${BUILD_VERSION.slice(0, 12)}`;
 const RUNTIME_CACHE = "mumbai-tripos-runtime-v5";
 const MAP_CACHE = "mumbai-tripos-map-v4";
 const BASE = "/mumbai-trip/";
@@ -34,8 +35,17 @@ self.addEventListener("activate", (event) => {
         type: "window",
         includeUncontrolled: true,
       });
-      for (const client of clients)
-        client.postMessage({ type: "TRIPOS_SW_ACTIVE" });
+      for (const client of clients) {
+        client.postMessage({ type: "TRIPOS_SW_ACTIVE", version: BUILD_VERSION });
+        if (
+          BUILD_VERSION !== "__TRIPOS_BUILD_SHA__" &&
+          typeof client.navigate === "function"
+        ) {
+          try {
+            await client.navigate(client.url);
+          } catch {}
+        }
+      }
     })(),
   );
 });
