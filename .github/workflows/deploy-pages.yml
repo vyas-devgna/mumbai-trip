@@ -29,7 +29,15 @@ jobs:
       - name: Stamp deployment version
         env:
           BUILD_SHA: ${{ github.sha }}
-        run: node -e "const fs=require('fs');fs.writeFileSync('public/version.json',JSON.stringify({version:process.env.BUILD_SHA,builtAt:new Date().toISOString()}))"
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const sha = process.env.BUILD_SHA
+          fs.writeFileSync('public/version.json', JSON.stringify({ version: sha, builtAt: new Date().toISOString() }))
+          const swPath = 'public/sw.js'
+          const sw = fs.readFileSync(swPath, 'utf8').replaceAll('__TRIPOS_BUILD_SHA__', sha)
+          fs.writeFileSync(swPath, sw)
+          NODE
       - name: Validate canonical trip data
         run: npm run validate:data
       - name: Build production PWA
