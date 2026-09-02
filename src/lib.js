@@ -6,6 +6,8 @@ export const BASE = import.meta.env.BASE_URL;
 export const DAYS = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17"];
 export const PRESS_SPRING = { type: "spring", stiffness: 300, damping: 30 };
 export const byId = (arr, id) => arr.find((x) => x.id === id);
+const RUNNING_BUILD =
+  typeof __TRIPOS_BUILD__ === "string" ? __TRIPOS_BUILD__ : "local-dev";
 
 const assertPaise = (value, label = "paise") => {
   if (!Number.isSafeInteger(value))
@@ -149,10 +151,11 @@ export function useAutoUpdate(React) {
     confirmedAt: null,
   });
   const regRef = useRef(null),
-    stoppedRef = useRef(false);
+    stoppedRef = useRef(false),
+    reloadRef = useRef(false);
 
   const check = useCallback(async () => {
-    if (stoppedRef.current) return;
+    if (stoppedRef.current || reloadRef.current) return;
     if (!navigator.onLine) {
       setState((prev) => ({ ...prev, label: "Offline" }));
       return;
@@ -167,32 +170,50 @@ export function useAutoUpdate(React) {
           }));
         await regRef.current.update().catch(() => {});
       }
-      const r = await fetch(`${BASE}version.json?t=${Date.now()}`, {
+
+      const response = await fetch(`${BASE}version.json?t=${Date.now()}`, {
         cache: "no-store",
       });
-      if (!r.ok) throw new Error("version");
-      const latest = await r.json(),
-        previous = localStorage.getItem("tripos-build"),
-        confirmedAt = new Date().toISOString();
-      if (
-        previous &&
-        previous !== latest.version &&
-        latest.version !== "local-dev"
-      ) {
-        localStorage.setItem("tripos-build", latest.version);
+      if (!response.ok) throw new Error("version");
+
+      const latest = await response.json(),
+        latestVersion = latest.version || null,
+        confirmedAt = new Date().toISOString(),
+        needsUpdate =
+          latestVersion &&
+          latestVersion !== "local-dev" &&
+          latestVersion !== RUNNING_BUILD;
+
+      if (needsUpdate) {
+        reloadRef.current = true;
         setState({
           label: "Updating",
-          version: latest.version,
+          version: latestVersion,
           builtAt: latest.builtAt || null,
           confirmedAt,
         });
-        setTimeout(() => location.reload(), 300);
+
+        const registration = regRef.current;
+        registration?.waiting?.postMessage({ type: "SKIP_WAITING" });
+
+        const target = new URL(location.href);
+        target.searchParams.set("_tripos", latestVersion.slice(0, 12));
+        setTimeout(() => location.replace(target.toString()), 450);
         return;
       }
-      if (latest.version) localStorage.setItem("tripos-build", latest.version);
+
+      if (latestVersion) localStorage.setItem("tripos-build", latestVersion);
+      if (RUNNING_BUILD !== "local-dev") {
+        const current = new URL(location.href);
+        if (current.searchParams.has("_tripos")) {
+          current.searchParams.delete("_tripos");
+          history.replaceState(null, "", `${current.pathname}${current.search}${current.hash}`);
+        }
+      }
+
       setState({
         label: "Current",
-        version: latest.version || null,
+        version: latestVersion,
         builtAt: latest.builtAt || null,
         confirmedAt,
       });
