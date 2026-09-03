@@ -230,12 +230,7 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, var(--glass-raised-strong) 0%, var(--glass-raised) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.82) !important;
   box-shadow: var(--glass-shadow-raised) !important;
-  position: relative;
-  transition:
-    background-color 0.16s ease,
-    border-color 0.16s ease,
-    transform 0.16s ease,
-    box-shadow 0.16s ease;
+  transition: none !important;
   touch-action: manipulation;
 }
 

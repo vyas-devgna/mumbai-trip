@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import {
   CalendarDays,
   Download,
@@ -7,7 +6,6 @@ import {
   MapPinned,
   Users,
 } from "lucide-react";
-import { PRESS_SPRING } from "./lib.js";
 
 function RupeeIcon() {
   return <span className="dock-rupee" aria-hidden="true">₹</span>;
@@ -30,32 +28,28 @@ export default function SideNav({
   return (
     <nav className="bottom-dock" aria-label="Trip dashboard navigation">
       {tabs.map(([tab, Icon]) => (
-        <motion.button
+        <button
           key={tab}
           className={active === tab ? "active" : ""}
-          whileTap={{ scale: 0.92 }}
-          transition={PRESS_SPRING}
           onClick={() => onChange(tab)}
           aria-current={active === tab ? "page" : undefined}
           aria-label={tab}
         >
           <Icon />
           <b>{tab}</b>
-        </motion.button>
+        </button>
       ))}
       {!installed && (
         <>
           <div className="side-nav-sep" />
-          <motion.button
+          <button
             className="install-nav"
-            whileTap={{ scale: 0.92 }}
-            transition={PRESS_SPRING}
             onClick={onInstall}
             aria-label="Install TripOS"
           >
             <Download />
             <b>Install</b>
-          </motion.button>
+          </button>
         </>
       )}
     </nav>

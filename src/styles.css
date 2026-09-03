@@ -22,8 +22,15 @@
 * { box-sizing: border-box; }
 html { background: var(--paper); }
 body { margin: 0; min-width: 320px; background: var(--paper); }
-button, a, input, textarea { font: inherit; }
+button, a, input, textarea {
+  font: inherit;
+  transition: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
 button { color: inherit; }
+.panel, .anchor, .date-rail button, .segment button, .actions a, .actions button {
+  transition: none !important;
+}
 
 /* ── App Shell ── */
 .app-shell {

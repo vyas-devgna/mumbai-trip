@@ -411,19 +411,7 @@ export default function App() {
       <More {...ctx} />
     );
 
-  const pageMotion = reduced
-    ? {
-        initial: { opacity: 1, y: 0, scale: 1 },
-        animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 1, y: 0 },
-        transition: { duration: 0 },
-      }
-    : {
-        initial: { opacity: 0, y: 8, scale: 0.995 },
-        animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, y: -5 },
-        transition: PRESS_SPRING,
-      };
+
   return (
     <div className="app-shell">
       <AmbientBackdrop live={tripIsLive(now)} />
@@ -436,11 +424,9 @@ export default function App() {
           setTab("Plan");
         }}
       />
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.main className="page-motion" key={tab} {...pageMotion}>
-          {screen}
-        </motion.main>
-      </AnimatePresence>
+      <main className="page-motion" key={tab}>
+        {screen}
+      </main>
       <LayoutGroup id="tripos-command">
         <SideNav
           active={tab}

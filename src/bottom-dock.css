@@ -40,11 +40,14 @@
   color: #635f56;
   padding: 4px 8px;
   cursor: pointer;
-  transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+  transition: none !important;
 }
 .bottom-dock button:hover {
   color: #1f1d19;
   background: rgba(255, 255, 255, 0.55);
+}
+.bottom-dock button:active {
+  transform: scale(0.95);
 }
 
 .bottom-dock button svg {
