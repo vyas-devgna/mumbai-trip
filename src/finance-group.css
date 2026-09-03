@@ -12,7 +12,7 @@
 .finance-grid,
 .group-fit-grid {
   display: grid;
-  gap: 9px;
+  gap: 14px;
 }
 
 .finance-ledger > div > span {
@@ -21,11 +21,11 @@
   min-width: 0;
 }
 .finance-ledger small {
-  font-size: 0.85em;
+  font-size: 9.5px;
   color: var(--muted);
 }
 .finance-drafts {
-  opacity: 0.78;
+  opacity: 0.85;
 }
 
 .finance-accounts {
@@ -33,42 +33,45 @@
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
 }
 .finance-account {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  gap: 9px;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 12px;
   align-items: center;
-  padding: 9px;
+  padding: 12px 14px;
   background: #faf7f0;
 }
 .finance-account-id {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   background: #e5ebf2;
   color: var(--blue);
   font-family: var(--mono);
-  font-size: 8px;
+  font-size: 10px;
+  font-weight: 700;
 }
 .finance-account > div:nth-child(2) {
   display: grid;
   min-width: 0;
+  gap: 2px;
 }
 .finance-account > div:nth-child(2) > b {
-  font-size: 9px;
+  font-size: 12px;
 }
 .finance-account small {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 9.5px;
 }
 .finance-account > strong {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 13px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -78,69 +81,77 @@
   gap: 1px;
   border: 1px solid var(--line);
   background: var(--line);
-  border-radius: 10px;
+  border-radius: 14px;
   overflow: hidden;
-  margin-bottom: 9px;
+  margin-bottom: 12px;
 }
 .group-status-grid > div {
   display: grid;
-  gap: 2px;
-  padding: 10px 8px;
+  gap: 3px;
+  padding: 12px 10px;
   background: #faf7f0;
+  text-align: center;
 }
 .group-status-grid strong {
   font-family: var(--mono);
-  font-size: 18px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
 }
 .group-status-grid span {
-  font-size: 7px;
+  font-size: 9.5px;
   color: var(--muted);
 }
 
 .preference-member {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 .preference-member-head {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
 }
 .preference-member-head h3 {
-  margin: 1px 0 2px;
-  font-size: 11px;
+  margin: 1px 0 3px;
+  font-size: 14px;
+  font-weight: 700;
 }
 .preference-member-head > div:last-child {
   display: grid;
 }
 .preference-member-head span {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 10px;
 }
 .preference-list {
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 .preference-row {
   display: grid;
-  gap: 2px;
-  padding: 8px 9px;
+  gap: 3px;
+  padding: 10px 12px;
   border: 1px solid var(--line);
-  border-radius: 9px;
+  border-radius: 11px;
   background: #faf7f0;
 }
 .preference-row small {
   font-family: var(--mono);
   color: var(--blue);
-  font-size: 6px;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
 }
 .preference-row b {
-  font-size: 9px;
+  font-size: 12px;
 }
 .preference-row span {
-  font-size: 7px;
+  font-size: 10px;
   color: var(--muted);
+  line-height: 1.45;
 }
 .preference-row.must {
   border-color: #d9bd82;
@@ -151,21 +162,21 @@
   background: #fbefeb;
 }
 .preference-empty {
-  min-height: 78px;
+  min-height: 80px;
   display: grid;
   align-content: center;
-  gap: 3px;
-  padding: 10px;
+  gap: 4px;
+  padding: 12px;
   border: 1px dashed var(--line);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--muted);
 }
 .preference-empty b {
   color: var(--ink);
-  font-size: 9px;
+  font-size: 12px;
 }
 .preference-empty span {
-  font-size: 7px;
+  font-size: 10px;
   line-height: 1.5;
 }
 .group-fit-list {
@@ -173,20 +184,20 @@
   gap: 1px;
   border: 1px solid var(--line);
   background: var(--line);
-  border-radius: 9px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .group-fit-list > div {
   display: grid;
-  gap: 2px;
-  padding: 9px;
+  gap: 3px;
+  padding: 11px 13px;
   background: #faf7f0;
 }
 .group-fit-list b {
-  font-size: 9px;
+  font-size: 12px;
 }
 .group-fit-list span {
-  font-size: 7px;
+  font-size: 10px;
   color: var(--muted);
 }
 .group-fit-list.conflict > div {
@@ -202,7 +213,7 @@
 
 @media (max-width: 420px) {
   .finance-account {
-    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-columns: 34px minmax(0, 1fr);
   }
   .finance-account > strong {
     grid-column: 2;

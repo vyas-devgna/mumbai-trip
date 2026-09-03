@@ -16,6 +16,7 @@ function RupeeIcon() {
 export default function SideNav({
   active,
   onChange,
+  onCommand,
   onInstall,
   installed,
 }) {

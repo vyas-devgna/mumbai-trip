@@ -1,261 +1,593 @@
-.ambient-bg{display:none!important}
-html,body,#root,.app-shell,.page-motion,.page,.dash,.map-page{background:transparent!important}
-body{color:var(--ink)}
+.ambient-bg { display: none !important; }
+html, body, #root, .app-shell, .page-motion, .page, .dash, .map-page { background: transparent !important; }
+body { color: var(--ink); }
 
-:root{
-  --glass-surface:rgba(250,247,240,.76);
-  --glass-surface-strong:rgba(250,247,240,.86);
-  --glass-raised:rgba(255,252,246,.58);
-  --glass-raised-strong:rgba(255,252,246,.72);
-  --glass-line:rgba(255,255,255,.74);
-  --glass-line-soft:rgba(119,112,101,.22);
-  --glass-shadow:0 16px 44px rgba(45,39,31,.11),inset 0 1px 0 rgba(255,255,255,.82);
-  --glass-shadow-raised:0 8px 22px rgba(45,39,31,.08),inset 0 1px 0 rgba(255,255,255,.78);
+/* ── Perfect Liquid Glass & Refraction Tokens ── */
+:root {
+  --glass-surface: rgba(252, 248, 240, 0.76);
+  --glass-surface-strong: rgba(255, 252, 246, 0.88);
+  --glass-raised: rgba(255, 253, 248, 0.65);
+  --glass-raised-strong: rgba(255, 254, 250, 0.82);
+  --glass-line: rgba(255, 255, 255, 0.85);
+  --glass-line-soft: rgba(119, 112, 101, 0.20);
+  --glass-shadow:
+    0 20px 48px rgba(45, 39, 31, 0.10),
+    0 6px 18px rgba(45, 39, 31, 0.05),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.48),
+    inset 0 -1.5px 3px rgba(119, 112, 101, 0.04);
+  --glass-shadow-raised:
+    0 6px 18px rgba(45, 39, 31, 0.06),
+    0 2px 6px rgba(45, 39, 31, 0.03),
+    inset 0 1px 1px rgba(255, 255, 255, 0.98),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.50);
 }
 
-.gradient-backdrop{
-  position:fixed;
-  inset:0;
-  z-index:-4;
-  overflow:hidden;
-  pointer-events:none;
+/* ── Chromatic Dynamic Mesh Backdrop (High Motion & Vibrant) ── */
+.gradient-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -4;
+  overflow: hidden;
+  pointer-events: none;
   background:
-    linear-gradient(145deg,#e4ebf2 0%,#f4ead4 38%,#e4ece4 67%,#e7e4ef 100%);
+    radial-gradient(ellipse at 50% 0%, rgba(255, 250, 240, 0.8) 0%, transparent 70%),
+    linear-gradient(155deg, #e4ecf7 0%, #fbf1de 28%, #e0f2ec 58%, #f8e5ee 82%, #e5e9f8 100%);
 }
-.gradient-backdrop::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(242,238,228,.18));
-}
-.gradient-blob{
-  position:absolute;
-  display:block;
-  width:64vmax;
-  height:64vmax;
-  border-radius:50%;
-  filter:blur(54px);
-  opacity:.72;
-  will-change:transform;
-  transform:translate3d(0,0,0);
-}
-.gradient-a{
-  left:-24vmax;
-  top:-20vmax;
-  background:radial-gradient(circle,rgba(22,77,140,.42) 0%,rgba(22,77,140,.18) 38%,transparent 68%);
-  animation:gradient-drift-a 30s ease-in-out infinite alternate;
-}
-.gradient-b{
-  right:-28vmax;
-  top:15vh;
-  background:radial-gradient(circle,rgba(239,167,40,.43) 0%,rgba(239,167,40,.16) 38%,transparent 70%);
-  animation:gradient-drift-b 34s ease-in-out infinite alternate;
-}
-.gradient-c{
-  left:18vw;
-  bottom:-34vmax;
-  background:radial-gradient(circle,rgba(63,115,89,.40) 0%,rgba(63,115,89,.15) 40%,transparent 70%);
-  animation:gradient-drift-c 38s ease-in-out infinite alternate;
-}
-@keyframes gradient-drift-a{to{transform:translate3d(14vw,10vh,0) scale(1.12)}}
-@keyframes gradient-drift-b{to{transform:translate3d(-12vw,14vh,0) scale(.92)}}
-@keyframes gradient-drift-c{to{transform:translate3d(8vw,-15vh,0) scale(1.08)}}
-
-.topbar{
-  background:linear-gradient(135deg,rgba(252,249,242,.88),rgba(248,244,235,.74))!important;
-  border-bottom-color:var(--glass-line-soft)!important;
-  box-shadow:0 8px 28px rgba(42,37,30,.10),inset 0 1px 0 rgba(255,255,255,.84)!important;
-  backdrop-filter:blur(18px) saturate(1.14)!important;
-  -webkit-backdrop-filter:blur(18px) saturate(1.14)!important;
-}
-.trip-horizon{
-  background:linear-gradient(135deg,rgba(255,252,246,.66),rgba(248,244,235,.48))!important;
-  border-color:var(--glass-line)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 7px 18px rgba(45,39,31,.06)!important;
-  backdrop-filter:blur(11px) saturate(1.1)!important;
-  -webkit-backdrop-filter:blur(11px) saturate(1.1)!important;
+.gradient-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(242, 238, 228, 0.22) 100%);
 }
 
-.panel,.date-rail,.segment,.map-days,.sheet,.side-nav,.install,.onboarding,.map-frame,.map-legend,.viewer header,.local-qr{
-  background:linear-gradient(135deg,var(--glass-surface-strong),var(--glass-surface))!important;
-  border-color:var(--glass-line-soft)!important;
-  box-shadow:var(--glass-shadow)!important;
-  backdrop-filter:blur(14px) saturate(1.12)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(1.12)!important;
-}
-.panel{position:relative}
-.panel::before,.sheet::before,.side-nav::before,.onboarding::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  pointer-events:none;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.74),inset 0 -1px 0 rgba(119,112,101,.06);
+.gradient-blob {
+  position: absolute;
+  display: block;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 46% 54% 52% 48% / 48% 46% 54% 52%;
+  filter: blur(65px);
+  opacity: 0.84;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
-.mission{
-  background:linear-gradient(135deg,rgba(22,77,140,.91),rgba(29,80,132,.82))!important;
-  border-color:rgba(255,255,255,.28)!important;
-  box-shadow:0 18px 44px rgba(19,55,95,.21),inset 0 1px 0 rgba(255,255,255,.22)!important;
-  color:#fff!important;
-  backdrop-filter:blur(13px) saturate(1.16)!important;
-  -webkit-backdrop-filter:blur(13px) saturate(1.16)!important;
-}
-.mission .panel-head{border-color:rgba(255,255,255,.27)!important;color:#dce8f4!important}
-.mission .panel-head>b,.mission h1{color:#fff!important}
-.mission .stamp,.mission .count span,.mission-grid>div:first-child>p:last-child{color:#e3edf7!important}
-.mission .count{border-color:rgba(255,255,255,.28)!important}
-.mission .geo-reading{
-  background:rgba(255,255,255,.10)!important;
-  border-color:rgba(255,255,255,.24)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
-}
-.mission .actions a,.mission .actions button{
-  background:rgba(255,255,255,.11)!important;
-  border-color:rgba(255,255,255,.28)!important;
-  color:#fff!important;
-  box-shadow:none!important;
-  backdrop-filter:blur(8px) saturate(1.08)!important;
-  -webkit-backdrop-filter:blur(8px) saturate(1.08)!important;
-}
-.mission .actions .primary{background:var(--amber)!important;border-color:var(--amber)!important;color:#2a271e!important}
-
-.panel-head{border-bottom-color:rgba(112,105,95,.22)!important;color:#66645e!important}
-.panel-head>b{color:var(--ink)!important}
-.panel-head button{color:var(--blue)!important}
-.page-title>span,.brand span,.sheet header span,.viewer header span{color:#6c6a64!important}
-.page-title p,.muted,.system-copy,.empty,.metric>p{color:#64625c!important}
-
-.anchor-track,.resource-list,.ledger,.system-rows,.settlement-grid,.payment-log{
-  background:rgba(112,105,95,.16)!important;
-  border-color:rgba(112,105,95,.19)!important;
-}
-.anchor,.resource-list>button,.ledger>div,.system-rows>div,.settlement-row,.settlement-transfer,.payment-log>div,.location-list a,.sheet-menu button,.install-step,.form input,.form textarea,.form .save,.payer-select button,.participant-select button,.deploy-check,.signal-action,.notes>div,.timeline-item,.people-chips>span,.viewer-actions button,.boarding-destination{
-  background:linear-gradient(135deg,var(--glass-raised-strong),var(--glass-raised))!important;
-  border-color:rgba(255,255,255,.68)!important;
-  box-shadow:var(--glass-shadow-raised)!important;
-  backdrop-filter:blur(8px) saturate(1.08)!important;
-  -webkit-backdrop-filter:blur(8px) saturate(1.08)!important;
-}
-.anchor,.resource-list>button,.location-list a,.sheet-menu button,.deploy-check,.signal-action,.form .save,.viewer-actions button{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}
-.anchor:hover,.resource-list>button:hover,.location-list a:hover,.sheet-menu button:hover,.deploy-check:hover,.signal-action:hover,.viewer-actions button:hover{
-  background:rgba(255,252,246,.76)!important;
-  border-color:rgba(255,255,255,.9)!important;
+/* 1. Sapphire Coastal Blue */
+.gradient-a {
+  left: -18vmax;
+  top: -16vmax;
+  background: radial-gradient(circle, rgba(20, 95, 185, 0.54) 0%, rgba(35, 140, 230, 0.28) 36%, transparent 70%);
+  animation: gradient-drift-a 26s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
 
-.alert{
-  border-bottom-color:rgba(112,105,95,.18)!important;
+/* 2. Saffron Gold / Sunset Amber */
+.gradient-b {
+  right: -22vmax;
+  top: 10vh;
+  background: radial-gradient(circle, rgba(245, 155, 25, 0.52) 0%, rgba(255, 185, 60, 0.26) 38%, transparent 70%);
+  animation: gradient-drift-b 30s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
-.alert>i{
-  background:rgba(239,167,40,.18)!important;
-  border:1px solid rgba(239,167,40,.22)!important;
-  color:#815a13!important;
+
+/* 3. Emerald Marine Teal */
+.gradient-c {
+  left: 12vw;
+  bottom: -28vmax;
+  background: radial-gradient(circle, rgba(38, 160, 115, 0.48) 0%, rgba(55, 195, 155, 0.22) 40%, transparent 70%);
+  animation: gradient-drift-c 34s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
-.signal-action{color:#765313!important}
-.notes>div{border-left:2px solid var(--amber)!important;padding:8px 9px!important;border-radius:0 9px 9px 0}
-.progress{background:rgba(37,39,36,.11)!important;box-shadow:inset 0 1px 1px rgba(37,39,36,.08)}
-.progress i{background:linear-gradient(90deg,var(--blue),#2e669f)!important}
 
-.date-rail,.segment,.map-days{padding:4px!important;gap:3px!important}
-.date-rail button,.segment button,.map-days button,.trip-horizon button{
-  position:relative;
-  isolation:isolate;
-  background:transparent!important;
-  border-color:transparent!important;
+/* 4. Sunset Coral / Radiant Rose */
+.gradient-d {
+  right: 15vw;
+  bottom: -15vmax;
+  width: 52vmax;
+  height: 52vmax;
+  background: radial-gradient(circle, rgba(235, 75, 125, 0.44) 0%, rgba(248, 130, 165, 0.20) 38%, transparent 70%);
+  animation: gradient-drift-d 28s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
-.date-rail button.active,.segment button.active{background:transparent!important;color:#fff!important}
-.date-rail button.active em,.date-rail button.active small{color:#d8d9d5!important}
-.day-indicator,.segment-indicator{
-  background:linear-gradient(135deg,#252724,#343630)!important;
-  border:1px solid rgba(255,255,255,.12)!important;
-  box-shadow:0 7px 16px rgba(37,39,36,.18)!important;
+
+/* 5. Electric Cyan / Coastal Azure */
+.gradient-e {
+  left: 30vw;
+  top: 18vh;
+  width: 48vmax;
+  height: 48vmax;
+  background: radial-gradient(circle, rgba(0, 190, 240, 0.46) 0%, rgba(95, 125, 245, 0.22) 42%, transparent 70%);
+  animation: gradient-drift-e 32s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
 }
-.segment button b{position:relative;z-index:1}
-.map-days button{border:1px solid rgba(112,105,95,.18)!important;color:#625f58!important}
-.map-days button.active{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important;box-shadow:0 6px 15px rgba(22,77,140,.18)!important}
 
-.timeline-item{border-radius:11px;padding:9px 8px 0;margin:0 0 7px}
-.timeline-line i{box-shadow:0 0 0 4px rgba(250,247,240,.84)!important}
-.timeline-title em{background:rgba(22,77,140,.11)!important;border:1px solid rgba(22,77,140,.10)!important;color:var(--blue)!important}
-.people-chips>span{border:1px solid rgba(112,105,95,.12)!important}
-.people-chips button{color:var(--blue)!important}
-
-.side-nav{
-  background:linear-gradient(135deg,rgba(252,249,242,.90),rgba(248,244,235,.76))!important;
-  border-color:rgba(255,255,255,.76)!important;
-  box-shadow:0 16px 42px rgba(45,39,31,.16),inset 0 1px 0 rgba(255,255,255,.84)!important;
+/* Multi-phase organic fluid wave motion */
+@keyframes gradient-drift-a {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  33%  { transform: translate3d(14vw, 12vh, 0) rotate(35deg) scale(1.14); }
+  66%  { transform: translate3d(-6vw, 18vh, 0) rotate(-20deg) scale(0.92); }
+  100% { transform: translate3d(10vw, 4vh, 0) rotate(15deg) scale(1.08); }
 }
-.side-nav-sep{background:rgba(112,105,95,.18)!important}
-.side-nav button{color:#67655f!important}
-.side-nav button.active{background:var(--blue)!important;color:#fff!important;box-shadow:0 7px 18px rgba(22,77,140,.23)!important}
-.side-nav button.quick{background:var(--amber)!important;color:#2b281f!important;box-shadow:0 7px 18px rgba(239,167,40,.20)!important}
-.side-nav button.install-nav{background:rgba(255,252,246,.68)!important;border-color:rgba(112,105,95,.18)!important;color:var(--blue)!important}
-
-.sheet-bg,.onboarding-bg{background:rgba(24,24,22,.36)!important;backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important}
-.sheet header{border-bottom-color:rgba(112,105,95,.20)!important}
-.sheet header>button{background:rgba(255,252,246,.62)!important;border-color:rgba(112,105,95,.18)!important}
-.handle{background:rgba(79,74,67,.28)!important}
-.form input,.form textarea{color:var(--ink)!important;outline:none}
-.form input:focus,.form textarea:focus{border-color:rgba(22,77,140,.42)!important;box-shadow:0 0 0 3px rgba(22,77,140,.09)!important}
-.form .save{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important}
-.payer-select button.active{background:var(--amber)!important;border-color:var(--amber)!important;color:#29261f!important}
-.participant-select button.active{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important}
-.sheet-success{background:rgba(255,252,246,.66)!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:var(--glass-shadow-raised)!important}
-
-.install{background:linear-gradient(135deg,rgba(22,77,140,.92),rgba(28,84,142,.82))!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important}
-.install-step i,.resource-list i,.location-index{
-  background:rgba(22,77,140,.10)!important;
-  border:1px solid rgba(22,77,140,.10)!important;
-  color:var(--blue)!important;
+@keyframes gradient-drift-b {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  33%  { transform: translate3d(-15vw, 16vh, 0) rotate(-40deg) scale(1.18); }
+  66%  { transform: translate3d(-8vw, -10vh, 0) rotate(25deg) scale(0.90); }
+  100% { transform: translate3d(-12vw, 12vh, 0) rotate(-15deg) scale(1.06); }
 }
-.resource-list i.image{background:rgba(239,167,40,.13)!important;color:#805d17!important}
-
-.map-frame{background:rgba(216,211,202,.62)!important}
-.map-legend{border-top-color:rgba(112,105,95,.18)!important;color:#66645e!important}
-.location-panel{background:linear-gradient(135deg,var(--glass-surface-strong),var(--glass-surface))!important}
-.location-list a{color:var(--ink)!important;border-top-color:rgba(112,105,95,.16)!important}
-.maplibregl-popup-content{
-  background:rgba(252,249,242,.94)!important;
-  color:var(--ink)!important;
-  border:1px solid rgba(255,255,255,.72)!important;
-  box-shadow:0 12px 30px rgba(35,32,27,.17)!important;
-  backdrop-filter:blur(12px)!important;
-  -webkit-backdrop-filter:blur(12px)!important;
+@keyframes gradient-drift-c {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
+  33%  { transform: translate3d(16vw, -14vh, 0) rotate(45deg) scale(1.12); }
+  66%  { transform: translate3d(-12vw, -8vh, 0) rotate(-30deg) scale(0.95); }
+  100% { transform: translate3d(8vw, -18vh, 0) rotate(20deg) scale(1.10); }
 }
-.maplibregl-ctrl-group{background:rgba(252,249,242,.88)!important;box-shadow:0 8px 22px rgba(35,32,27,.14)!important}
-
-.member-id>b{box-shadow:0 7px 16px rgba(22,77,140,.18)!important}
-.settlement-transfer>button{background:rgba(255,252,246,.66)!important;border-color:rgba(112,105,95,.18)!important;color:var(--blue)!important}
-.net-positive{color:#336c50!important}.net-negative{color:#91442f!important}
-
-.viewer{
-  background:rgba(242,238,228,.76)!important;
-  backdrop-filter:blur(16px) saturate(1.08)!important;
-  -webkit-backdrop-filter:blur(16px) saturate(1.08)!important;
+@keyframes gradient-drift-d {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.96); }
+  33%  { transform: translate3d(-18vw, -12vh, 0) rotate(-35deg) scale(1.15); }
+  66%  { transform: translate3d(10vw, -20vh, 0) rotate(25deg) scale(1.02); }
+  100% { transform: translate3d(-10vw, -8vh, 0) rotate(-15deg) scale(1.12); }
 }
-.viewer header{background:rgba(252,249,242,.90)!important}
-.viewer footer{background:rgba(252,249,242,.80)!important;border-top-color:rgba(112,105,95,.18)!important;color:#66645e!important}
-.viewer.boarding{background:#0c0d0c!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-.viewer.boarding header{background:rgba(12,13,12,.94)!important;color:#fff!important;border-color:#343734!important;box-shadow:none!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important}
-.viewer.boarding header span,.viewer.boarding header small{color:#c5ccc6!important}
-.viewer.boarding header b{color:#fff!important}
-.viewer.boarding .viewer-actions button{background:#fff!important;color:#111!important;border-color:#fff!important;box-shadow:none!important}
-.boarding-destination{background:rgba(251,248,240,.96)!important;color:var(--ink)!important}
-.local-qr canvas{background:#fbf8f0!important;border-radius:7px}
+@keyframes gradient-drift-e {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.05); }
+  33%  { transform: translate3d(-14vw, 15vh, 0) rotate(30deg) scale(0.92); }
+  66%  { transform: translate3d(12vw, -12vh, 0) rotate(-45deg) scale(1.16); }
+  100% { transform: translate3d(-8vw, 10vh, 0) rotate(15deg) scale(1.02); }
+}
 
-@media(max-width:520px){
-  .gradient-blob{filter:blur(44px);opacity:.67}
-  .panel,.date-rail,.segment,.map-days,.sheet,.side-nav,.install,.onboarding,.map-frame,.map-legend,.viewer header,.local-qr{
-    backdrop-filter:blur(11px) saturate(1.08)!important;
-    -webkit-backdrop-filter:blur(11px) saturate(1.08)!important;
+/* ── Primary Tier 1 Glass Planes (Refraction & Depth) ── */
+.topbar {
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.88), rgba(248, 244, 235, 0.76)) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    0 8px 32px rgba(45, 39, 31, 0.08),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(119, 112, 101, 0.12) !important;
+  backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
+}
+
+.trip-horizon {
+  background: linear-gradient(135deg, rgba(255, 253, 248, 0.72), rgba(248, 244, 235, 0.55)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    0 8px 22px rgba(45, 39, 31, 0.06),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.40) !important;
+  backdrop-filter: blur(14px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+}
+
+.panel,
+.sheet,
+.side-nav,
+.install,
+.onboarding,
+.map-frame,
+.map-legend,
+.viewer header,
+.local-qr {
+  background: linear-gradient(135deg, var(--glass-surface-strong) 0%, var(--glass-surface) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.82) !important;
+  box-shadow: var(--glass-shadow) !important;
+  backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
+  position: relative;
+}
+
+/* Crisp specular refraction edge on panels */
+.panel::before,
+.sheet::before,
+.side-nav::before,
+.onboarding::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 3px 0 rgba(119, 112, 101, 0.05);
+}
+
+/* ── Mission Card: Luminous Liquid Sapphire Glass ── */
+.mission {
+  background: linear-gradient(135deg, rgba(18, 70, 130, 0.94) 0%, rgba(28, 86, 148, 0.86) 50%, rgba(22, 65, 118, 0.92) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow:
+    0 22px 52px rgba(18, 55, 95, 0.28),
+    0 6px 20px rgba(18, 55, 95, 0.16),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.20) !important;
+  color: #fff !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+}
+.mission .panel-head { border-color: rgba(255, 255, 255, 0.28) !important; color: #dce8f4 !important; }
+.mission .panel-head > b, .mission h1 { color: #fff !important; }
+.mission .stamp, .mission .count span, .mission-grid > div:first-child > p:last-child { color: #e5eff8 !important; }
+.mission .count { border-color: rgba(255, 255, 255, 0.30) !important; }
+.mission .geo-reading {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+.mission .actions a, .mission .actions button {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  backdrop-filter: blur(8px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+}
+.mission .actions a:hover, .mission .actions button:hover {
+  background: rgba(255, 255, 255, 0.24) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+.mission .actions .primary {
+  background: linear-gradient(135deg, #f7b438, #e59a18) !important;
+  border-color: #f7b438 !important;
+  color: #262218 !important;
+  box-shadow: 0 6px 20px rgba(239, 167, 40, 0.35) !important;
+}
+
+/* ── Content Readability & High-Contrast Typography ── */
+.panel-head {
+  border-bottom: 1px solid rgba(112, 105, 95, 0.18) !important;
+  color: #5c5850 !important;
+}
+.panel-head > b { color: var(--ink) !important; font-weight: 700 !important; }
+.panel-head button { color: var(--blue) !important; font-weight: 600 !important; }
+.page-title > span, .brand span, .sheet header span, .viewer header span { color: #66635c !important; font-weight: 600 !important; }
+.page-title p, .muted, .system-copy, .empty, .metric > p { color: #5a5750 !important; }
+
+/* ── Tier 2 Layered Glass (Nested Interactive Elements) ── */
+.anchor-track,
+.resource-list,
+.ledger,
+.system-rows,
+.settlement-grid,
+.payment-log {
+  background: rgba(112, 105, 95, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  border-radius: 14px;
+}
+
+.anchor,
+.resource-list > button,
+.ledger > div,
+.system-rows > div,
+.settlement-row,
+.settlement-transfer,
+.payment-log > div,
+.location-list a,
+.sheet-menu button,
+.install-step,
+.form input,
+.form textarea,
+.form .save,
+.payer-select button,
+.participant-select button,
+.deploy-check,
+.signal-action,
+.notes > div,
+.timeline-item,
+.people-chips > span,
+.viewer-actions button,
+.boarding-destination {
+  background: linear-gradient(135deg, var(--glass-raised-strong) 0%, var(--glass-raised) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.82) !important;
+  box-shadow: var(--glass-shadow-raised) !important;
+  position: relative;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+/* Layered glass hover refraction */
+.anchor:hover,
+.resource-list > button:hover,
+.location-list a:hover,
+.sheet-menu button:hover,
+.deploy-check:hover,
+.signal-action:hover,
+.settlement-transfer:hover,
+.viewer-actions button:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(252, 248, 240, 0.85)) !important;
+  border-color: rgba(255, 255, 255, 0.98) !important;
+  box-shadow:
+    0 8px 24px rgba(45, 39, 31, 0.08),
+    0 2px 8px rgba(45, 39, 31, 0.04),
+    inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
+  transform: translateY(-1.5px);
+}
+
+.alert { border-bottom-color: rgba(112, 105, 95, 0.16) !important; }
+.alert > i {
+  background: linear-gradient(135deg, rgba(255, 242, 210, 0.9), rgba(245, 215, 150, 0.65)) !important;
+  border: 1px solid rgba(239, 167, 40, 0.35) !important;
+  color: #815a13 !important;
+  box-shadow: 0 4px 12px rgba(239, 167, 40, 0.18) !important;
+}
+.signal-action { color: #765313 !important; }
+.notes > div {
+  border-left: 3px solid var(--amber) !important;
+  padding: 10px 12px !important;
+  border-radius: 0 11px 11px 0;
+}
+.progress {
+  background: rgba(37, 39, 36, 0.10) !important;
+  box-shadow: inset 0 1px 2px rgba(37, 39, 36, 0.10);
+}
+.progress i {
+  background: linear-gradient(90deg, var(--blue), #2a72b8) !important;
+  box-shadow: 0 0 12px rgba(22, 77, 140, 0.3);
+}
+
+/* ── Segment, Rail & Tab Glass Controls ── */
+.date-rail, .segment, .map-days {
+  padding: 4px !important;
+  gap: 4px !important;
+  background: linear-gradient(135deg, rgba(250, 246, 238, 0.65), rgba(245, 240, 230, 0.50)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: inset 0 1px 2px rgba(45, 39, 31, 0.04), 0 4px 14px rgba(45, 39, 31, 0.04) !important;
+  backdrop-filter: blur(14px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+}
+
+.date-rail button, .segment button, .map-days button, .trip-horizon button {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.date-rail button.active, .segment button.active {
+  background: transparent !important;
+  color: #fff !important;
+}
+.date-rail button.active em, .date-rail button.active small { color: #e4e6e2 !important; }
+
+.day-indicator, .segment-indicator {
+  background: linear-gradient(135deg, #222421 0%, #353832 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  box-shadow:
+    0 6px 18px rgba(37, 39, 36, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+.map-days button {
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  color: #5d5952 !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+.map-days button.active {
+  background: linear-gradient(135deg, var(--blue), #1e5fa5) !important;
+  color: #fff !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 6px 18px rgba(22, 77, 140, 0.25) !important;
+}
+
+/* ── Timeline Refraction ── */
+.timeline-item {
+  border-radius: 12px;
+  padding: 10px 10px 0;
+  margin: 0 0 8px;
+}
+.timeline-line i {
+  box-shadow:
+    0 0 0 4px rgba(252, 248, 240, 0.9),
+    0 2px 8px rgba(22, 77, 140, 0.3) !important;
+}
+.timeline-title em {
+  background: linear-gradient(135deg, rgba(22, 77, 140, 0.12), rgba(22, 77, 140, 0.06)) !important;
+  border: 1px solid rgba(22, 77, 140, 0.18) !important;
+  color: var(--blue) !important;
+}
+.people-chips > span {
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+.people-chips button { color: var(--blue) !important; }
+
+/* ── Floating Side Nav / Bottom Dock Glass ── */
+.bottom-dock {
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.90) 0%, rgba(248, 243, 233, 0.78) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.88) !important;
+  box-shadow:
+    0 18px 50px rgba(45, 39, 31, 0.15),
+    0 6px 18px rgba(45, 39, 31, 0.08),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(24px) saturate(145%) brightness(1.04) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(145%) brightness(1.04) !important;
+}
+
+.bottom-dock button.active {
+  background: linear-gradient(135deg, var(--blue) 0%, #1a569c 100%) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  box-shadow:
+    0 7px 22px rgba(22, 77, 140, 0.32),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
+}
+
+/* ── Modal Sheets & Overlays ── */
+.sheet-bg, .onboarding-bg {
+  background: rgba(20, 19, 17, 0.42) !important;
+  backdrop-filter: blur(8px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+}
+.sheet header { border-bottom-color: rgba(112, 105, 95, 0.18) !important; }
+.sheet header > button {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+}
+.handle { background: rgba(79, 74, 67, 0.32) !important; }
+.form input, .form textarea {
+  color: var(--ink) !important;
+  outline: none;
+  background: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(112, 105, 95, 0.22) !important;
+}
+.form input:focus, .form textarea:focus {
+  border-color: rgba(22, 77, 140, 0.55) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 0 0 3px rgba(22, 77, 140, 0.12) !important;
+}
+.form .save {
+  background: linear-gradient(135deg, var(--blue), #1a569c) !important;
+  color: #fff !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 6px 20px rgba(22, 77, 140, 0.25) !important;
+}
+.payer-select button.active {
+  background: linear-gradient(135deg, var(--amber), #e89e18) !important;
+  border-color: var(--amber) !important;
+  color: #28241b !important;
+}
+.participant-select button.active {
+  background: linear-gradient(135deg, var(--blue), #1a569c) !important;
+  border-color: var(--blue) !important;
+  color: #fff !important;
+}
+.sheet-success {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: var(--glass-shadow-raised) !important;
+}
+
+/* ── Install & Resources ── */
+.install {
+  background: linear-gradient(135deg, rgba(22, 77, 140, 0.94), rgba(28, 88, 150, 0.86)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 14px 34px rgba(22, 77, 140, 0.22) !important;
+}
+.install-step i, .resource-list i, .location-index {
+  background: linear-gradient(135deg, rgba(22, 77, 140, 0.12), rgba(22, 77, 140, 0.06)) !important;
+  border: 1px solid rgba(22, 77, 140, 0.15) !important;
+  color: var(--blue) !important;
+}
+.resource-list i.image {
+  background: linear-gradient(135deg, rgba(239, 167, 40, 0.16), rgba(239, 167, 40, 0.08)) !important;
+  color: #805d17 !important;
+}
+
+/* ── Map Elements ── */
+.map-frame {
+  background: rgba(220, 215, 206, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.80) !important;
+}
+.map-legend {
+  border-top: 1px solid rgba(112, 105, 95, 0.16) !important;
+  color: #5c5850 !important;
+}
+.location-panel {
+  background: linear-gradient(135deg, var(--glass-surface-strong), var(--glass-surface)) !important;
+}
+.location-list a {
+  color: var(--ink) !important;
+  border-top-color: rgba(112, 105, 95, 0.14) !important;
+}
+.maplibregl-popup-content {
+  background: rgba(255, 252, 246, 0.96) !important;
+  color: var(--ink) !important;
+  border: 1px solid rgba(255, 255, 255, 0.90) !important;
+  box-shadow:
+    0 16px 38px rgba(35, 32, 27, 0.20),
+    0 4px 12px rgba(35, 32, 27, 0.08) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+.maplibregl-ctrl-group {
+  background: rgba(255, 252, 246, 0.92) !important;
+  box-shadow: 0 8px 24px rgba(35, 32, 27, 0.14) !important;
+}
+
+.member-id > b {
+  box-shadow: 0 8px 20px rgba(22, 77, 140, 0.22) !important;
+}
+.settlement-transfer > button {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  color: var(--blue) !important;
+}
+.net-positive { color: #2e664a !important; font-weight: 700 !important; }
+.net-negative { color: #8e3f2a !important; font-weight: 700 !important; }
+
+/* ── Viewer Glass ── */
+.viewer {
+  background: rgba(244, 240, 230, 0.82) !important;
+  backdrop-filter: blur(20px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(135%) !important;
+}
+.viewer header { background: rgba(255, 252, 246, 0.94) !important; }
+.viewer footer {
+  background: rgba(255, 252, 246, 0.88) !important;
+  border-top-color: rgba(112, 105, 95, 0.16) !important;
+  color: #5c5850 !important;
+}
+.viewer.boarding {
+  background: #0a0b0a !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.viewer.boarding header {
+  background: rgba(12, 13, 12, 0.96) !important;
+  color: #fff !important;
+  border-color: #343734 !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+.viewer.boarding header span, .viewer.boarding header small { color: #c5ccc6 !important; }
+.viewer.boarding header b { color: #fff !important; }
+.viewer.boarding .viewer-actions button {
+  background: #fff !important;
+  color: #111 !important;
+  border-color: #fff !important;
+  box-shadow: none !important;
+}
+.boarding-destination {
+  background: rgba(255, 252, 246, 0.98) !important;
+  color: var(--ink) !important;
+}
+.local-qr canvas {
+  background: #fbf8f0 !important;
+  border-radius: 8px;
+}
+
+/* ── Mobile Optimizations ── */
+@media (max-width: 520px) {
+  .gradient-blob { filter: blur(52px); opacity: 0.80; }
+  .panel,
+  .sheet,
+  .side-nav,
+  .install,
+  .onboarding,
+  .map-frame,
+  .map-legend,
+  .viewer header,
+  .local-qr {
+    backdrop-filter: blur(14px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
   }
-  .anchor,.resource-list>button,.ledger>div,.system-rows>div,.settlement-row,.settlement-transfer,.payment-log>div,.location-list a,.sheet-menu button,.install-step,.form input,.form textarea,.form .save,.payer-select button,.participant-select button,.deploy-check,.signal-action,.notes>div,.timeline-item,.people-chips>span,.viewer-actions button,.boarding-destination{
-    backdrop-filter:blur(6px) saturate(1.05)!important;
-    -webkit-backdrop-filter:blur(6px) saturate(1.05)!important;
-  }
 }
 
-@media(prefers-reduced-motion:reduce){
-  .gradient-blob{animation:none!important;transform:none!important}
-  .anchor,.resource-list>button,.location-list a,.sheet-menu button,.deploy-check,.signal-action,.form .save,.viewer-actions button{transition:none!important}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-blob {
+    animation: none !important;
+    transform: none !important;
+  }
+  .anchor,
+  .resource-list > button,
+  .location-list a,
+  .sheet-menu button,
+  .deploy-check,
+  .signal-action,
+  .form .save,
+  .viewer-actions button {
+    transition: none !important;
+    transform: none !important;
+  }
 }

@@ -1,3 +1,4 @@
+/* ── Improved Bottom Dock: Liquid Glass Refraction & High Contrast ── */
 .bottom-dock {
   position: fixed;
   left: 50%;
@@ -6,69 +7,106 @@
   z-index: 60;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   width: max-content;
-  max-width: calc(100vw - 20px);
-  padding: 6px;
-  border: 1px solid #d1c8b8;
-  border-radius: 20px;
-  background: #f8f4ebee;
-  backdrop-filter: blur(20px) saturate(1.08);
-  -webkit-backdrop-filter: blur(20px) saturate(1.08);
-  box-shadow: 0 16px 46px #39302324;
+  max-width: calc(100vw - 16px);
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.90) 0%, rgba(248, 243, 233, 0.78) 100%);
+  backdrop-filter: blur(24px) saturate(145%) brightness(1.04);
+  -webkit-backdrop-filter: blur(24px) saturate(145%) brightness(1.04);
+  box-shadow:
+    0 18px 50px rgba(45, 39, 31, 0.14),
+    0 6px 18px rgba(45, 39, 31, 0.06),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
 
 .bottom-dock button {
   position: relative;
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
-  display: grid;
-  place-items: center;
+  width: auto;
+  min-width: 50px;
+  height: 52px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
   border: 1px solid transparent;
-  border-radius: 14px;
+  border-radius: 16px;
   background: transparent;
-  color: #77766f;
-  padding: 0;
+  color: #635f56;
+  padding: 4px 8px;
   cursor: pointer;
+  transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+.bottom-dock button:hover {
+  color: #1f1d19;
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .bottom-dock button svg {
   width: 21px;
   height: 21px;
-  stroke-width: 1.8;
+  stroke-width: 1.9;
+  flex-shrink: 0;
 }
 
+/* Show labels with high contrast */
 .bottom-dock button b {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  display: block;
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
   white-space: nowrap;
-  border: 0;
 }
 
+/* Active state: filled pill with amber accent glow */
 .bottom-dock button.active {
-  background: var(--blue);
+  background: linear-gradient(135deg, var(--blue) 0%, #19589e 100%);
   color: #fff;
-  box-shadow: 0 7px 18px #164d8c26;
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 8px 24px rgba(22, 77, 140, 0.32),
+    inset 0 1px 1px rgba(255, 255, 255, 0.48);
+}
+.bottom-dock button.active b {
+  color: #fff;
+}
+
+/* Active dot indicator */
+.bottom-dock button.active::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--amber);
+  box-shadow: 0 0 8px rgba(239, 167, 40, 0.7);
 }
 
 .bottom-dock .install-nav {
-  border-color: var(--line);
-  background: #fbf8f0;
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.65);
   color: var(--blue);
+}
+.bottom-dock .install-nav:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .bottom-dock .side-nav-sep {
   width: 1px;
   height: 28px;
   flex: 0 0 1px;
-  margin: 0 1px;
-  background: var(--line);
+  margin: 0 2px;
+  background: rgba(119, 112, 101, 0.22);
 }
 
 .bottom-dock .dock-rupee {
@@ -79,47 +117,49 @@
   font-family: var(--mono);
   font-size: 19px;
   line-height: 1;
+  font-weight: 600;
 }
 
-/* DockAwarePanel looks for .side-nav. The live dock deliberately uses a
-   different class, so content never measures, yields or morphs around it. */
+/* DockAwarePanel: bottom dock uses different class, no yielding */
 .dock-aware-slot,
 .dock-aware {
   width: 100% !important;
   max-width: 100% !important;
 }
 .dock-aware {
-  border-bottom-right-radius: 14px !important;
+  border-bottom-right-radius: 18px !important;
 }
 .dock-probe {
   display: none !important;
 }
 
-/* Reserve enough scrollable space for the floating dock. The final card can
-   always be scrolled completely above it, including devices with safe areas. */
+/* Reserve space for floating dock */
 .app-shell {
-  padding-right: 13px !important;
-  padding-bottom: calc(102px + env(safe-area-inset-bottom)) !important;
+  padding-right: 16px !important;
+  padding-bottom: calc(108px + env(safe-area-inset-bottom)) !important;
 }
 .page-motion {
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 @media (min-width: 680px) {
   .app-shell {
-    padding-right: 20px !important;
+    padding-right: 24px !important;
   }
 }
 
-@media (max-width: 359px) {
+@media (max-width: 375px) {
   .bottom-dock {
-    gap: 2px;
-    padding: 5px;
+    gap: 1px;
+    padding: 5px 4px;
   }
   .bottom-dock button {
-    width: 43px;
-    height: 43px;
-    flex-basis: 43px;
+    min-width: 44px;
+    height: 48px;
+    padding: 3px 5px;
     border-radius: 13px;
+  }
+  .bottom-dock button b {
+    font-size: 7px;
   }
 }

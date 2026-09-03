@@ -21,7 +21,12 @@ function mountGradientBackdrop(){
   layer.id='trip-gradient-backdrop'
   layer.className='gradient-backdrop'
   layer.setAttribute('aria-hidden','true')
-  layer.innerHTML='<i class="gradient-blob gradient-a"></i><i class="gradient-blob gradient-b"></i><i class="gradient-blob gradient-c"></i>'
+  layer.innerHTML=
+    '<i class="gradient-blob gradient-a"></i>' +
+    '<i class="gradient-blob gradient-b"></i>' +
+    '<i class="gradient-blob gradient-c"></i>' +
+    '<i class="gradient-blob gradient-d"></i>' +
+    '<i class="gradient-blob gradient-e"></i>'
   document.body.prepend(layer)
   const syncMotion=()=>layer.classList.toggle('motion-paused',document.hidden||reduced.matches)
   document.addEventListener('visibilitychange',syncMotion)
