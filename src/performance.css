@@ -1,31 +1,31 @@
-/* ── Performance Budget: Optimized Hardware-Accelerated Liquid Glass ── */
+/* ── Performance Budget: 60/120 FPS Liquid Glass ── */
 .gradient-blob {
-  filter: blur(65px) !important;
+  filter: none !important;
 }
 .gradient-backdrop.motion-paused .gradient-blob {
   animation-play-state: paused !important;
   will-change: auto !important;
 }
 
-/* Primary Glass Planes: Full Refraction with Saturation Boost */
+/* Primary Glass Planes: Calibrated for instant responsiveness */
 .topbar {
-  backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
+  backdrop-filter: blur(12px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.15) !important;
 }
 .trip-horizon {
-  backdrop-filter: blur(14px) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+  backdrop-filter: blur(8px) saturate(1.10) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.10) !important;
 }
 .panel, .date-rail, .segment, .map-days, .sheet, .side-nav, .install, .onboarding, .viewer header {
-  backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
+  backdrop-filter: blur(8px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.12) !important;
 }
 .mission {
-  backdrop-filter: blur(16px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  backdrop-filter: blur(8px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.12) !important;
 }
 
-/* Secondary Nested Items: Keep GPU fillrate high by relying on specular highlights and gradients */
+/* Secondary Nested Items: Zero blur passes for blazing fast scrolling */
 .mission .actions a, .mission .actions button,
 .anchor, .resource-list > button, .ledger > div, .system-rows > div,
 .settlement-row, .settlement-transfer, .payment-log > div,
@@ -49,9 +49,9 @@
 .deploy-check, .signal-action, .notes > div,
 .timeline-item, .people-chips > span, .viewer-actions button, .boarding-destination {
   box-shadow:
-    0 4px 14px rgba(45, 39, 31, 0.05),
+    0 4px 12px rgba(45, 39, 31, 0.04),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.50) !important;
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -61,23 +61,18 @@
   }
 }
 
-/* Mobile: Calibrated blur for maximum battery & 60/120fps smoothness */
+/* Mobile: Strict budget for 60/120fps smoothness & battery efficiency */
 @media (max-width: 720px) {
   .topbar {
-    backdrop-filter: blur(14px) saturate(135%) brightness(1.02) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(135%) brightness(1.02) !important;
+    backdrop-filter: blur(8px) saturate(1.10) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1.10) !important;
   }
   .trip-horizon {
-    backdrop-filter: blur(10px) saturate(125%) !important;
-    -webkit-backdrop-filter: blur(10px) saturate(125%) !important;
+    backdrop-filter: blur(6px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
   }
   .panel, .date-rail, .segment, .map-days, .sheet, .side-nav, .install, .onboarding, .viewer header, .mission {
-    backdrop-filter: blur(14px) saturate(135%) brightness(1.02) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(135%) brightness(1.02) !important;
-  }
-  .gradient-blob {
-    filter: blur(52px) !important;
-    width: 62vmax;
-    height: 62vmax;
+    backdrop-filter: blur(6px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
   }
 }

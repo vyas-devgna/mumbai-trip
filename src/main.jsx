@@ -24,9 +24,7 @@ function mountGradientBackdrop(){
   layer.innerHTML=
     '<i class="gradient-blob gradient-a"></i>' +
     '<i class="gradient-blob gradient-b"></i>' +
-    '<i class="gradient-blob gradient-c"></i>' +
-    '<i class="gradient-blob gradient-d"></i>' +
-    '<i class="gradient-blob gradient-e"></i>'
+    '<i class="gradient-blob gradient-c"></i>'
   document.body.prepend(layer)
   const syncMotion=()=>layer.classList.toggle('motion-paused',document.hidden||reduced.matches)
   document.addEventListener('visibilitychange',syncMotion)

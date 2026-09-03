@@ -2,28 +2,26 @@
 html, body, #root, .app-shell, .page-motion, .page, .dash, .map-page { background: transparent !important; }
 body { color: var(--ink); }
 
-/* ── Perfect Liquid Glass & Refraction Tokens ── */
+/* ── High-Performance Liquid Glass Tokens ── */
 :root {
-  --glass-surface: rgba(252, 248, 240, 0.76);
-  --glass-surface-strong: rgba(255, 252, 246, 0.88);
-  --glass-raised: rgba(255, 253, 248, 0.65);
-  --glass-raised-strong: rgba(255, 254, 250, 0.82);
+  --glass-surface: rgba(252, 248, 240, 0.78);
+  --glass-surface-strong: rgba(255, 252, 246, 0.90);
+  --glass-raised: rgba(255, 253, 248, 0.68);
+  --glass-raised-strong: rgba(255, 254, 250, 0.85);
   --glass-line: rgba(255, 255, 255, 0.85);
-  --glass-line-soft: rgba(119, 112, 101, 0.20);
+  --glass-line-soft: rgba(119, 112, 101, 0.18);
   --glass-shadow:
-    0 20px 48px rgba(45, 39, 31, 0.10),
-    0 6px 18px rgba(45, 39, 31, 0.05),
-    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.96),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.48),
-    inset 0 -1.5px 3px rgba(119, 112, 101, 0.04);
+    0 12px 32px rgba(45, 39, 31, 0.07),
+    0 2px 8px rgba(45, 39, 31, 0.04),
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45);
   --glass-shadow-raised:
-    0 6px 18px rgba(45, 39, 31, 0.06),
-    0 2px 6px rgba(45, 39, 31, 0.03),
-    inset 0 1px 1px rgba(255, 255, 255, 0.98),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.50);
+    0 4px 12px rgba(45, 39, 31, 0.04),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
 
-/* ── Chromatic Dynamic Mesh Backdrop (High Motion & Vibrant) ── */
+/* ── Zero-Cost Chromatic Animated Backdrop (Native Feathered Radial Gradients) ── */
 .gradient-backdrop {
   position: fixed;
   inset: 0;
@@ -31,125 +29,86 @@ body { color: var(--ink); }
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(255, 250, 240, 0.8) 0%, transparent 70%),
-    linear-gradient(155deg, #e4ecf7 0%, #fbf1de 28%, #e0f2ec 58%, #f8e5ee 82%, #e5e9f8 100%);
-}
-.gradient-backdrop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(242, 238, 228, 0.22) 100%);
+    radial-gradient(ellipse at 50% 0%, rgba(255, 250, 242, 0.75) 0%, transparent 65%),
+    linear-gradient(155deg, #e5ecf6 0%, #fbf2e2 30%, #e2f2ed 62%, #fae8f0 85%, #e6ebf8 100%);
+  contain: strict;
 }
 
 .gradient-blob {
   position: absolute;
   display: block;
-  width: 60vmax;
-  height: 60vmax;
-  border-radius: 46% 54% 52% 48% / 48% 46% 54% 52%;
-  filter: blur(65px);
-  opacity: 0.84;
+  width: 58vmax;
+  height: 58vmax;
+  border-radius: 50%;
+  filter: none !important;
+  opacity: 0.80;
   will-change: transform;
   transform: translate3d(0, 0, 0);
+  pointer-events: none;
 }
 
-/* 1. Sapphire Coastal Blue */
+/* 1. Sapphire Coastal Blue (Native Feathering) */
 .gradient-a {
-  left: -18vmax;
-  top: -16vmax;
-  background: radial-gradient(circle, rgba(20, 95, 185, 0.54) 0%, rgba(35, 140, 230, 0.28) 36%, transparent 70%);
-  animation: gradient-drift-a 26s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  left: -16vmax;
+  top: -14vmax;
+  background: radial-gradient(circle at 45% 45%, rgba(20, 95, 185, 0.48) 0%, rgba(35, 140, 230, 0.22) 30%, rgba(70, 160, 240, 0.07) 55%, transparent 72%);
+  animation: gradient-drift-a 26s ease-in-out infinite alternate;
 }
 
-/* 2. Saffron Gold / Sunset Amber */
+/* 2. Saffron Gold / Sunset Amber (Native Feathering) */
 .gradient-b {
-  right: -22vmax;
-  top: 10vh;
-  background: radial-gradient(circle, rgba(245, 155, 25, 0.52) 0%, rgba(255, 185, 60, 0.26) 38%, transparent 70%);
-  animation: gradient-drift-b 30s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  right: -20vmax;
+  top: 12vh;
+  background: radial-gradient(circle at 50% 50%, rgba(245, 155, 25, 0.46) 0%, rgba(255, 185, 60, 0.20) 30%, rgba(255, 205, 100, 0.06) 55%, transparent 72%);
+  animation: gradient-drift-b 30s ease-in-out infinite alternate;
 }
 
-/* 3. Emerald Marine Teal */
+/* 3. Emerald Marine Teal (Native Feathering) */
 .gradient-c {
-  left: 12vw;
-  bottom: -28vmax;
-  background: radial-gradient(circle, rgba(38, 160, 115, 0.48) 0%, rgba(55, 195, 155, 0.22) 40%, transparent 70%);
-  animation: gradient-drift-c 34s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  left: 10vw;
+  bottom: -24vmax;
+  background: radial-gradient(circle at 48% 48%, rgba(38, 155, 110, 0.42) 0%, rgba(55, 190, 145, 0.18) 32%, rgba(80, 210, 170, 0.06) 55%, transparent 72%);
+  animation: gradient-drift-c 34s ease-in-out infinite alternate;
 }
 
-/* 4. Sunset Coral / Radiant Rose */
-.gradient-d {
-  right: 15vw;
-  bottom: -15vmax;
-  width: 52vmax;
-  height: 52vmax;
-  background: radial-gradient(circle, rgba(235, 75, 125, 0.44) 0%, rgba(248, 130, 165, 0.20) 38%, transparent 70%);
-  animation: gradient-drift-d 28s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
-}
-
-/* 5. Electric Cyan / Coastal Azure */
-.gradient-e {
-  left: 30vw;
-  top: 18vh;
-  width: 48vmax;
-  height: 48vmax;
-  background: radial-gradient(circle, rgba(0, 190, 240, 0.46) 0%, rgba(95, 125, 245, 0.22) 42%, transparent 70%);
-  animation: gradient-drift-e 32s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
-}
-
-/* Multi-phase organic fluid wave motion */
+/* Compositor-Only GPU Fluid Wave Motion */
 @keyframes gradient-drift-a {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  33%  { transform: translate3d(14vw, 12vh, 0) rotate(35deg) scale(1.14); }
-  66%  { transform: translate3d(-6vw, 18vh, 0) rotate(-20deg) scale(0.92); }
-  100% { transform: translate3d(10vw, 4vh, 0) rotate(15deg) scale(1.08); }
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(12vw, 14vh, 0) scale(1.10); }
+  100% { transform: translate3d(-6vw, 10vh, 0) scale(0.95); }
 }
 @keyframes gradient-drift-b {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  33%  { transform: translate3d(-15vw, 16vh, 0) rotate(-40deg) scale(1.18); }
-  66%  { transform: translate3d(-8vw, -10vh, 0) rotate(25deg) scale(0.90); }
-  100% { transform: translate3d(-12vw, 12vh, 0) rotate(-15deg) scale(1.06); }
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(-14vw, 12vh, 0) scale(1.12); }
+  100% { transform: translate3d(-8vw, -8vh, 0) scale(0.94); }
 }
 @keyframes gradient-drift-c {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); }
-  33%  { transform: translate3d(16vw, -14vh, 0) rotate(45deg) scale(1.12); }
-  66%  { transform: translate3d(-12vw, -8vh, 0) rotate(-30deg) scale(0.95); }
-  100% { transform: translate3d(8vw, -18vh, 0) rotate(20deg) scale(1.10); }
-}
-@keyframes gradient-drift-d {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(0.96); }
-  33%  { transform: translate3d(-18vw, -12vh, 0) rotate(-35deg) scale(1.15); }
-  66%  { transform: translate3d(10vw, -20vh, 0) rotate(25deg) scale(1.02); }
-  100% { transform: translate3d(-10vw, -8vh, 0) rotate(-15deg) scale(1.12); }
-}
-@keyframes gradient-drift-e {
-  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.05); }
-  33%  { transform: translate3d(-14vw, 15vh, 0) rotate(30deg) scale(0.92); }
-  66%  { transform: translate3d(12vw, -12vh, 0) rotate(-45deg) scale(1.16); }
-  100% { transform: translate3d(-8vw, 10vh, 0) rotate(15deg) scale(1.02); }
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(14vw, -12vh, 0) scale(1.08); }
+  100% { transform: translate3d(-10vw, -6vh, 0) scale(0.96); }
 }
 
-/* ── Primary Tier 1 Glass Planes (Refraction & Depth) ── */
+/* ── Primary Tier 1 Glass Planes (Calibrated for 60/120 FPS) ── */
 .topbar {
-  background: linear-gradient(135deg, rgba(255, 252, 246, 0.88), rgba(248, 244, 235, 0.76)) !important;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.90), rgba(248, 244, 235, 0.80)) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow:
-    0 8px 32px rgba(45, 39, 31, 0.08),
+    0 6px 24px rgba(45, 39, 31, 0.06),
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1px 0 rgba(119, 112, 101, 0.12) !important;
-  backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(145%) brightness(1.03) !important;
+    inset 0 -1px 0 rgba(119, 112, 101, 0.10) !important;
+  backdrop-filter: blur(12px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.15) !important;
 }
 
 .trip-horizon {
-  background: linear-gradient(135deg, rgba(255, 253, 248, 0.72), rgba(248, 244, 235, 0.55)) !important;
+  background: linear-gradient(135deg, rgba(255, 253, 248, 0.78), rgba(248, 244, 235, 0.62)) !important;
   border: 1px solid rgba(255, 255, 255, 0.85) !important;
   box-shadow:
-    0 8px 22px rgba(45, 39, 31, 0.06),
+    0 4px 14px rgba(45, 39, 31, 0.04),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
     inset 0 0 0 1px rgba(255, 255, 255, 0.40) !important;
-  backdrop-filter: blur(14px) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+  backdrop-filter: blur(8px) saturate(1.10) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.10) !important;
 }
 
 .panel,
@@ -164,8 +123,8 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, var(--glass-surface-strong) 0%, var(--glass-surface) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.82) !important;
   box-shadow: var(--glass-shadow) !important;
-  backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(142%) brightness(1.03) !important;
+  backdrop-filter: blur(8px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.12) !important;
   position: relative;
 }
 
@@ -182,40 +141,36 @@ body { color: var(--ink); }
   box-shadow:
     inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.95),
     inset 0 0 0 1px rgba(255, 255, 255, 0.35),
-    inset 0 -1.5px 3px 0 rgba(119, 112, 101, 0.05);
+    inset 0 -1.5px 3px 0 rgba(119, 112, 101, 0.04);
 }
 
-/* ── Mission Card: Luminous Liquid Sapphire Glass ── */
+/* ── Mission Card: Liquid Sapphire Glass ── */
 .mission {
-  background: linear-gradient(135deg, rgba(18, 70, 130, 0.94) 0%, rgba(28, 86, 148, 0.86) 50%, rgba(22, 65, 118, 0.92) 100%) !important;
+  background: linear-gradient(135deg, rgba(18, 70, 130, 0.95) 0%, rgba(28, 86, 148, 0.88) 50%, rgba(22, 65, 118, 0.93) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow:
-    0 22px 52px rgba(18, 55, 95, 0.28),
-    0 6px 20px rgba(18, 55, 95, 0.16),
+    0 16px 40px rgba(18, 55, 95, 0.22),
+    0 4px 14px rgba(18, 55, 95, 0.12),
     inset 0 1.5px 1px rgba(255, 255, 255, 0.45),
     inset 0 0 0 1px rgba(255, 255, 255, 0.20) !important;
   color: #fff !important;
-  backdrop-filter: blur(16px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  backdrop-filter: blur(8px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.12) !important;
 }
 .mission .panel-head { border-color: rgba(255, 255, 255, 0.28) !important; color: #dce8f4 !important; }
 .mission .panel-head > b, .mission h1 { color: #fff !important; }
 .mission .stamp, .mission .count span, .mission-grid > div:first-child > p:last-child { color: #e5eff8 !important; }
 .mission .count { border-color: rgba(255, 255, 255, 0.30) !important; }
 .mission .geo-reading {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
   border: 1px solid rgba(255, 255, 255, 0.28) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
-  backdrop-filter: blur(6px) !important;
-  -webkit-backdrop-filter: blur(6px) !important;
 }
 .mission .actions a, .mission .actions button {
   background: rgba(255, 255, 255, 0.14) !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
   color: #fff !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  backdrop-filter: blur(8px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
 }
 .mission .actions a:hover, .mission .actions button:hover {
   background: rgba(255, 255, 255, 0.24) !important;
@@ -225,7 +180,7 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, #f7b438, #e59a18) !important;
   border-color: #f7b438 !important;
   color: #262218 !important;
-  box-shadow: 0 6px 20px rgba(239, 167, 40, 0.35) !important;
+  box-shadow: 0 6px 18px rgba(239, 167, 40, 0.30) !important;
 }
 
 /* ── Content Readability & High-Contrast Typography ── */
@@ -238,14 +193,14 @@ body { color: var(--ink); }
 .page-title > span, .brand span, .sheet header span, .viewer header span { color: #66635c !important; font-weight: 600 !important; }
 .page-title p, .muted, .system-copy, .empty, .metric > p { color: #5a5750 !important; }
 
-/* ── Tier 2 Layered Glass (Nested Interactive Elements) ── */
+/* ── Tier 2 Layered Glass (Zero-Blur Specular Highlights) ── */
 .anchor-track,
 .resource-list,
 .ledger,
 .system-rows,
 .settlement-grid,
 .payment-log {
-  background: rgba(112, 105, 95, 0.12) !important;
+  background: rgba(112, 105, 95, 0.10) !important;
   border: 1px solid rgba(255, 255, 255, 0.65) !important;
   border-radius: 14px;
 }
@@ -277,10 +232,11 @@ body { color: var(--ink); }
   box-shadow: var(--glass-shadow-raised) !important;
   position: relative;
   transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease,
-    box-shadow 0.18s ease;
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+  touch-action: manipulation;
 }
 
 /* Layered glass hover refraction */
@@ -292,13 +248,13 @@ body { color: var(--ink); }
 .signal-action:hover,
 .settlement-transfer:hover,
 .viewer-actions button:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(252, 248, 240, 0.85)) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(252, 248, 240, 0.88)) !important;
   border-color: rgba(255, 255, 255, 0.98) !important;
   box-shadow:
-    0 8px 24px rgba(45, 39, 31, 0.08),
-    0 2px 8px rgba(45, 39, 31, 0.04),
+    0 6px 18px rgba(45, 39, 31, 0.07),
+    0 2px 6px rgba(45, 39, 31, 0.03),
     inset 0 1.5px 1px rgba(255, 255, 255, 1) !important;
-  transform: translateY(-1.5px);
+  transform: translateY(-1px);
 }
 
 .alert { border-bottom-color: rgba(112, 105, 95, 0.16) !important; }
@@ -320,18 +276,18 @@ body { color: var(--ink); }
 }
 .progress i {
   background: linear-gradient(90deg, var(--blue), #2a72b8) !important;
-  box-shadow: 0 0 12px rgba(22, 77, 140, 0.3);
+  box-shadow: 0 0 10px rgba(22, 77, 140, 0.25);
 }
 
 /* ── Segment, Rail & Tab Glass Controls ── */
 .date-rail, .segment, .map-days {
   padding: 4px !important;
   gap: 4px !important;
-  background: linear-gradient(135deg, rgba(250, 246, 238, 0.65), rgba(245, 240, 230, 0.50)) !important;
+  background: linear-gradient(135deg, rgba(250, 246, 238, 0.70), rgba(245, 240, 230, 0.55)) !important;
   border: 1px solid rgba(255, 255, 255, 0.75) !important;
-  box-shadow: inset 0 1px 2px rgba(45, 39, 31, 0.04), 0 4px 14px rgba(45, 39, 31, 0.04) !important;
-  backdrop-filter: blur(14px) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+  box-shadow: inset 0 1px 2px rgba(45, 39, 31, 0.04), 0 4px 12px rgba(45, 39, 31, 0.03) !important;
+  backdrop-filter: blur(8px) saturate(1.10) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.10) !important;
 }
 
 .date-rail button, .segment button, .map-days button, .trip-horizon button {
@@ -351,7 +307,7 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, #222421 0%, #353832 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.20) !important;
   box-shadow:
-    0 6px 18px rgba(37, 39, 36, 0.22),
+    0 4px 14px rgba(37, 39, 36, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
 }
 
@@ -364,7 +320,7 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, var(--blue), #1e5fa5) !important;
   color: #fff !important;
   border-color: var(--blue) !important;
-  box-shadow: 0 6px 18px rgba(22, 77, 140, 0.25) !important;
+  box-shadow: 0 4px 14px rgba(22, 77, 140, 0.22) !important;
 }
 
 /* ── Timeline Refraction ── */
@@ -376,7 +332,7 @@ body { color: var(--ink); }
 .timeline-line i {
   box-shadow:
     0 0 0 4px rgba(252, 248, 240, 0.9),
-    0 2px 8px rgba(22, 77, 140, 0.3) !important;
+    0 2px 8px rgba(22, 77, 140, 0.25) !important;
 }
 .timeline-title em {
   background: linear-gradient(135deg, rgba(22, 77, 140, 0.12), rgba(22, 77, 140, 0.06)) !important;
@@ -391,15 +347,15 @@ body { color: var(--ink); }
 
 /* ── Floating Side Nav / Bottom Dock Glass ── */
 .bottom-dock {
-  background: linear-gradient(135deg, rgba(255, 252, 246, 0.90) 0%, rgba(248, 243, 233, 0.78) 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 252, 246, 0.92) 0%, rgba(248, 243, 233, 0.82) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.88) !important;
   box-shadow:
-    0 18px 50px rgba(45, 39, 31, 0.15),
-    0 6px 18px rgba(45, 39, 31, 0.08),
+    0 14px 40px rgba(45, 39, 31, 0.12),
+    0 4px 14px rgba(45, 39, 31, 0.06),
     inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.98),
     inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
-  backdrop-filter: blur(24px) saturate(145%) brightness(1.04) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(145%) brightness(1.04) !important;
+  backdrop-filter: blur(14px) saturate(1.18) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.18) !important;
 }
 
 .bottom-dock button.active {
@@ -407,15 +363,15 @@ body { color: var(--ink); }
   color: #fff !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
   box-shadow:
-    0 7px 22px rgba(22, 77, 140, 0.32),
+    0 6px 18px rgba(22, 77, 140, 0.28),
     inset 0 1px 1px rgba(255, 255, 255, 0.45) !important;
 }
 
 /* ── Modal Sheets & Overlays ── */
 .sheet-bg, .onboarding-bg {
-  background: rgba(20, 19, 17, 0.42) !important;
-  backdrop-filter: blur(8px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+  background: rgba(20, 19, 17, 0.40) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
 }
 .sheet header { border-bottom-color: rgba(112, 105, 95, 0.18) !important; }
 .sheet header > button {
@@ -426,19 +382,19 @@ body { color: var(--ink); }
 .form input, .form textarea {
   color: var(--ink) !important;
   outline: none;
-  background: rgba(255, 255, 255, 0.65) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
   border: 1px solid rgba(112, 105, 95, 0.22) !important;
 }
 .form input:focus, .form textarea:focus {
   border-color: rgba(22, 77, 140, 0.55) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  box-shadow: 0 0 0 3px rgba(22, 77, 140, 0.12) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 0 3px rgba(22, 77, 140, 0.10) !important;
 }
 .form .save {
   background: linear-gradient(135deg, var(--blue), #1a569c) !important;
   color: #fff !important;
   border-color: var(--blue) !important;
-  box-shadow: 0 6px 20px rgba(22, 77, 140, 0.25) !important;
+  box-shadow: 0 6px 18px rgba(22, 77, 140, 0.22) !important;
 }
 .payer-select button.active {
   background: linear-gradient(135deg, var(--amber), #e89e18) !important;
@@ -451,7 +407,7 @@ body { color: var(--ink); }
   color: #fff !important;
 }
 .sheet-success {
-  background: rgba(255, 255, 255, 0.82) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
   border: 1px solid rgba(255, 255, 255, 0.9) !important;
   box-shadow: var(--glass-shadow-raised) !important;
 }
@@ -461,7 +417,7 @@ body { color: var(--ink); }
   background: linear-gradient(135deg, rgba(22, 77, 140, 0.94), rgba(28, 88, 150, 0.86)) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  box-shadow: 0 14px 34px rgba(22, 77, 140, 0.22) !important;
+  box-shadow: 0 12px 30px rgba(22, 77, 140, 0.18) !important;
 }
 .install-step i, .resource-list i, .location-index {
   background: linear-gradient(135deg, rgba(22, 77, 140, 0.12), rgba(22, 77, 140, 0.06)) !important;
@@ -494,21 +450,19 @@ body { color: var(--ink); }
   color: var(--ink) !important;
   border: 1px solid rgba(255, 255, 255, 0.90) !important;
   box-shadow:
-    0 16px 38px rgba(35, 32, 27, 0.20),
-    0 4px 12px rgba(35, 32, 27, 0.08) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+    0 12px 30px rgba(35, 32, 27, 0.18),
+    0 4px 10px rgba(35, 32, 27, 0.06) !important;
 }
 .maplibregl-ctrl-group {
   background: rgba(255, 252, 246, 0.92) !important;
-  box-shadow: 0 8px 24px rgba(35, 32, 27, 0.14) !important;
+  box-shadow: 0 6px 18px rgba(35, 32, 27, 0.12) !important;
 }
 
 .member-id > b {
-  box-shadow: 0 8px 20px rgba(22, 77, 140, 0.22) !important;
+  box-shadow: 0 6px 16px rgba(22, 77, 140, 0.18) !important;
 }
 .settlement-transfer > button {
-  background: rgba(255, 255, 255, 0.78) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
   border: 1px solid rgba(255, 255, 255, 0.95) !important;
   color: var(--blue) !important;
 }
@@ -517,13 +471,11 @@ body { color: var(--ink); }
 
 /* ── Viewer Glass ── */
 .viewer {
-  background: rgba(244, 240, 230, 0.82) !important;
-  backdrop-filter: blur(20px) saturate(135%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(135%) !important;
+  background: rgba(244, 240, 230, 0.85) !important;
 }
-.viewer header { background: rgba(255, 252, 246, 0.94) !important; }
+.viewer header { background: rgba(255, 252, 246, 0.95) !important; }
 .viewer footer {
-  background: rgba(255, 252, 246, 0.88) !important;
+  background: rgba(255, 252, 246, 0.90) !important;
   border-top-color: rgba(112, 105, 95, 0.16) !important;
   color: #5c5850 !important;
 }
@@ -537,8 +489,6 @@ body { color: var(--ink); }
   color: #fff !important;
   border-color: #343734 !important;
   box-shadow: none !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
 }
 .viewer.boarding header span, .viewer.boarding header small { color: #c5ccc6 !important; }
 .viewer.boarding header b { color: #fff !important; }
@@ -559,7 +509,6 @@ body { color: var(--ink); }
 
 /* ── Mobile Optimizations ── */
 @media (max-width: 520px) {
-  .gradient-blob { filter: blur(52px); opacity: 0.80; }
   .panel,
   .sheet,
   .side-nav,
@@ -569,8 +518,8 @@ body { color: var(--ink); }
   .map-legend,
   .viewer header,
   .local-qr {
-    backdrop-filter: blur(14px) saturate(135%) !important;
-    -webkit-backdrop-filter: blur(14px) saturate(135%) !important;
+    backdrop-filter: blur(6px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
   }
 }
 
