@@ -9,6 +9,12 @@ const BUILD_SHA =
   process.env.VITE_BUILD_SHA ||
   'local-dev'
 
+const PWA_ICONS = [
+  ['icon-180.png', 'scripts/pwa-icons/icon-180.png.b64'],
+  ['icon-192.png', 'scripts/pwa-icons/icon-192.png.b64'],
+  ['icon-512.png', 'scripts/pwa-icons/icon-512.png.b64'],
+]
+
 function scaleTripTypography() {
   return {
     name: 'tripos-font-scale',
@@ -39,6 +45,11 @@ function stampTripBuild() {
     closeBundle() {
       const dist = path.resolve('dist')
       if (!fs.existsSync(dist)) return
+
+      for (const [outputName, sourceName] of PWA_ICONS) {
+        const encoded = fs.readFileSync(path.resolve(sourceName), 'utf8').replace(/\s+/g, '')
+        fs.writeFileSync(path.join(dist, outputName), Buffer.from(encoded, 'base64'))
+      }
 
       fs.writeFileSync(
         path.join(dist, 'version.json'),
