@@ -12,6 +12,7 @@ import {
   Utensils,
   Waves,
 } from "lucide-react";
+import operations from "../data/operations.json";
 import { byId, data, DAYS, dayItems, PRESS_SPRING } from "../lib.js";
 import { DockAwarePanel } from "../ui.jsx";
 
@@ -45,6 +46,18 @@ const satellite = {
   layers: [{ id: "satellite", type: "raster", source: "sat" }],
 };
 
+const stayPlaces = operations.stays.map((stay) => ({
+  id: stay.id,
+  name: stay.name,
+  latitude: stay.latitude,
+  longitude: stay.longitude,
+  address: stay.address,
+  category: "stay",
+  googleMapsUrl: stay.mapsUrl,
+  candidateStatus: stay.status,
+  candidateScore: stay.score,
+}));
+
 const mapsUrl = (p) =>
   p.googleMapsUrl ||
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${p.latitude},${p.longitude}`)}`;
@@ -59,6 +72,7 @@ const markerIcon = (category) => {
     case "darshan":
       return Sparkles;
     case "hotel":
+    case "stay":
       return Hotel;
     case "restaurant":
       return Utensils;
@@ -107,6 +121,7 @@ export default function MapScreen({ setDay }) {
 
   const visiblePlaces = useMemo(() => {
     if (scope === "mumbai") return data.places.filter(inMumbaiMap);
+    if (scope === "stays") return stayPlaces.filter(validPlace);
 
     const ids = new Set();
     for (const activity of dayItems(scope)) {
@@ -177,7 +192,8 @@ export default function MapScreen({ setDay }) {
         Icon = markerIcon(place.category),
         root = createRoot(iconHost),
         category = categoryClass(place.category),
-        url = mapsUrl(place);
+        url = mapsUrl(place),
+        candidate = place.category === "stay";
 
       node.type = "button";
       node.className = `map-marker map-marker-${category}`;
@@ -192,7 +208,7 @@ export default function MapScreen({ setDay }) {
         offset: 18,
         closeButton: false,
       }).setHTML(
-        `<div class="map-popup"><b>${place.name}</b><span>${place.category}</span>${place.address ? `<small>${place.address}</small>` : ""}<a href="${url}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
+        `<div class="map-popup"><b>${place.name}</b><span>${candidate ? `${place.candidateStatus} · ${place.candidateScore}/100` : place.category}</span>${place.address ? `<small>${place.address}</small>` : ""}<a href="${url}" target="_blank" rel="noreferrer">Open Google Maps ↗</a></div>`,
       );
 
       return new maplibregl.Marker({ element: node, anchor: "bottom" })
@@ -222,7 +238,7 @@ export default function MapScreen({ setDay }) {
     const draw = () => {
       if (map.getLayer("route")) map.removeLayer("route");
       if (map.getSource("route")) map.removeSource("route");
-      if (coords.length > 1) {
+      if (coords.length > 1 && scope !== "stays") {
         map.addSource("route", {
           type: "geojson",
           data: {
@@ -249,8 +265,8 @@ export default function MapScreen({ setDay }) {
           new maplibregl.LngLatBounds(coords[0], coords[0]),
         );
         map.fitBounds(bounds, {
-          padding: 60,
-          maxZoom: 14,
+          padding: scope === "stays" ? 90 : 60,
+          maxZoom: scope === "stays" ? 16 : 14,
           duration: reduced ? 0 : 500,
         });
       }
@@ -258,7 +274,9 @@ export default function MapScreen({ setDay }) {
 
     if (map.isStyleLoaded()) draw();
     else map.once("style.load", draw);
-  }, [coords, mode, reduced]);
+  }, [coords, mode, reduced, scope]);
+
+  const listPlaces = scope === "stays" ? stayPlaces : data.places;
 
   return (
     <section className="map-page">
@@ -304,6 +322,12 @@ export default function MapScreen({ setDay }) {
         >
           Mumbai
         </button>
+        <button
+          className={scope === "stays" ? "active" : ""}
+          onClick={() => setScope("stays")}
+        >
+          Stays
+        </button>
         {DAYS.map((d) => (
           <button
             key={d}
@@ -331,7 +355,7 @@ export default function MapScreen({ setDay }) {
           )}
           <div className="map-legend">
             <span>
-              <i /> planned sequence
+              <i /> {scope === "stays" ? "stay candidates" : "planned sequence"}
             </span>
             <span>anchor tiles prefetched · live detail online</span>
           </div>
@@ -339,11 +363,11 @@ export default function MapScreen({ setDay }) {
 
         <DockAwarePanel className="panel location-panel">
           <div className="panel-head">
-            <span>TRIP LOCATIONS</span>
-            <b>{data.places.length} ANCHORS</b>
+            <span>{scope === "stays" ? "STAY CANDIDATES" : "TRIP LOCATIONS"}</span>
+            <b>{listPlaces.length} {scope === "stays" ? "OPTIONS" : "ANCHORS"}</b>
           </div>
           <div className="location-list">
-            {data.places.map((p, i) => {
+            {listPlaces.map((p, i) => {
               const Icon = markerIcon(p.category);
               return (
                 <a key={p.id} href={mapsUrl(p)} target="_blank" rel="noreferrer">
