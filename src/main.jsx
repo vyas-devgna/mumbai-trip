@@ -20,43 +20,20 @@ function armNativeInstall(){
     window.matchMedia?.('(display-mode: standalone)').matches ||
     window.navigator.standalone===true
 
-  // A prior install can leave this hint behind even after the user removes the
-  // PWA. Never let that stale flag hide the install control in the browser.
+  // A prior install can leave this hint behind after the PWA is removed.
+  // Browser mode is authoritative; standalone mode is authoritative too.
   if(!standalone()){
     try{localStorage.removeItem('tripos-installed')}catch{}
   }
 
-  let deferred=null
+  // Capture Chromium's one-shot prompt before React mounts. App.jsx consumes
+  // the same event exactly once, so there is no duplicate prompt race.
   addEventListener('beforeinstallprompt',event=>{
     event.preventDefault()
-    deferred=event
     window.__triposInstallPrompt=event
   })
 
-  // Capture the click before React so a beforeinstallprompt event that arrived
-  // during startup cannot be missed by the later component listener.
-  document.addEventListener('click',async event=>{
-    const target=event.target instanceof Element
-      ? event.target.closest('.install-nav, button.install')
-      : null
-    if(!target||!deferred||standalone())return
-
-    event.preventDefault()
-    event.stopPropagation()
-    const prompt=deferred
-    deferred=null
-    window.__triposInstallPrompt=null
-    try{
-      await prompt.prompt()
-      await prompt.userChoice
-      // userChoice="accepted" only means the browser started installing. The
-      // transaction can still fail afterwards, so appinstalled is the only
-      // event allowed to mark TripOS as installed.
-    }catch{}
-  },true)
-
   addEventListener('appinstalled',()=>{
-    deferred=null
     window.__triposInstallPrompt=null
     try{localStorage.setItem('tripos-installed','1')}catch{}
   })
