@@ -114,24 +114,16 @@ function render(size) {
     }
   }
 
-  // Lower pav.
   ellipse(canvas, S(256), S(360), S(164), S(77), [247, 193, 105], [170, 92, 33], S(4));
   ellipse(canvas, S(256), S(348), S(151), S(48), [255, 222, 157], [222, 139, 57], S(3));
-
-  // Green chutney and dry garlic chutney layer.
   roundedRect(canvas, S(108), S(306), S(404), S(337), S(15), [43, 113, 54]);
   roundedRect(canvas, S(122), S(318), S(392), S(343), S(12), [77, 139, 47]);
-
-  // Vada.
   ellipse(canvas, S(257), S(278), S(137), S(92), [244, 177, 56], [177, 90, 18], S(4));
   ellipse(canvas, S(249), S(260), S(119), S(67), [255, 200, 77], [218, 125, 25], S(3));
-
-  // Top pav.
   ellipse(canvas, S(256), S(174), S(172), S(103), [255, 194, 91], [174, 73, 20], S(4));
   ellipse(canvas, S(246), S(149), S(150), S(70), [255, 218, 139], [235, 132, 42], S(3));
   rotatedEllipse(canvas, S(207), S(122), S(77), S(24), -0.2, [255, 235, 184], S(3));
 
-  // Garlic chutney crumbs.
   const crumbs = [
     [160, 321, 9], [181, 326, 6], [203, 316, 7], [225, 329, 5], [246, 318, 8],
     [269, 329, 6], [291, 316, 7], [314, 327, 5], [337, 318, 8], [357, 329, 6],
@@ -139,29 +131,26 @@ function render(size) {
   ];
   for (const [x, y, r] of crumbs) ellipse(canvas, S(x), S(y), S(r), S(r * 0.72), [220, 70, 19], [126, 34, 11], S(2));
 
-  // Herb flecks in the vada.
   for (const [x, y] of [[194, 264], [221, 295], [255, 245], [285, 285], [322, 266], [301, 309]]) {
     rotatedEllipse(canvas, S(x), S(y), S(7), S(3), -0.5, [47, 113, 47], S(2));
   }
 
-  // Fried green chilli across the lower-left edge.
   const chilli = [[118, 320], [143, 306], [170, 299], [199, 301], [227, 311]];
   for (let i = 0; i < chilli.length - 1; i++) {
     const [ax, ay] = chilli[i], [bx, by] = chilli[i + 1];
-    const steps = 18;
-    for (let j = 0; j <= steps; j++) {
-      const t = j / steps;
-      const x = mix(ax, bx, t), y = mix(ay, by, t);
-      ellipse(canvas, S(x), S(y), S(8.5), S(6.2), [100, 176, 50], [26, 96, 35], S(2));
+    for (let j = 0; j <= 18; j++) {
+      const t = j / 18;
+      ellipse(canvas, S(mix(ax, bx, t)), S(mix(ay, by, t)), S(8.5), S(6.2), [100, 176, 50], [26, 96, 35], S(2));
     }
   }
   rotatedEllipse(canvas, S(111), S(320), S(18), S(6), -0.9, [71, 145, 42], S(2));
-
   return encodePng(size, size, canvas.data);
 }
 
 fs.mkdirSync(OUT, { recursive: true });
-fs.writeFileSync(path.join(OUT, "apple-touch-icon.png"), render(180));
+const touch = render(180);
+fs.writeFileSync(path.join(OUT, "icon-180.png"), touch);
+fs.writeFileSync(path.join(OUT, "apple-touch-icon.png"), touch);
 fs.writeFileSync(path.join(OUT, "icon-192.png"), render(192));
 fs.writeFileSync(path.join(OUT, "icon-512.png"), render(512));
 console.log("Generated TripOS PWA icons: 180, 192, 512");
