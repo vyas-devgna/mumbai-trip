@@ -1,8 +1,8 @@
 const BUILD_VERSION = "__TRIPOS_BUILD_SHA__";
-const SHELL_CACHE = `mumbai-tripos-shell-v6-${BUILD_VERSION.slice(0, 12)}`;
-const RUNTIME_CACHE = "mumbai-tripos-runtime-v5";
+const SHELL_CACHE = `mumbai-tripos-shell-v7-${BUILD_VERSION.slice(0, 12)}`;
+const RUNTIME_CACHE = "mumbai-tripos-runtime-v6";
 const MAP_CACHE = "mumbai-tripos-map-v4";
-const BASE = "/mumbai-trip/";
+const BASE = new URL("./", self.location.href).pathname;
 const PRECACHE = [
   BASE,
   `${BASE}manifest.webmanifest`,
