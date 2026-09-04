@@ -1,146 +1,204 @@
 {
-  "status": "research-shortlist",
+  "status": "decision-pending",
   "verifiedAt": "2026-09-04",
-  "baseArea": "Dadar East",
+  "baseArea": "Dadar East · Central side",
+  "researchNote": "Ranked for the actual trip problem: five adults, one night, room access around 08:00–09:00 on 15 Sep, minimal luggage handling, easy Dadar return, and low group cost. Published rates are signals only until the property quotes 15→16 Sep for five adults.",
   "stayWindow": {
     "targetCheckIn": "2026-09-15 08:00–09:00",
     "checkOut": "2026-09-16 around 09:00",
     "guests": 5,
-    "selectionRule": "Choose the first option that explicitly guarantees the early check-in window, private-bath AC rooms for five adults, and a total group quote that fits the budget. Do not rely on standard check-in times."
+    "planningEnvelope": "Target ≤ ₹8,000 total for the group including any early-access charge; do not treat this as a confirmed expense.",
+    "selectionRule": "Accept the first candidate that confirms the exact five-adult room arrangement, guarantees morning room access, has AC + private bathroom + hot water, and gives a final tax-inclusive group quote. Early access matters more than a slightly cheaper advertised rate."
   },
+  "decisionProtocol": [
+    "Call Option 01 first. Its own published terms explicitly allow check-in/check-out to be scheduled to guest requests, making it the strongest match to the 08:00–09:00 recovery requirement.",
+    "Ask for the final five-adult total, exact bed layout, early-access charge, and whether five backpacks can be held after checkout until 04:30 on 17 Sep.",
+    "If the answer is not an explicit yes, move immediately to the next option. Do not book based on 'subject to availability' when the recovery block depends on it.",
+    "After you report a confirmed property, delete the rejected candidates, promote the winner into the canonical itinerary/map, and replace the planning envelope with the real amount."
+  ],
   "callChecklist": [
-    "Five adults for the night of 15 Sep, checking out morning of 16 Sep.",
-    "Can you GUARANTEE room access between 08:00 and 09:00 on 15 Sep, and what is the early-check-in charge?",
-    "Quote the total including taxes for the cheapest practical room combination for five adults.",
-    "Confirm every booked room has AC, a private bathroom and hot water.",
-    "Can you hold five backpacks before check-in if needed, and after checkout until about 04:30 on 17 Sep?",
-    "If holding bags overnight after checkout, confirm the front desk will physically release them at 04:30."
+    "Five adults, one night: 15 Sep → morning 16 Sep.",
+    "Can you GUARANTEE room access between 08:00 and 09:00 on 15 Sep? If yes, what is the exact extra charge?",
+    "What exact room/bed combination will legally accommodate all five adults?",
+    "Give the final total including taxes, extra-person/bed charges and early check-in.",
+    "Confirm AC, attached/private bathroom and hot water for the room(s).",
+    "Can you hold five backpacks after checkout on 16 Sep until about 04:30 on 17 Sep, and will someone physically release them at that time?",
+    "Can the booking/early-access promise be sent by WhatsApp, SMS or email before payment?"
   ],
   "stays": [
     {
-      "id": "parklane-dadar",
+      "id": "city-guest-house-dadar",
       "rank": 1,
-      "name": "Hotel Parklane · Dadar East",
-      "status": "call-to-verify",
-      "fit": "Best effort/cost balance",
-      "address": "5th Floor, Hind Rajasthan Building, 95 Dadasaheb Phalke Marg, Dadar East, Mumbai 400014",
-      "phone": "+91 75065 27741",
-      "phoneHref": "tel:+917506527741",
-      "email": null,
-      "website": null,
-      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Hotel%20Parklane%20Dadar%20East%20Mumbai",
-      "stationAccess": "About a 2-minute walk from Dadar Central railway station according to its current hotel listing.",
-      "standardCheckIn": "12:00",
-      "standardCheckOut": "12:00",
-      "earlyCheckIn": "Not guaranteed publicly. 24-hour front desk is listed; call and require written/clear confirmation for 08:00–09:00.",
-      "priceNote": "Budget property. Nearby-date online prices were materially below the better-rated Dadar options, but the 15 Sep five-adult total must be quoted directly.",
-      "why": "Almost eliminates the station-to-hotel transfer after collecting bags and makes checkout-to-storage on 16 Sep walkable.",
-      "watch": "Do not book unless early check-in is guaranteed; standard check-in is noon."
+      "score": 94,
+      "name": "City Guest House · Dadar East",
+      "status": "CALL FIRST",
+      "fit": "Best match for early access + five-person budget",
+      "latitude": 19.0162924,
+      "longitude": 72.8430858,
+      "address": "3, West Wing, 1st Floor, Framroz Court, Dadasaheb Phalke Marg, Dadar East, Mumbai 400014",
+      "phone": "+91 98677 83344",
+      "phoneHref": "tel:+919867783344",
+      "alternatePhone": "+91 22 2415 0618",
+      "alternatePhoneHref": "tel:+912224150618",
+      "secondAlternatePhone": "+91 95949 33059",
+      "website": "https://cityguesthouse.in/",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=City%20Guest%20House%20Dadar%20East%20Mumbai",
+      "stationAccess": "About a 2-minute walk from Dadar railway station in current Google hotel data; the property is on Dadasaheb Phalke Marg beside the station area.",
+      "groupFit": "Current inventory data lists a Superior Deluxe room for up to 5 guests; the hotel's own site publishes four room categories including Superior Deluxe.",
+      "standardCheckIn": "12:00 listed by Google",
+      "standardCheckOut": "11:00 listed by Google",
+      "earlyCheckInConfidence": "HIGH CANDIDATE",
+      "earlyCheckIn": "Most important finding: the hotel's own terms state check-in and checkout timings can be scheduled as per guest requests at any time of day. This is still not a reservation guarantee until they confirm your 08:00–09:00 date/time.",
+      "priceNote": "Official site: rooms start at ₹3,600; Triple Deluxe ₹4,500; Superior Deluxe ₹5,500. Use ₹5,500 only as a published starting signal, not the 15 Sep final price.",
+      "bagHold": "Not reliably published. Ask for 16→17 backpack hold and 04:30 release in the same call.",
+      "why": "It nearly removes the Dadar station → hotel transfer, has a documented flexible-timing policy, and appears capable of putting the full group in one larger room instead of buying multiple rooms.",
+      "watch": "Google's default listing still shows noon check-in. Get the 08:00–09:00 promise in writing before paying."
     },
     {
       "id": "avon-ruby-dadar",
       "rank": 2,
+      "score": 84,
       "name": "Hotel Avon Ruby · Dadar East",
-      "status": "call-to-verify",
-      "fit": "Best operational fallback",
-      "address": "87, Naigaon Cross Road, Dadar East, Mumbai 400014",
+      "status": "SECOND CALL",
+      "fit": "Best one-room family-suite fallback",
+      "latitude": 19.01527,
+      "longitude": 72.84455,
+      "address": "87, Naigaum Cross Road, Dadar East, Mumbai 400014",
       "phone": "+91 22 4213 3600",
       "phoneHref": "tel:+912242133600",
       "email": "bookings@hotelavonruby.net",
       "website": "https://www.hotelavonruby.com/",
       "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Hotel%20Avon%20Ruby%20Dadar%20Mumbai",
-      "stationAccess": "Roughly a 7-minute walk from Dadar station in current hotel listings.",
-      "standardCheckIn": "12:30–13:00",
-      "standardCheckOut": "11:00–11:30",
-      "earlyCheckIn": "Early check-in is referenced by a current booking listing and may carry an extra charge; exact 08:00–09:00 access remains subject to direct confirmation.",
-      "priceNote": "A current Sep 15–17 search showed roughly ₹4.7k per night for two adults before group/room-combination differences.",
-      "why": "24-hour front desk, baggage storage and a short station walk make it the strongest fallback if Parklane will not guarantee the morning room.",
-      "watch": "Standard check-in is after noon, so an early-access promise is still mandatory."
+      "stationAccess": "OpenStreetMap-derived data places it roughly 480 m south of Dadar station; the official hotel site describes the station as a few minutes away.",
+      "groupFit": "Booking inventory currently lists a Family Suite with 2 king beds + 2 sofa beds and capacity 6+, while the hotel's official site confirms large Suite Rooms. Verify the exact five-adult configuration directly.",
+      "standardCheckIn": "13:00 in current Hotels.com data",
+      "standardCheckOut": "11:00",
+      "earlyCheckInConfidence": "MEDIUM",
+      "earlyCheckIn": "Current hotel-booking policy says early check-in is subject to availability. That is not enough for this trip unless the hotel explicitly reserves the morning access for you.",
+      "priceNote": "Two-adult online rates around the trip window are roughly mid-₹4k/night, but that is not comparable to a five-adult Family Suite. Ask direct for the suite total.",
+      "bagHold": "24-hour front desk is listed by current booking sources; baggage storage must still be confirmed, especially 04:30 release.",
+      "why": "If the Family Suite is available, five people may fit in one room while staying extremely close to Dadar, which can beat seemingly cheaper hotels that require two or three rooms.",
+      "watch": "Do not accept 'early check-in subject to availability'. Require a date-specific guarantee."
     },
     {
-      "id": "kohinoor-lodge-dadar",
+      "id": "ramee-guestline-dadar",
       "rank": 3,
-      "name": "Kohinoor Lodge · Dadar East",
-      "status": "call-to-verify",
-      "fit": "Emergency budget fallback",
-      "address": "Kohinoor Bhavan, Swami Gyanjivandasji Road, opposite Dadar Central Railway Station, Dadar East, Mumbai 400014",
-      "phone": "+91 86910 30919",
-      "phoneHref": "tel:+918691030919",
-      "alternatePhone": "+91 88509 32475",
-      "alternatePhoneHref": "tel:+918850932475",
-      "email": "kohinoorlodgedadar@gmail.com",
-      "website": "https://www.kohinoorhotels.com/dadar-hotels/",
-      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Kohinoor%20Lodge%20Dadar%20Mumbai",
-      "stationAccess": "Opposite the Dadar Central station complex; current hotel listings describe it as roughly an 8-minute walk depending on the entrance used.",
+      "score": 80,
+      "name": "Ramee Guestline · Dadar East",
+      "status": "RELIABILITY FALLBACK",
+      "fit": "Best high-confidence operational fallback",
+      "latitude": 19.01708,
+      "longitude": 72.84459,
+      "address": "Plot No. 3, Kohinoor Road, Opp. Swaminarayan Temple, Dadar East, Mumbai 400014",
+      "phone": "+91 22 6924 7900",
+      "phoneHref": "tel:+912269247900",
+      "whatsapp": "+91 75062 71464",
+      "whatsappHref": "https://wa.me/917506271464",
+      "email": "reservations.dadar@rameehotels.com",
+      "website": "https://rameehotels.com/ramee-guestline-hotel-dadar/",
+      "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Ramee%20Guestline%20Dadar%20Mumbai",
+      "stationAccess": "The hotel's own current site states Dadar Railway Station is 100 m away.",
+      "groupFit": "Current marketplace room inventory includes larger Club-room variants advertised for up to 4–5 adults. Confirm the exact legal bedding/occupancy directly before assuming one room is enough.",
       "standardCheckIn": "12:00",
       "standardCheckOut": "12:00",
-      "earlyCheckIn": "No reliable public guarantee found. Call the property reservation number and require explicit confirmation.",
-      "priceNote": "Officially positioned as a budget lodge; live Sep 15 group pricing was not consistently published, so call direct.",
-      "why": "Very low transfer effort and direct official reservation contacts make it a useful last-resort stay if the first two fail.",
-      "watch": "Recent review summaries are materially weaker, especially around room/bathroom quality. Insist on AC rooms with private bathrooms before paying."
+      "earlyCheckInConfidence": "MEDIUM",
+      "earlyCheckIn": "No public 08:00 guarantee found. Use the official WhatsApp/phone to negotiate and obtain a written confirmation.",
+      "priceNote": "Current two-adult public rates are materially higher than City Guest House/Avon Ruby. Treat this as the reliability fallback, not the default budget choice.",
+      "bagHold": "Current amenity listings include luggage assistance, a cloak room and 24-hour reception, making this the strongest hotel-based bag-hold fallback if they confirm 04:30 release.",
+      "why": "Very close to the station, direct official WhatsApp, stronger service infrastructure and hotel cloak-room facilities make it a good fallback when the cheaper options cannot guarantee the exact timing.",
+      "watch": "Likely the most expensive of the three; only use it if the morning-access or luggage guarantees justify the premium."
+    }
+  ],
+  "excludedStays": [
+    {
+      "name": "Hotel Parklane · Dadar East",
+      "reason": "Good location and inexpensive per-room signals, but no strong public evidence of flexible 08:00 access and five adults may require multiple rooms. It loses to City Guest House on the actual constraint set."
+    },
+    {
+      "name": "Kohinoor Lodge · Dadar East",
+      "reason": "Excellent station proximity and low-budget positioning, but materially weaker room/bathroom review signals. Kept out of the operational top three rather than making cleanliness/private-bath quality a trip risk."
     }
   ],
   "luggage": {
-    "principle": "Keep Dadar as the luggage hub. Avoid carrying bags to Lalbaug, Siddhivinayak, Uran or South Mumbai.",
+    "principle": "Keep Dadar as the luggage hub. Bags should make only four intentional moves: Bandra→Dadar on arrival, Dadar→hotel after sunrise, hotel→Dadar/hold at checkout, hold→return train.",
+    "referenceBudget": "Central Railway's digital-cloak-room rollout used ₹30 per bag for the first 24 hours. Five bags therefore reference to ₹150 per storage period; keep the existing ₹200 planned amount as a conservative buffer until 2026 station pricing is rechecked.",
     "options": [
       {
-        "id": "dadar-rail-cloak",
+        "id": "dadar-digital-cloak",
         "rank": 1,
-        "name": "Dadar Railway cloak room",
-        "status": "must-reverify",
-        "contact": "Indian Railways 139 / station staff",
+        "name": "Dadar Digital Smart Cloak Room",
+        "status": "PRIMARY · REVERIFY BEFORE TRIP",
+        "contact": "Indian Railways 139 / Dadar station staff",
         "phoneHref": "tel:139",
-        "cost": "Use the station's current prescribed tariff; do not rely on old online rates.",
-        "rules": "Railway guidance says cloak rooms are for genuine rail passengers, require photo ID, and accept securely locked/neatly packed luggage.",
-        "use": "Primary for 14→15. For 16→17 use it only if 04:30 retrieval is explicitly confirmed before the trip.",
-        "watch": "A reliable current public source for Dadar's exact overnight/04:30 collection hours was not found."
+        "cost": "Published Central Railway rollout rate: ₹30 per bag for first 24h; later reporting states ₹40 for each subsequent 24h. Keep ₹200 planned per five-bag storage block until current tariff is confirmed.",
+        "rules": "Digital lockers use passenger travel details/PNR, payment and a barcode receipt for retrieval. Railway cloak-room rules require genuine passengers and securely packed/locked baggage.",
+        "use": "Best 14→15 solution. Also best 16→17 solution if current 04:30 retrieval access is reconfirmed.",
+        "evidence": "Central Railway introduced Dadar as part of its digital smart cloak-room system; later Central Railway reporting cited 160 Dadar lockers. Original rollout documentation states 24-hour operator support.",
+        "watch": "The infrastructure is well evidenced, but a current official 2026 notice with exact Dadar access/maintenance hours was not found. Confirm 04:30 retrieval shortly before travel."
       },
       {
         "id": "hotel-bag-hold",
         "rank": 2,
-        "name": "Chosen hotel's baggage hold",
-        "status": "ask-during-hotel-call",
-        "contact": "Use the selected hotel's direct phone",
+        "name": "Confirmed hotel's overnight baggage hold",
+        "status": "PREFERRED 16→17 IF GUARANTEED",
+        "contact": "Use selected hotel's direct contact",
         "phoneHref": null,
-        "cost": "Ask whether it is complimentary for booked guests.",
-        "rules": "Get explicit permission for five backpacks and a named pickup time.",
-        "use": "Potentially the cleanest 16→17 solution if the hotel will release bags at 04:30; all shortlisted stays are close to Dadar.",
-        "watch": "Do not assume a 24-hour front desk automatically means overnight luggage release is allowed."
+        "cost": "Ask for complimentary hold; get any charge in writing.",
+        "rules": "Get explicit permission for five backpacks, overnight storage after checkout, and a named 04:30 release time.",
+        "use": "Can eliminate the second railway-storage transaction entirely if the chosen Dadar hotel guarantees overnight hold and 04:30 pickup.",
+        "watch": "24-hour reception does not automatically mean unattended luggage can be released at any hour. Ask the exact question."
       },
       {
         "id": "lugsto-dadar",
         "rank": 3,
         "name": "Lugsto · Dadar fallback",
-        "status": "live-partner-required",
+        "status": "ONLY AFTER PARTNER HOURS VERIFIED",
         "contact": "+91 99900 92171 · support@lugsto.com",
         "phoneHref": "tel:+919990092171",
         "website": "https://www.lugsto.com/city/cloakroom-in-Mumbai/NDM3NjAw",
-        "cost": "Lugsto currently states roughly ₹50–₹120 per bag for the first day depending on location.",
-        "rules": "Book online; the exact partner address and hours are supplied with the booking. Photo ID is required.",
-        "use": "Fallback for Dadar storage when the railway cloak room cannot be used.",
-        "watch": "Support is listed 07:00–23:00; verify the actual partner's pickup hours before using it for any early-morning retrieval."
+        "cost": "Rates vary by partner/location; use only after seeing the live Dadar partner and total.",
+        "rules": "Book online; the exact partner address and operating hours are supplied with the booking. Photo ID is required.",
+        "use": "Non-rail fallback if Dadar railway storage is unavailable.",
+        "watch": "Do not use for the 16→17 block unless the selected Dadar partner explicitly supports the 04:30 collection time."
       }
     ]
   },
   "mobility": {
     "2026-09-14": [
-      "Bandra Terminus → Dadar: take one direct cab with the backpacks. A local-train option adds an unnecessary transfer from Bandra Terminus to Bandra local station.",
-      "Dadar storage → Lalbaug: use a short taxi hop. If Lalbaug is abandoned, go directly to Siddhivinayak rather than returning to Dadar first.",
-      "Late night → Uran: pre-book the Danda Beach road ride and, ideally, the return pickup. This is the trip's one deliberately long transfer."
+      "Bandra Terminus → Dadar East: take one direct cab with all backpacks. This avoids hauling luggage from Bandra Terminus to the suburban station just to save a small fare.",
+      "Dadar → luggage drop → Lalbaug: complete the bag handoff once, then use one short cab to Lalbaug. If Lalbaug is impossible, continue directly to Siddhivinayak instead of returning to Dadar.",
+      "Keep the rest of 14 Sep in central Mumbai. Do not go to South Mumbai and back before the overnight Uran transfer.",
+      "For Danda Beach, pre-book the overnight road ride and the return pickup together. That is the one long transfer the plan intentionally accepts."
     ],
     "2026-09-15": [
-      "Danda Beach → Dadar: use the pre-arranged return ride, collect bags once, then walk to the selected Dadar East hotel.",
-      "Protect the hotel recovery block; do not insert sightseeing between bag collection and check-in.",
-      "Hotel → Siddhivinayak by short taxi. If Lalbaug is the fallback instead, go hotel → Lalbaug directly. Explore outward from that anchor and make only one return to the hotel at night."
+      "Danda Beach → Dadar: use the pre-arranged return ride, retrieve bags once, then walk to the confirmed Dadar East hotel.",
+      "Nothing goes between bag pickup and hotel recovery. Morning sleep/shower/charging is operationally more valuable than squeezing in another attraction.",
+      "After recovery: hotel → Siddhivinayak directly. If Lalbaug became the fallback, hotel → Lalbaug directly. Do not route through another hub first.",
+      "Keep the evening around Dadar/Prabhadevi/Worli and return to the hotel once. Save Colaba/Fort/Marine Drive for 16 Sep so the city is covered in geographic clusters rather than repeated north-south crossings."
     ],
     "2026-09-16": [
-      "Checkout → luggage hold: walk to the chosen hotel hold or Dadar cloak room; no cab should be needed if the stay shortlist is used.",
-      "Dadar → Sea Lounge: use the Western local to Churchgate, then a short taxi or walk to the Taj area. With no luggage this is cheaper and less traffic-sensitive than a road trip from Dadar.",
-      "After Sea Lounge keep the rest of the day geographically in South Mumbai rather than returning north and coming south again."
+      "Checkout → bag handoff should be walkable: selected hotel hold first if 04:30 release is guaranteed, otherwise Dadar digital cloak room.",
+      "From the Dadar East/Central side, take a direct Central local toward CSMT, then one short final cab to the Taj/Sea Lounge area. This avoids crossing Dadar simply to use the Western line.",
+      "Arrive around the Taj area with a real buffer before the fixed 11:45 Sea Lounge booking.",
+      "After Sea Lounge use one outward-to-homeward South Mumbai chain: Colaba → Kala Ghoda/Fort → Marine Drive → progressively north later at night. Do not return to Dadar in the middle of the day."
     ],
     "2026-09-17": [
-      "Late night: bias the final exploration northward. Once local-train service becomes inconvenient, use one cab back to Dadar rather than hopping between areas.",
-      "Reach the bag pickup point around 04:30, then go straight to the platform buffer for the 05:52 train."
+      "After midnight, keep drifting north rather than starting any new southbound loop.",
+      "Use one final cab to Dadar when local-train timing becomes inconvenient; target the luggage point around 04:30.",
+      "Retrieve bags once, then go directly to the return-train platform buffer for the 05:52 departure."
     ]
+  },
+  "explorationLanes": {
+    "2026-09-15": {
+      "label": "CENTRAL CLUSTER",
+      "default": "Siddhivinayak → Shivaji Park / Dadar seafront → Worli-side evening → Dadar hotel",
+      "lalbaugFallback": "Lalbaug → Parel/Lower Parel-side exploration → Worli/Dadar → hotel",
+      "rule": "Stay north/central tonight; no unnecessary Colaba run."
+    },
+    "2026-09-16": {
+      "label": "SOUTH MUMBAI CLUSTER",
+      "default": "Sea Lounge / Colaba → Kala Ghoda + Fort → Marine Drive → northbound late-night exit",
+      "rule": "Once you reach South Mumbai, move through it in one direction and only return north when the night is ending."
+    }
   }
 }
