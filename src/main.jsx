@@ -15,6 +15,53 @@ import './stay-planning.css'
 import {data} from './lib.js'
 import App from './App.jsx'
 
+function armNativeInstall(){
+  const standalone=()=>
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.navigator.standalone===true
+
+  // A prior install can leave this hint behind even after the user removes the
+  // PWA. Never let that stale flag hide the install control in the browser.
+  if(!standalone()){
+    try{localStorage.removeItem('tripos-installed')}catch{}
+  }
+
+  let deferred=null
+  addEventListener('beforeinstallprompt',event=>{
+    event.preventDefault()
+    deferred=event
+    window.__triposInstallPrompt=event
+  })
+
+  // Capture the click before React so a beforeinstallprompt event that arrived
+  // during startup cannot be missed by the later component listener.
+  document.addEventListener('click',async event=>{
+    const target=event.target instanceof Element
+      ? event.target.closest('.install-nav, button.install')
+      : null
+    if(!target||!deferred||standalone())return
+
+    event.preventDefault()
+    event.stopPropagation()
+    const prompt=deferred
+    deferred=null
+    window.__triposInstallPrompt=null
+    try{
+      await prompt.prompt()
+      const choice=await prompt.userChoice
+      if(choice?.outcome==='accepted'){
+        try{localStorage.setItem('tripos-installed','1')}catch{}
+      }
+    }catch{}
+  },true)
+
+  addEventListener('appinstalled',()=>{
+    deferred=null
+    window.__triposInstallPrompt=null
+    try{localStorage.setItem('tripos-installed','1')}catch{}
+  })
+}
+
 function mountGradientBackdrop(){
   if(document.getElementById('trip-gradient-backdrop'))return
   const layer=document.createElement('div')
@@ -87,6 +134,7 @@ function mountTripProgress(){
   addEventListener('pagehide',()=>{stop();if(bindFrame)cancelAnimationFrame(bindFrame);document.removeEventListener('visibilitychange',visibility)},{once:true})
 }
 
+armNativeInstall()
 mountGradientBackdrop()
 createRoot(document.getElementById('root')).render(<App/>)
 mountTripProgress()
