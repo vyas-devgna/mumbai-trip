@@ -1,6 +1,6 @@
 const BUILD_VERSION = "__TRIPOS_BUILD_SHA__";
-const SHELL_CACHE = `mumbai-tripos-shell-v8-${BUILD_VERSION.slice(0, 12)}`;
-const RUNTIME_CACHE = "mumbai-tripos-runtime-v7";
+const SHELL_CACHE = `mumbai-tripos-shell-v9-${BUILD_VERSION.slice(0, 12)}`;
+const RUNTIME_CACHE = "mumbai-tripos-runtime-v8";
 const MAP_CACHE = "mumbai-tripos-map-v4";
 const BASE = new URL("./", self.location.href).pathname;
 
@@ -13,7 +13,7 @@ const CRITICAL_PRECACHE = [
   `${BASE}version.json`,
 ];
 
-const OPTIONAL_PRECACHE = [
+const VAULT_URLS = [
   `${BASE}resources/outbound-karnavati.pdf`,
   `${BASE}resources/return-gujarat.pdf`,
   `${BASE}resources/sea-lounge-booking.jpg`,
@@ -23,15 +23,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(SHELL_CACHE);
-
-      // Keep worker installation dependent only on the actual app shell. Large
-      // vault files are useful offline, but one failed PDF/image request must
-      // never make Android reject the PWA installation.
       await cache.addAll(CRITICAL_PRECACHE);
-      await Promise.allSettled(
-        OPTIONAL_PRECACHE.map((url) => cache.add(url)),
-      );
-
       await self.skipWaiting();
     })(),
   );
@@ -47,9 +39,8 @@ self.addEventListener("activate", (event) => {
       );
       await self.clients.claim();
 
-      // Do not navigate/reload an open page from activate. Chromium can be in
-      // the middle of committing an Add-to-Home-Screen install at this point;
-      // forcing a navigation can abort that transaction.
+      // Never force-navigation from activate. Android may be committing the
+      // Add-to-Home-Screen transaction at exactly this point.
       const clients = await self.clients.matchAll({
         type: "window",
         includeUncontrolled: true,
@@ -88,6 +79,24 @@ async function staleWhileRevalidate(request) {
     })
     .catch(() => null);
   return cached || (await update) || Response.error();
+}
+
+async function prefetchVault() {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const results = await Promise.allSettled(
+    VAULT_URLS.map(async (url) => {
+      if (await cache.match(url)) return true;
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response?.ok) throw new Error(`Vault fetch failed: ${url}`);
+      await cache.put(url, response.clone());
+      return true;
+    }),
+  );
+  return {
+    ok: results.every((r) => r.status === "fulfilled"),
+    cached: results.filter((r) => r.status === "fulfilled").length,
+    requested: results.length,
+  };
 }
 
 async function mapTile(request) {
@@ -196,6 +205,13 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+
+  if (event.data?.type === "PREFETCH_VAULT") {
+    event.waitUntil(
+      prefetchVault().then((result) => event.ports?.[0]?.postMessage(result)),
+    );
+  }
+
   if (event.data?.type === "PREFETCH_MAP_ANCHORS") {
     event.waitUntil(
       (async () => {
