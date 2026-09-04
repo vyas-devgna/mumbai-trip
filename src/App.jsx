@@ -34,13 +34,6 @@ const TABS = new Set(["Now", "Plan", "Map", "Group", "Finance", "More"]);
 const isStandalone = () =>
   window.matchMedia?.("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
-const hasInstalledHint = () => {
-  try {
-    return localStorage.getItem("tripos-installed") === "1";
-  } catch {
-    return false;
-  }
-};
 const onboardingDone = () => {
   try {
     return localStorage.getItem("tripos-onboarding-v1") === "1";
@@ -198,10 +191,10 @@ export default function App() {
     return found ? { ...found, boarding: initialRoute.boarding } : null;
   });
   const [sheet, setSheet] = useState(null),
-    [installPrompt, setInstallPrompt] = useState(null),
-    [installed, setInstalled] = useState(
-      () => isStandalone() || hasInstalledHint(),
+    [installPrompt, setInstallPrompt] = useState(
+      () => window.__triposInstallPrompt || null,
     ),
+    [installed, setInstalled] = useState(() => isStandalone()),
     [showOnboarding, setShowOnboarding] = useState(() => !onboardingDone());
 
   const migratedLocalExpenses = useMemo(
@@ -261,6 +254,7 @@ export default function App() {
     }
     const before = (e) => {
       e.preventDefault();
+      window.__triposInstallPrompt = e;
       setInstallPrompt(e);
       setInstalled(false);
       try {
@@ -268,6 +262,7 @@ export default function App() {
       } catch {}
     };
     const didInstall = () => {
+      window.__triposInstallPrompt = null;
       setInstallPrompt(null);
       setInstalled(true);
       try {
@@ -279,6 +274,25 @@ export default function App() {
     return () => {
       removeEventListener("beforeinstallprompt", before);
       removeEventListener("appinstalled", didInstall);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    let cancelled = false;
+    const prefetchVault = async () => {
+      if (cancelled || !navigator.onLine) return;
+      try {
+        const reg = await navigator.serviceWorker.ready,
+          target = reg.active || navigator.serviceWorker.controller;
+        target?.postMessage({ type: "PREFETCH_VAULT" });
+      } catch {}
+    };
+    prefetchVault();
+    addEventListener("online", prefetchVault);
+    return () => {
+      cancelled = true;
+      removeEventListener("online", prefetchVault);
     };
   }, []);
 
@@ -343,7 +357,7 @@ export default function App() {
       if (mins > 0 && mins <= 90 && !localStorage.getItem(key)) {
         new Notification(`Mumbai Trip · ${a.title}`, {
           body: `${a.timing.start} · ${a.notes?.[0] || "Upcoming fixed item"}`,
-          icon: `${import.meta.env.BASE_URL}icon.svg`,
+          icon: `${import.meta.env.BASE_URL}icon-192.png`,
         });
         localStorage.setItem(key, "1");
       }
@@ -356,16 +370,14 @@ export default function App() {
   );
   const installApp = async () => {
     if (installed) return;
-    if (installPrompt) {
-      installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
+    const prompt = installPrompt || window.__triposInstallPrompt;
+    if (prompt) {
       setInstallPrompt(null);
-      if (choice?.outcome === "accepted") {
-        setInstalled(true);
-        try {
-          localStorage.setItem("tripos-installed", "1");
-        } catch {}
-      }
+      window.__triposInstallPrompt = null;
+      try {
+        await prompt.prompt();
+        await prompt.userChoice;
+      } catch {}
       return;
     }
     setSheet("install");
@@ -410,7 +422,6 @@ export default function App() {
     ) : (
       <More {...ctx} />
     );
-
 
   return (
     <div className="app-shell">
