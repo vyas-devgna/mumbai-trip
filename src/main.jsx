@@ -11,6 +11,7 @@ import './finance-group.css'
 import './interaction-fix.css'
 import './bottom-dock.css'
 import './map-upgrade.css'
+import './stay-planning.css'
 import {data} from './lib.js'
 import App from './App.jsx'
 
