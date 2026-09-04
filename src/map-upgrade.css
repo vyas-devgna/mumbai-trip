@@ -44,7 +44,8 @@
 .map-marker-station { --marker: #164d8c; }
 .map-marker-temple,
 .map-marker-darshan { --marker: #a56f18; }
-.map-marker-hotel { --marker: #3f7359; }
+.map-marker-hotel,
+.map-marker-stay { --marker: #3f7359; }
 .map-marker-restaurant { --marker: #9a4d35; }
 .map-marker-beach { --marker: #28758a; }
 .map-marker-landmark { --marker: #59564f; }
@@ -87,7 +88,8 @@
 }
 .location-icon-temple,
 .location-icon-darshan { color: #a56f18; }
-.location-icon-hotel { color: #3f7359; }
+.location-icon-hotel,
+.location-icon-stay { color: #3f7359; }
 .location-icon-restaurant { color: #9a4d35; }
 .location-icon-beach { color: #28758a; }
 .location-icon-landmark { color: #59564f; }
