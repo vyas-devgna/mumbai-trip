@@ -48,10 +48,10 @@ function armNativeInstall(){
     window.__triposInstallPrompt=null
     try{
       await prompt.prompt()
-      const choice=await prompt.userChoice
-      if(choice?.outcome==='accepted'){
-        try{localStorage.setItem('tripos-installed','1')}catch{}
-      }
+      await prompt.userChoice
+      // userChoice="accepted" only means the browser started installing. The
+      // transaction can still fail afterwards, so appinstalled is the only
+      // event allowed to mark TripOS as installed.
     }catch{}
   },true)
 
