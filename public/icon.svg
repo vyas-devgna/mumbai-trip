@@ -1,13 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vada pav">
   <defs>
-    <linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4c66f"/><stop offset="1" stop-color="#d88d2f"/></linearGradient>
-    <linearGradient id="vada" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d47a21"/><stop offset="1" stop-color="#a84e18"/></linearGradient>
+    <radialGradient id="bg" cx="48%" cy="38%" r="78%"><stop offset="0" stop-color="#2b2e2a"/><stop offset="1" stop-color="#0d0f0e"/></radialGradient>
+    <linearGradient id="bunTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd68c"/><stop offset="0.48" stop-color="#eda13b"/><stop offset="1" stop-color="#a74618"/></linearGradient>
+    <linearGradient id="bunBottom" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe0a3"/><stop offset="0.58" stop-color="#e59638"/><stop offset="1" stop-color="#9f451a"/></linearGradient>
+    <linearGradient id="vada" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd15b"/><stop offset="0.6" stop-color="#d98720"/><stop offset="1" stop-color="#8e3f10"/></linearGradient>
+    <linearGradient id="chilli" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8bc64b"/><stop offset="1" stop-color="#1d6e2d"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#000" flood-opacity=".42"/></filter>
   </defs>
-  <rect width="512" height="512" rx="118" fill="#f2eee4"/>
-  <path d="M111 228c9-73 65-120 145-120s136 47 145 120c2 16-10 31-27 31H138c-17 0-29-15-27-31Z" fill="url(#bun)" stroke="#332b24" stroke-width="12"/>
-  <path d="M129 273c0-14 11-25 25-25h204c14 0 25 11 25 25v14c0 15-12 27-27 27H156c-15 0-27-12-27-27v-14Z" fill="#5c9b42" stroke="#332b24" stroke-width="10"/>
-  <path d="M145 302c0-47 47-82 111-82s111 35 111 82c0 47-47 82-111 82s-111-35-111-82Z" fill="url(#vada)" stroke="#332b24" stroke-width="12"/>
-  <path d="M112 318h288c0 54-48 88-144 88S112 372 112 318Z" fill="url(#bun)" stroke="#332b24" stroke-width="12"/>
-  <path d="M173 259c24 14 50 19 78 19 34 0 62-8 89-23" fill="none" stroke="#7dbb59" stroke-width="18" stroke-linecap="round"/>
-  <circle cx="210" cy="170" r="7" fill="#8e5d25"/><circle cx="256" cy="150" r="7" fill="#8e5d25"/><circle cx="304" cy="173" r="7" fill="#8e5d25"/>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <path d="M94 365c5-52 51-82 162-82s157 30 162 82c4 43-35 83-162 83S90 408 94 365Z" fill="url(#bunBottom)"/>
+    <path d="M116 318c35 11 76 17 140 17 62 0 107-8 142-20" fill="none" stroke="#337e3f" stroke-width="30" stroke-linecap="round"/>
+    <path d="M132 292c0-63 50-108 124-108s124 45 124 108-50 103-124 103-124-40-124-103Z" fill="url(#vada)"/>
+    <path d="M89 203c10-91 74-146 167-146s157 55 167 146c2 20-12 35-34 35H123c-22 0-36-15-34-35Z" fill="url(#bunTop)"/>
+    <path d="M133 123c42-33 86-45 135-39" fill="none" stroke="#fff0ca" stroke-width="26" stroke-linecap="round" opacity=".72"/>
+  </g>
+  <g fill="#c94616">
+    <circle cx="161" cy="320" r="9"/><circle cx="188" cy="329" r="6"/><circle cx="219" cy="318" r="8"/><circle cx="250" cy="330" r="6"/><circle cx="281" cy="318" r="8"/><circle cx="316" cy="329" r="7"/><circle cx="348" cy="318" r="8"/>
+    <circle cx="186" cy="214" r="7"/><circle cx="221" cy="205" r="6"/><circle cx="292" cy="207" r="7"/><circle cx="326" cy="216" r="6"/>
+  </g>
+  <g fill="#367a35"><ellipse cx="197" cy="278" rx="9" ry="4" transform="rotate(-28 197 278)"/><ellipse cx="250" cy="247" rx="9" ry="4" transform="rotate(18 250 247)"/><ellipse cx="301" cy="285" rx="9" ry="4" transform="rotate(-20 301 285)"/></g>
+  <path d="M106 334c35-34 76-38 124-16" fill="none" stroke="url(#chilli)" stroke-width="17" stroke-linecap="round"/>
+  <path d="M104 334l-18 13" fill="none" stroke="#5e9d39" stroke-width="9" stroke-linecap="round"/>
 </svg>
