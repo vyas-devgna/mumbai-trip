@@ -42,6 +42,54 @@ jobs:
         run: npm run validate:data
       - name: Build production PWA
         run: npm run build
+      - name: Validate installable PWA output
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const required = [
+            'dist/index.html',
+            'dist/manifest.webmanifest',
+            'dist/sw.js',
+            'dist/icon-180.png',
+            'dist/icon-192.png',
+            'dist/icon-512.png',
+          ]
+          for (const file of required) {
+            if (!fs.existsSync(file) || fs.statSync(file).size === 0) {
+              throw new Error(`Missing PWA asset: ${file}`)
+            }
+          }
+
+          const pngSize = file => {
+            const data = fs.readFileSync(file)
+            const signature = data.subarray(0, 8).toString('hex')
+            if (signature !== '89504e470d0a1a0a') throw new Error(`${file} is not PNG`)
+            return [data.readUInt32BE(16), data.readUInt32BE(20)]
+          }
+
+          for (const [file, expected] of [
+            ['dist/icon-180.png', 180],
+            ['dist/icon-192.png', 192],
+            ['dist/icon-512.png', 512],
+          ]) {
+            const [width, height] = pngSize(file)
+            if (width !== expected || height !== expected) {
+              throw new Error(`${file} is ${width}x${height}, expected ${expected}x${expected}`)
+            }
+          }
+
+          const manifest = JSON.parse(fs.readFileSync('dist/manifest.webmanifest', 'utf8'))
+          if (manifest.start_url !== '/mumbai-trip/' || manifest.scope !== '/mumbai-trip/') {
+            throw new Error('Manifest start_url/scope do not match GitHub Pages path')
+          }
+          if (manifest.display !== 'standalone') throw new Error('Manifest is not standalone')
+          if (!manifest.icons?.some(icon => icon.sizes === '192x192' && icon.type === 'image/png')) {
+            throw new Error('Manifest is missing the 192x192 PNG icon')
+          }
+          if (!manifest.icons?.some(icon => icon.sizes === '512x512' && icon.type === 'image/png')) {
+            throw new Error('Manifest is missing the 512x512 PNG icon')
+          }
+          NODE
       - name: Configure Pages
         uses: actions/configure-pages@v6
       - name: Upload Pages artifact
