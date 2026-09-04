@@ -1,6 +1,12 @@
 import React from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ExternalLink, Mail, MapPin, Phone } from "lucide-react";
+import {
+  ExternalLink,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
 import operations from "../data/operations.json";
 import {
   byId,
@@ -82,7 +88,8 @@ export default function Plan({ day, setDay, setResource, sunrises }) {
       </DockAwarePanel>
 
       <MobilityPlan day={day} />
-      {day === "2026-09-15" && <StayShortlist />}
+      <ExplorationLane day={day} />
+      {day === "2026-09-15" && <StayDecisionBoard />}
       {BAG_DAYS.has(day) && <LuggagePlan day={day} />}
     </section>
   );
@@ -159,28 +166,69 @@ function MobilityPlan({ day }) {
   );
 }
 
-function StayShortlist() {
+function ExplorationLane({ day }) {
+  const lane = operations.explorationLanes?.[day];
+  if (!lane) return null;
+  return (
+    <DockAwarePanel className="panel exploration-panel">
+      <div className="panel-head">
+        <span>EXPLORATION LANE</span>
+        <b>{lane.label}</b>
+      </div>
+      <div className="exploration-route">{lane.default}</div>
+      {lane.lalbaugFallback && (
+        <p className="ops-note">
+          <b>LALBAUG FALLBACK:</b> {lane.lalbaugFallback}
+        </p>
+      )}
+      <p className="ops-note">{lane.rule}</p>
+    </DockAwarePanel>
+  );
+}
+
+function StayDecisionBoard() {
   return (
     <DockAwarePanel className="panel stay-panel">
       <div className="panel-head">
-        <span>STAY SHORTLIST · DADAR EAST</span>
-        <b>3 OPTIONS · CALL FIRST</b>
+        <span>STAY DECISION BOARD · DADAR EAST</span>
+        <b>3 CALLS · 1 WINNER</b>
       </div>
+      <p className="ops-note">{operations.researchNote}</p>
       <div className="stay-window">
         <b>{operations.stayWindow.targetCheckIn}</b>
         <span>→</span>
         <b>{operations.stayWindow.checkOut}</b>
       </div>
+      <div className="stay-budget">{operations.stayWindow.planningEnvelope}</div>
       <p className="ops-note">{operations.stayWindow.selectionRule}</p>
+
+      <div className="decision-protocol">
+        <b>CALL ORDER</b>
+        {operations.decisionProtocol.map((item, index) => (
+          <p key={item}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            {item}
+          </p>
+        ))}
+      </div>
+
       <div className="stay-list">
         {operations.stays.map((stay) => (
-          <article className="stay-card" key={stay.id}>
+          <article
+            className={`stay-card ${stay.rank === 1 ? "recommended" : ""}`}
+            key={stay.id}
+          >
             <div className="stay-card-head">
               <span>OPTION {String(stay.rank).padStart(2, "0")}</span>
               <em>{stay.status}</em>
             </div>
-            <h3>{stay.name}</h3>
-            <strong>{stay.fit}</strong>
+            <div className="stay-score-row">
+              <div>
+                <h3>{stay.name}</h3>
+                <strong>{stay.fit}</strong>
+              </div>
+              <b>{stay.score}<small>/100</small></b>
+            </div>
             <p>{stay.why}</p>
             <div className="stay-facts">
               <span>
@@ -188,22 +236,31 @@ function StayShortlist() {
                 {stay.stationAccess}
               </span>
               <span>
-                <b>STANDARD</b>
-                {stay.standardCheckIn} in · {stay.standardCheckOut} out
+                <b>5-PERSON FIT</b>
+                {stay.groupFit}
               </span>
               <span>
                 <b>EARLY ACCESS</b>
-                {stay.earlyCheckIn}
+                <i>{stay.earlyCheckInConfidence}</i> {stay.earlyCheckIn}
               </span>
               <span>
                 <b>PRICE SIGNAL</b>
                 {stay.priceNote}
+              </span>
+              <span>
+                <b>BAG HOLD</b>
+                {stay.bagHold}
               </span>
             </div>
             <div className="stay-actions">
               <a href={stay.phoneHref}>
                 <Phone aria-hidden="true" /> Call
               </a>
+              {stay.whatsappHref && (
+                <a href={stay.whatsappHref} target="_blank" rel="noreferrer">
+                  <MessageCircle aria-hidden="true" /> WhatsApp
+                </a>
+              )}
               <a href={stay.mapsUrl} target="_blank" rel="noreferrer">
                 <MapPin aria-hidden="true" /> Map
               </a>
@@ -218,13 +275,18 @@ function StayShortlist() {
                 </a>
               )}
             </div>
-            <small className="stay-contact">{stay.phone}{stay.alternatePhone ? ` · backup ${stay.alternatePhone}` : ""}</small>
+            <small className="stay-contact">
+              {stay.phone}
+              {stay.alternatePhone ? ` · ${stay.alternatePhone}` : ""}
+              {stay.secondAlternatePhone ? ` · ${stay.secondAlternatePhone}` : ""}
+            </small>
             <small className="stay-warning">{stay.watch}</small>
           </article>
         ))}
       </div>
+
       <div className="call-checklist">
-        <b>ASK EVERY HOTEL BEFORE PAYING</b>
+        <b>DO NOT PAY UNTIL ALL OF THESE ARE ANSWERED</b>
         {operations.callChecklist.map((item, index) => (
           <p key={item}>
             <span>{String(index + 1).padStart(2, "0")}</span>
@@ -250,6 +312,7 @@ function LuggagePlan({ day }) {
         <b>3-LAYER FALLBACK</b>
       </div>
       <p className="ops-note">{operations.luggage.principle}</p>
+      <div className="luggage-budget">{operations.luggage.referenceBudget}</div>
       <div className="luggage-options">
         {operations.luggage.options.map((option) => (
           <article key={option.id}>
@@ -259,6 +322,7 @@ function LuggagePlan({ day }) {
             </div>
             <h3>{option.name}</h3>
             <p>{option.use}</p>
+            {option.evidence && <small>{option.evidence}</small>}
             <small>{option.rules}</small>
             <small>{option.cost}</small>
             <em>{option.watch}</em>
