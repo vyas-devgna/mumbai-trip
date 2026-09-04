@@ -5,8 +5,6 @@ import react from '@vitejs/plugin-react'
 
 const FONT_SCALE = 1.1
 const BUILD_SHA =
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  process.env.VERCEL_DEPLOYMENT_ID ||
   process.env.GITHUB_SHA ||
   process.env.VITE_BUILD_SHA ||
   'local-dev'
@@ -60,13 +58,9 @@ function stampTripBuild() {
 
 export default defineConfig({
   plugins: [react(), scaleTripTypography(), stampTripBuild()],
-  // Relative assets let the same build work at Vercel root and the legacy
-  // GitHub Pages /mumbai-trip/ path during migration.
-  base: './',
+  base: '/mumbai-trip/',
   define: {
     __TRIPOS_BUILD__: JSON.stringify(BUILD_SHA),
   },
-  // Production source maps add several MB to every deployment and are not
-  // needed by the trip client. Keep the deploy artifact lean on Hobby.
   build: { sourcemap: false },
 })
