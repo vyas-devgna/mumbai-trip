@@ -66,5 +66,7 @@ export default defineConfig({
   define: {
     __TRIPOS_BUILD__: JSON.stringify(BUILD_SHA),
   },
-  build: { sourcemap: true },
+  // Production source maps add several MB to every deployment and are not
+  // needed by the trip client. Keep the deploy artifact lean on Hobby.
+  build: { sourcemap: false },
 })
