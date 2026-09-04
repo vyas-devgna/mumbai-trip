@@ -1,13 +1,19 @@
 const BUILD_VERSION = "__TRIPOS_BUILD_SHA__";
-const SHELL_CACHE = `mumbai-tripos-shell-v7-${BUILD_VERSION.slice(0, 12)}`;
-const RUNTIME_CACHE = "mumbai-tripos-runtime-v6";
+const SHELL_CACHE = `mumbai-tripos-shell-v8-${BUILD_VERSION.slice(0, 12)}`;
+const RUNTIME_CACHE = "mumbai-tripos-runtime-v7";
 const MAP_CACHE = "mumbai-tripos-map-v4";
 const BASE = new URL("./", self.location.href).pathname;
-const PRECACHE = [
+
+const CRITICAL_PRECACHE = [
   BASE,
   `${BASE}manifest.webmanifest`,
-  `${BASE}icon.svg`,
+  `${BASE}icon-180.png`,
+  `${BASE}icon-192.png`,
+  `${BASE}icon-512.png`,
   `${BASE}version.json`,
+];
+
+const OPTIONAL_PRECACHE = [
   `${BASE}resources/outbound-karnavati.pdf`,
   `${BASE}resources/return-gujarat.pdf`,
   `${BASE}resources/sea-lounge-booking.jpg`,
@@ -15,10 +21,19 @@ const PRECACHE = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+
+      // Keep worker installation dependent only on the actual app shell. Large
+      // vault files are useful offline, but one failed PDF/image request must
+      // never make Android reject the PWA installation.
+      await cache.addAll(CRITICAL_PRECACHE);
+      await Promise.allSettled(
+        OPTIONAL_PRECACHE.map((url) => cache.add(url)),
+      );
+
+      await self.skipWaiting();
+    })(),
   );
 });
 
@@ -31,20 +46,16 @@ self.addEventListener("activate", (event) => {
         keys.filter((key) => !keep.has(key)).map((key) => caches.delete(key)),
       );
       await self.clients.claim();
+
+      // Do not navigate/reload an open page from activate. Chromium can be in
+      // the middle of committing an Add-to-Home-Screen install at this point;
+      // forcing a navigation can abort that transaction.
       const clients = await self.clients.matchAll({
         type: "window",
         includeUncontrolled: true,
       });
       for (const client of clients) {
         client.postMessage({ type: "TRIPOS_SW_ACTIVE", version: BUILD_VERSION });
-        if (
-          BUILD_VERSION !== "__TRIPOS_BUILD_SHA__" &&
-          typeof client.navigate === "function"
-        ) {
-          try {
-            await client.navigate(client.url);
-          } catch {}
-        }
       }
     })(),
   );
