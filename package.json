@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "generate:icons": "node scripts/generate-pwa-icons.mjs",
+    "predev": "npm run generate:icons",
     "dev": "vite",
+    "prebuild": "npm run generate:icons",
     "build": "npm run validate:data && vite build",
     "preview": "vite preview",
     "validate:data": "node scripts/validate-trip.mjs"
