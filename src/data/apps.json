@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-09-12",
+  "apps": [
+    {
+      "id": "mumbai-one",
+      "rank": 1,
+      "name": "Mumbai One",
+      "priority": "essential",
+      "category": "public transport",
+      "summary": "Official all-in-one public transport app for Mumbai: suburban rail, metro, bus and monorail journey planning plus QR ticketing.",
+      "tripUse": "Use this first for public transport planning and tickets across Mumbai.",
+      "androidUrl": "https://play.google.com/store/apps/details?id=com.mmrda",
+      "iosUrl": "https://apps.apple.com/in/app/mumbai-one/id6478221525",
+      "webUrl": "https://mmrda.maharashtra.gov.in/en/news-and-announcements/mmrda-presents-mumbai-one-app-indias-first-common-mobility-app-integrating",
+      "sourceUrl": "https://mmrda.maharashtra.gov.in/en/news-and-announcements/mmrda-presents-mumbai-one-app-indias-first-common-mobility-app-integrating"
+    },
+    {
+      "id": "google-maps",
+      "rank": 2,
+      "name": "Google Maps",
+      "priority": "essential",
+      "category": "navigation",
+      "summary": "Live traffic, walking and transit navigation, Street View and downloadable offline maps.",
+      "tripUse": "Use for street-level navigation, live traffic and offline map backup.",
+      "androidUrl": "https://play.google.com/store/apps/details?id=com.google.android.apps.maps",
+      "iosUrl": "https://apps.apple.com/in/app/google-maps/id585027354",
+      "webUrl": "https://maps.google.com/",
+      "sourceUrl": "https://play.google.com/store/apps/details?id=com.google.android.apps.maps"
+    },
+    {
+      "id": "uber",
+      "rank": 3,
+      "name": "Uber",
+      "priority": "recommended",
+      "category": "cab + auto",
+      "summary": "Cab, auto and group rides for last-mile or luggage-heavy transfers; Mumbai Metro 2A/7 ticketing is also integrated.",
+      "tripUse": "Use for Bandra Terminus luggage transfers, late-night rides and any route where public transport is inconvenient.",
+      "androidUrl": "https://play.google.com/store/apps/details?id=com.ubercab",
+      "iosUrl": "https://apps.apple.com/in/app/uber-request-a-ride/id368677368",
+      "webUrl": "https://www.uber.com/in/en/ride/",
+      "sourceUrl": "https://www.uber.com/in/en/blog/introducing-metro-ticketing-on-uber/"
+    },
+    {
+      "id": "chalo",
+      "rank": 4,
+      "name": "Chalo",
+      "priority": "useful backup",
+      "category": "BEST bus",
+      "summary": "Live bus tracking and mobile bus ticketing in Mumbai, with some schedule information available offline.",
+      "tripUse": "Use when BEST bus is the best local option or when you want live bus arrival information.",
+      "androidUrl": "https://play.google.com/store/apps/details?id=app.zophop",
+      "iosUrl": "https://apps.apple.com/in/app/chalo-live-bus-tracking-app/id1607824800",
+      "webUrl": "https://chalo.com/chalo-app",
+      "sourceUrl": "https://chalo.com/chalo-app"
+    }
+  ]
+}
