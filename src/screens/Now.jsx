@@ -15,6 +15,7 @@ import {
   buildFinanceSnapshot,
   formatPercentFromBasisPoints,
 } from "../finance.js";
+import groupDecisions from "../data/group-decisions.json";
 import { DockAwarePanel } from "../ui.jsx";
 
 const EARLY_DEPARTURES = new Set(["05:00", "05:40", "05:52"]);
@@ -64,7 +65,8 @@ export default function Now({
       [fixed, now],
     ),
     place = next?.placeId && byId(data.places, next.placeId),
-    finance = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]);
+    finance = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]),
+    visibleSignals = [...data.signals, ...(groupDecisions.signals || [])];
   const tripStart = new Date(`${data.trip.startDate}T05:00:00+05:30`),
     hours = Math.max(0, Math.round((tripStart - now) / 3600000)),
     progress = Math.min(100, finance.forecastBudgetBasisPoints / 100),
@@ -209,9 +211,9 @@ export default function Now({
       <DockAwarePanel className="panel alerts">
         <div className="panel-head">
           <span>03 / SIGNALS</span>
-          <b>{data.signals.length} OPEN</b>
+          <b>{visibleSignals.length} OPEN</b>
         </div>
-        {data.signals.map((s) => (
+        {visibleSignals.map((s) => (
           <div className="alert" key={s.id}>
             <i>!</i>
             <div>
