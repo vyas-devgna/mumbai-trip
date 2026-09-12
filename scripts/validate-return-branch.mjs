@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { buildFinanceSnapshot } from "../src/finance.js";
 
 const read = (relative) =>
   JSON.parse(fs.readFileSync(new URL(relative, import.meta.url), "utf8"));
@@ -27,6 +28,8 @@ for (const key of [
   "checkpoints",
   "resources",
   "signals",
+  "expenses",
+  "reimbursements",
 ]) duplicateIds(key);
 
 const members = ids("members");
@@ -106,11 +109,108 @@ for (const resource of extra.resources || []) {
     errors.push(`resource ${resource.id}: local file missing path`);
 }
 
+for (const expense of extra.expenses || []) {
+  if (!Number.isSafeInteger(expense.amountPaise) || expense.amountPaise <= 0)
+    errors.push(`expense ${expense.id}: amountPaise must be positive integer paise`);
+  if (!members.has(expense.payerId))
+    errors.push(`expense ${expense.id}: unknown payer ${expense.payerId}`);
+  if (!(expense.participantIds?.length > 0))
+    errors.push(`expense ${expense.id}: missing participants`);
+  for (const memberId of expense.participantIds || [])
+    if (!members.has(memberId))
+      errors.push(`expense ${expense.id}: unknown participant ${memberId}`);
+  if (expense.sourceId && !resources.has(expense.sourceId))
+    errors.push(`expense ${expense.id}: unknown source ${expense.sourceId}`);
+  if (expense.budgetScope && !["core", "personal"].includes(expense.budgetScope))
+    errors.push(`expense ${expense.id}: unsupported budgetScope ${expense.budgetScope}`);
+  if (expense.componentsPaise) {
+    const componentTotal = Object.values(expense.componentsPaise).reduce((sum, value) => {
+      if (!Number.isSafeInteger(value) || value < 0) {
+        errors.push(`expense ${expense.id}: invalid component amount`);
+        return sum;
+      }
+      return sum + value;
+    }, 0);
+    if (componentTotal !== expense.amountPaise)
+      errors.push(
+        `expense ${expense.id}: components total ${componentTotal}, expected ${expense.amountPaise}`,
+      );
+  }
+}
+
+const budgetMemberIds = extra.finance?.budgetMemberIds || [];
+if (new Set(budgetMemberIds).size !== budgetMemberIds.length)
+  errors.push("finance: duplicate budget member");
+for (const memberId of budgetMemberIds)
+  if (!members.has(memberId)) errors.push(`finance: unknown budget member ${memberId}`);
+if (
+  Number.isSafeInteger(base.trip?.budget?.groupSizeBudgeted) &&
+  budgetMemberIds.length !== base.trip.budget.groupSizeBudgeted
+)
+  errors.push(
+    `finance: ${budgetMemberIds.length} budget members, expected ${base.trip.budget.groupSizeBudgeted}`,
+  );
+if (budgetMemberIds.includes("het"))
+  errors.push("finance: Het must remain outside the five-person core planning budget");
+
+const hetExpense = (extra.expenses || []).find(
+  (expense) => expense.id === "expense-return-het",
+);
+if (!hetExpense) errors.push("finance: Het return expense is missing");
+else {
+  if (hetExpense.amountPaise !== 23315)
+    errors.push(`finance: Het return amount is ${hetExpense.amountPaise}, expected 23315`);
+  if (hetExpense.payerId !== "het") errors.push("finance: Het must be the ticket payer");
+  if (
+    hetExpense.participantIds?.length !== 1 ||
+    hetExpense.participantIds[0] !== "het"
+  )
+    errors.push("finance: Het return ticket must be allocated only to Het");
+  if (hetExpense.budgetScope !== "personal")
+    errors.push("finance: Het return ticket must be outside the core budget");
+}
+
+const merged = {
+  ...base,
+  finance: { ...(base.finance || {}), ...(extra.finance || {}) },
+  members: all("members"),
+  places: all("places"),
+  activities: all("activities"),
+  travelLegs: all("travelLegs"),
+  branches: all("branches"),
+  checkpoints: all("checkpoints"),
+  fallbacks: all("fallbacks"),
+  candidates: all("candidates"),
+  expenses: all("expenses"),
+  reimbursements: all("reimbursements"),
+  signals: all("signals"),
+  resources: all("resources"),
+};
+const finance = buildFinanceSnapshot(merged, merged.expenses),
+  financeWithoutHet = buildFinanceSnapshot(
+    merged,
+    merged.expenses.filter((expense) => expense.id !== "expense-return-het"),
+  );
+if (finance.corePaidPaise !== financeWithoutHet.corePaidPaise)
+  errors.push("finance: Het personal ticket leaked into the core paid total");
+if (finance.recordedPaidPaise - financeWithoutHet.recordedPaidPaise !== 23315)
+  errors.push("finance: Het ticket does not add exactly 23315 paise to recorded spend");
+if (finance.settlement.rows.het?.netPaise !== 0)
+  errors.push(`finance: Het net is ${finance.settlement.rows.het?.netPaise}, expected 0`);
+if (finance.settlement.unassignedPaidPaise !== 0)
+  errors.push(`finance: ${finance.settlement.unassignedPaidPaise} paise has no payer`);
+if (finance.settlement.unallocatedSharePaise !== 0)
+  errors.push(`finance: ${finance.settlement.unallocatedSharePaise} paise is unallocated`);
+if (finance.settlement.netBalancePaise !== 0)
+  errors.push(`finance: net balances total ${finance.settlement.netBalancePaise}, expected 0`);
+if (finance.settlement.diagnostics.length)
+  errors.push(...finance.settlement.diagnostics.map((item) => `finance: ${item}`));
+
 if (errors.length) {
   console.error(errors.join("\n"));
   process.exit(1);
 }
 
 console.log(
-  `Return branch valid: ${(extra.members || []).length} member, ${(extra.activities || []).length} activity, ${(extra.branches || []).length} branch`,
+  `Return branch + finance valid: ${(extra.members || []).length} extra member, ${(extra.activities || []).length} extra activity, ${finance.recordedPaidPaise} paid paise recorded`,
 );
