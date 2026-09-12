@@ -1,0 +1,141 @@
+.trip-apps-panel {
+  grid-column: 1 / -1;
+}
+
+.device-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8f4eb;
+}
+.device-strip > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.device-strip b {
+  font-size: 12px;
+}
+.device-strip small {
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+.device-os {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #e9eef5;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.trip-app-grid {
+  display: grid;
+  gap: 8px;
+}
+.trip-app-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #faf7f0;
+}
+.trip-app-rank {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #e5ebf2;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+.trip-app-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.trip-app-title {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.trip-app-title b {
+  font-size: 12px;
+}
+.trip-app-title span {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.trip-app-copy p,
+.trip-app-copy small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.42;
+}
+.trip-app-copy small {
+  color: #645f56;
+}
+.trip-app-link {
+  align-self: center;
+  white-space: nowrap;
+  padding: 8px 10px;
+  border: 1px solid #c7d3e1;
+  border-radius: 10px;
+  background: #f1f6fb;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.trip-app-link:active {
+  transform: scale(.97);
+}
+.trip-app-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+@media (min-width: 680px) {
+  .trip-app-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .trip-app-card {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+  .trip-app-rank {
+    width: 30px;
+    height: 30px;
+  }
+  .trip-app-link {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 3px;
+  }
+}
