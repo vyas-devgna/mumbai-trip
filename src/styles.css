@@ -687,7 +687,7 @@ h1, h2, h3, p { margin-top: 0; }
 .map-popup small { font-size: 8px; color: #777; }
 
 /* ── Group Grid ── */
-.group-grid, .more-grid { display: grid; gap: 14px; }
+.group-grid { display: grid; gap: 14px; }
 .member {
   display: grid;
   grid-template-columns: 52px 1fr;
@@ -712,24 +712,6 @@ h1, h2, h3, p { margin-top: 0; }
 .member strong { font-family: var(--mono); font-size: 12px; }
 .member div:last-child > small { display: block; font-size: 8px; color: var(--muted); }
 
-/* ── Install Button ── */
-.install {
-  border: 0;
-  background: var(--blue);
-  color: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: left;
-  display: grid;
-  gap: 3px;
-  cursor: pointer;
-  box-shadow: 0 12px 28px rgba(22, 77, 140, .14);
-  transition: box-shadow .2s ease;
-}
-.install:hover { box-shadow: 0 16px 36px rgba(22, 77, 140, .2); }
-.install span { font-family: var(--mono); font-size: 8px; opacity: .7; }
-.install b { font-size: 13px; }
-
 /* ── Ledger / System Rows ── */
 .ledger, .system-rows {
   display: grid;
@@ -751,51 +733,6 @@ h1, h2, h3, p { margin-top: 0; }
 .ledger b { font-family: var(--mono); }
 .system-rows span { text-align: right; color: var(--muted); }
 .live { color: var(--green) !important; }
-
-/* ── Command Button ── */
-.command {
-  position: fixed;
-  right: max(15px, calc((100vw - 980px) / 2 + 15px));
-  bottom: calc(72px + env(safe-area-inset-bottom));
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 1px solid #d19320;
-  background: var(--amber);
-  font-size: 24px;
-  box-shadow: 0 12px 30px #35250f30;
-  z-index: 40;
-  cursor: pointer;
-}
-
-/* ── Bottom Nav (legacy hidden) ── */
-.bottom-nav {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
-  width: min(980px, 100%);
-  height: calc(60px + env(safe-area-inset-bottom));
-  padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  background: #f2eee4f3;
-  border-top: 1px solid var(--line);
-  backdrop-filter: blur(16px);
-  z-index: 30;
-}
-.bottom-nav button {
-  border: 0;
-  background: none;
-  display: grid;
-  place-items: center;
-  gap: 1px;
-  color: #817d75;
-  cursor: pointer;
-}
-.bottom-nav span { font-family: var(--mono); font-size: 14px; }
-.bottom-nav b { font-size: 9px; }
-.bottom-nav button.active { color: var(--blue); }
 
 /* ── Sheet / Modal ── */
 .sheet-bg {
@@ -841,21 +778,7 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 18px;
   cursor: pointer;
 }
-.sheet-menu, .form { display: grid; gap: 8px; padding-top: 12px; }
-.sheet-menu button {
-  border: 1px solid var(--line);
-  background: #faf7f0;
-  border-radius: 14px;
-  padding: 14px;
-  text-align: left;
-  display: grid;
-  gap: 3px;
-  cursor: pointer;
-  transition: background .12s ease;
-}
-.sheet-menu button:hover { background: #f5f0e5; }
-.sheet-menu b { font-size: 12px; }
-.sheet-menu span { font-size: 10px; color: var(--muted); }
+.form { display: grid; gap: 8px; padding-top: 12px; }
 .form input, .form textarea {
   border: 1px solid var(--line);
   background: #faf7f0;
@@ -964,7 +887,7 @@ h1, h2, h3, p { margin-top: 0; }
   .span2 { grid-column: 1/-1; }
   .mission h1 { font-size: 44px; }
   .anchor-track { grid-template-columns: repeat(3, 1fr); }
-  .group-grid, .more-grid { grid-template-columns: 1fr 1fr; }
+  .group-grid { grid-template-columns: 1fr 1fr; }
   .timeline-item { grid-template-columns: 94px 20px 1fr; }
   .map-canvas { height: 640px; }
   .viewer { padding: 20px; background: #201f1be8; }
