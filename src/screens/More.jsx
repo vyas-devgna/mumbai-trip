@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { data, PRESS_SPRING } from "../lib.js";
+import appsCatalog from "../data/apps.json";
 import { DockAwarePanel } from "../ui.jsx";
 
 const fmtTime = (value) =>
@@ -13,6 +14,27 @@ const fmtTime = (value) =>
       })
     : "not confirmed yet";
 
+function detectDevice() {
+  if (typeof navigator === "undefined")
+    return { os: "other", label: "Unknown device", store: "Open site" };
+  const ua = navigator.userAgent || "",
+    platform = navigator.userAgentData?.platform || navigator.platform || "",
+    touch = navigator.maxTouchPoints || 0,
+    ios =
+      /iPhone|iPad|iPod/i.test(ua) ||
+      (/Mac/i.test(platform) && touch > 1),
+    android = /Android/i.test(ua);
+  if (ios) return { os: "ios", label: "iPhone / iPad", store: "App Store" };
+  if (android) return { os: "android", label: "Android", store: "Google Play" };
+  return { os: "other", label: platform || "Other device", store: "Open site" };
+}
+
+function appLink(app, os) {
+  if (os === "ios") return app.iosUrl;
+  if (os === "android") return app.androidUrl;
+  return app.webUrl;
+}
+
 export default function More({
   notes,
   setResource,
@@ -23,10 +45,15 @@ export default function More({
   onReplayOnboarding,
 }) {
   const sha = update.version
-    ? update.version === "local-dev"
-      ? "local-dev"
-      : update.version.slice(0, 8)
-    : "—";
+      ? update.version === "local-dev"
+        ? "local-dev"
+        : update.version.slice(0, 8)
+      : "—",
+    device = detectDevice(),
+    standalone =
+      installed ||
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
   const enableAlerts = async () => {
     if ("Notification" in window) await Notification.requestPermission();
   };
@@ -35,7 +62,7 @@ export default function More({
       <div className="page-title">
         <span>SYSTEM + VAULT</span>
         <h1>More</h1>
-        <p>Offline resources, personal notes, alerts and deployment state.</p>
+        <p>Offline resources, trip apps, personal notes, alerts and deployment state.</p>
       </div>
       {!installed && (
         <button className="install" onClick={onInstall}>
@@ -44,6 +71,48 @@ export default function More({
         </button>
       )}
       <div className="more-grid">
+        <DockAwarePanel className="panel trip-apps-panel">
+          <div className="panel-head">
+            <span>TRIP APPS</span>
+            <b>4 RECOMMENDED</b>
+          </div>
+          <div className="device-strip">
+            <div>
+              <b>{device.label}</b>
+              <small>
+                TripOS is {standalone ? "running as an installed PWA" : "open in browser mode"}. Links below automatically use the right store.
+              </small>
+            </div>
+            <span className="device-os">{device.os}</span>
+          </div>
+          <div className="trip-app-grid">
+            {appsCatalog.apps.map((app) => (
+              <article className="trip-app-card" key={app.id}>
+                <div className="trip-app-rank">0{app.rank}</div>
+                <div className="trip-app-copy">
+                  <div className="trip-app-title">
+                    <b>{app.name}</b>
+                    <span>{app.priority} · {app.category}</span>
+                  </div>
+                  <p>{app.summary}</p>
+                  <small>{app.tripUse}</small>
+                </div>
+                <a
+                  className="trip-app-link"
+                  href={appLink(app, device.os)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {device.store} ↗
+                </a>
+              </article>
+            ))}
+          </div>
+          <p className="trip-app-note">
+            Checked {appsCatalog.checkedAt}. Browser security does not let TripOS reliably inspect whether third-party apps are already installed, so this panel detects the phone OS and sends you to the correct official store page.
+          </p>
+        </DockAwarePanel>
+
         <DockAwarePanel className="panel">
           <div className="panel-head">
             <span>OFFLINE FILES</span>
