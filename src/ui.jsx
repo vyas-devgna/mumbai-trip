@@ -303,8 +303,7 @@ export function CommandSheet({
   localExpenses,
   setLocalExpenses,
 }) {
-  const [view, setView] = useState(mode === "command" ? "menu" : mode),
-    [text, setText] = useState(""),
+  const [text, setText] = useState(""),
     [amount, setAmount] = useState(""),
     [label, setLabel] = useState(""),
     [participants, setParticipants] = useState(data.members.map((m) => m.id)),
@@ -358,24 +357,12 @@ export function CommandSheet({
     ]);
     finish("EXPENSE DRAFT SAVED");
   };
-  const copy = async (value) => {
-    try {
-      await navigator.clipboard.writeText(value);
-    } catch {}
-    onClose();
-  };
   const title =
-    view === "menu"
-      ? "Add / change"
-      : view === "note"
-        ? "Local note"
-        : view === "expense"
-          ? "Local expense"
-          : view === "shared"
-            ? "Shared change"
-            : view === "installed"
-              ? "Installed"
-              : "Install TripOS";
+    mode === "note"
+      ? "Local note"
+      : mode === "expense"
+        ? "Local expense"
+        : "Install TripOS";
   return (
     <motion.div
       className="sheet-bg"
@@ -387,10 +374,7 @@ export function CommandSheet({
     >
       <section className="sheet">
         <div className="handle" />
-        <motion.header
-          layoutId={mode === "command" ? "command-surface" : undefined}
-          transition={reduced ? { duration: 0 } : PRESS_SPRING}
-        >
+        <motion.header transition={reduced ? { duration: 0 } : PRESS_SPRING}>
           <div>
             <span>CONTEXTUAL ACTION</span>
             <h2>{title}</h2>
@@ -411,29 +395,13 @@ export function CommandSheet({
             </motion.div>
           ) : (
             <motion.div
-              key={view}
+              key={mode}
               initial={reduced ? false : { opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduced ? undefined : { opacity: 0, y: -3 }}
               transition={reduced ? { duration: 0 } : PRESS_SPRING}
             >
-              {view === "menu" && (
-                <div className="sheet-menu">
-                  <button onClick={() => setView("note")}>
-                    <b>Note on this phone</b>
-                    <span>Offline, private to this browser</span>
-                  </button>
-                  <button onClick={() => setView("expense")}>
-                    <b>Draft an expense</b>
-                    <span>Local ledger until committed</span>
-                  </button>
-                  <button onClick={() => setView("shared")}>
-                    <b>Change the shared trip</b>
-                    <span>Copy a precise ChatGPT command</span>
-                  </button>
-                </div>
-              )}
-              {view === "note" && (
+              {mode === "note" && (
                 <div className="form">
                   <textarea
                     autoFocus
@@ -446,7 +414,7 @@ export function CommandSheet({
                   </button>
                 </div>
               )}
-              {view === "expense" && (
+              {mode === "expense" && (
                 <div className="form">
                   <input
                     autoFocus
@@ -510,55 +478,7 @@ export function CommandSheet({
                   </button>
                 </div>
               )}
-              {view === "shared" && (
-                <div className="sheet-menu">
-                  <button
-                    onClick={() =>
-                      copy(
-                        "Add this to the Mumbai TripOS inbox, research it, choose the best slot, validate, commit and deploy: ",
-                      )
-                    }
-                  >
-                    <b>Add a place</b>
-                    <span>Candidate ingestion</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      copy(
-                        "Replan Mumbai TripOS around this change, preserve fixed bookings, update travel legs, validate, commit and deploy: ",
-                      )
-                    }
-                  >
-                    <b>Replan</b>
-                    <span>Safe downstream change</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      copy(
-                        "Add this expense to the Mumbai TripOS shared ledger. Record the payerId for the person who actually paid, the participantIds for everyone sharing it, integer amountPaise, date and category. If I have not said who paid, ask me for the payer before committing. Validate, commit to main and deploy: ",
-                      )
-                    }
-                  >
-                    <b>Share an expense</b>
-                    <span>Canonical ledger with payer</span>
-                  </button>
-                </div>
-              )}
-              {view === "install" && <InstallHelp />}
-              {view === "installed" && (
-                <div className="install-help">
-                  <div className="install-step">
-                    <i>OK</i>
-                    <div>
-                      <b>TripOS is already running as an installed app.</b>
-                      <span>
-                        Updates are detected through version.json on resume,
-                        reconnect and the regular update check.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {mode === "install" && <InstallHelp />}
             </motion.div>
           )}
         </AnimatePresence>
