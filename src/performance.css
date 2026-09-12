@@ -16,7 +16,7 @@
   backdrop-filter: blur(8px) saturate(1.10) !important;
   -webkit-backdrop-filter: blur(8px) saturate(1.10) !important;
 }
-.panel, .date-rail, .segment, .map-days, .sheet, .side-nav, .install, .onboarding, .viewer header {
+.panel, .date-rail, .segment, .map-days, .sheet, .onboarding, .viewer header {
   backdrop-filter: blur(8px) saturate(1.12) !important;
   -webkit-backdrop-filter: blur(8px) saturate(1.12) !important;
 }
@@ -29,10 +29,10 @@
 .mission .actions a, .mission .actions button,
 .anchor, .resource-list > button, .ledger > div, .system-rows > div,
 .settlement-row, .settlement-transfer, .payment-log > div,
-.location-list a, .sheet-menu button, .install-step,
+.location-list a, .install-step,
 .form input, .form textarea, .form .save,
 .payer-select button, .participant-select button,
-.deploy-check, .signal-action, .notes > div,
+.signal-action, .notes > div,
 .timeline-item, .people-chips > span,
 .viewer-actions button, .boarding-destination,
 .sheet-success, .maplibregl-popup-content {
@@ -43,10 +43,10 @@
 /* High-contrast nested glass specular edge */
 .anchor, .resource-list > button, .ledger > div, .system-rows > div,
 .settlement-row, .settlement-transfer, .payment-log > div,
-.location-list a, .sheet-menu button, .install-step,
+.location-list a, .install-step,
 .form input, .form textarea, .form .save,
 .payer-select button, .participant-select button,
-.deploy-check, .signal-action, .notes > div,
+.signal-action, .notes > div,
 .timeline-item, .people-chips > span, .viewer-actions button, .boarding-destination {
   box-shadow:
     0 4px 12px rgba(45, 39, 31, 0.04),
@@ -71,7 +71,7 @@
     backdrop-filter: blur(6px) saturate(1.08) !important;
     -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
   }
-  .panel, .date-rail, .segment, .map-days, .sheet, .side-nav, .install, .onboarding, .viewer header, .mission {
+  .panel, .date-rail, .segment, .map-days, .sheet, .onboarding, .viewer header, .mission {
     backdrop-filter: blur(6px) saturate(1.08) !important;
     -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
   }
