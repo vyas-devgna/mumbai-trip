@@ -17,6 +17,7 @@ const VAULT_URLS = [
   `${BASE}resources/outbound-karnavati.pdf`,
   `${BASE}resources/return-gujarat.pdf`,
   `${BASE}resources/sea-lounge-booking.jpg`,
+  `${BASE}resources/return-het-summary.svg`,
 ];
 
 self.addEventListener("install", (event) => {

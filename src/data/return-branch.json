@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "members": [
+    {
+      "id": "het",
+      "name": "Het Gandhi",
+      "initials": "HG"
+    }
+  ],
+  "places": [
+    {
+      "id": "mumbai-central",
+      "name": "Mumbai Central",
+      "aliases": ["MMCT", "Mumbai Central railway station"],
+      "latitude": 18.9695855,
+      "longitude": 72.8193152,
+      "address": "Anandrao Nair Marg, Mumbai, Maharashtra",
+      "category": "station",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Mumbai%20Central%20Railway%20Station%20MMCT",
+      "lastVerifiedAt": "2026-09-12",
+      "confidence": "high"
+    }
+  ],
+  "activities": [
+    {
+      "id": "return-train-het",
+      "title": "Gujarat SF Express · Het boards at Mumbai Central",
+      "placeId": "mumbai-central",
+      "date": "2026-09-17",
+      "timing": {
+        "type": "fixed",
+        "start": "05:40"
+      },
+      "duration": {
+        "minMinutes": 454,
+        "targetMinutes": 454,
+        "maxMinutes": 454
+      },
+      "participants": ["het"],
+      "priority": "must",
+      "bookingStatus": "booked",
+      "status": "planned",
+      "notes": [
+        "Train 22953 · uploaded ticket shows Mumbai Central (MMCT) 05:40 → Nadiad Junction 13:14.",
+        "Confirmed D1/2/NC. Re-check the final railway departure time before boarding because operational timings can change."
+      ],
+      "fallbackIds": [],
+      "sourceIds": ["resource-return-het-summary"]
+    }
+  ],
+  "travelLegs": [
+    {
+      "id": "leg-return-het",
+      "fromPlaceId": "mumbai-central",
+      "toPlaceId": "nadiad-jn",
+      "date": "2026-09-17",
+      "mode": "train",
+      "estimatedMinutes": 454,
+      "bufferMinutes": 0,
+      "status": "booked"
+    }
+  ],
+  "branches": [
+    {
+      "id": "sep17-return-boarding-split",
+      "date": "2026-09-17",
+      "label": "Same return train · two boarding stations",
+      "start": "04:30",
+      "participants": ["vyas", "tirth", "nishit", "milan", "het"],
+      "lanes": [
+        {
+          "id": "dadar-boarding",
+          "label": "Dadar boarding",
+          "participants": ["vyas", "tirth", "nishit", "milan"],
+          "activityIds": ["sep17-collect-bags", "return-train"],
+          "expectedCompletion": "13:14"
+        },
+        {
+          "id": "mmct-boarding",
+          "label": "Mumbai Central boarding",
+          "participants": ["het"],
+          "activityIds": ["return-train-het"],
+          "expectedCompletion": "13:14"
+        }
+      ],
+      "rejoinCheckpointId": "checkpoint-nadiad-return",
+      "notes": [
+        "The four-person group boards train 22953 at Dadar at 05:52; Het's uploaded ticket boards the same train at Mumbai Central at 05:40.",
+        "Do not move either fixed booking merely to make the group visually uniform."
+      ]
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "checkpoint-nadiad-return",
+      "date": "2026-09-17",
+      "placeId": "nadiad-jn",
+      "label": "Rejoin at Nadiad Junction",
+      "targetTime": "13:14",
+      "earliest": "13:10",
+      "latest": "13:30",
+      "participants": ["vyas", "tirth", "nishit", "milan", "het"],
+      "departurePolicy": "Rejoin after train arrival; no one needs to change boarding station.",
+      "lateFallback": "If the train is delayed or the group separates on arrival, coordinate by phone and meet at the main Nadiad Junction exit."
+    }
+  ],
+  "signals": [
+    {
+      "id": "het-return-time-recheck",
+      "type": "travel",
+      "label": "Re-check train 22953 MMCT departure time before Het boards",
+      "severity": "attention",
+      "status": "needs-refresh",
+      "lastVerifiedAt": "2026-09-12"
+    }
+  ],
+  "resources": [
+    {
+      "id": "resource-return-het-summary",
+      "type": "image",
+      "label": "Het · Gujarat SF Express boarding summary",
+      "path": "/mumbai-trip/resources/return-het-summary.svg",
+      "public": true,
+      "sensitive": false,
+      "offline": true,
+      "date": "2026-09-17",
+      "meta": "Safe offline summary · MMCT 05:40 → ND 13:14 · D1/2/NC",
+      "destinationUrl": "https://www.google.com/maps/search/?api=1&query=Nadiad%20Junction%20ND",
+      "destinationLabel": "Nadiad Junction"
+    }
+  ]
+}

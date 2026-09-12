@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1600" role="img" aria-labelledby="title desc">
+  <title id="title">Het Gandhi return train boarding summary</title>
+  <desc id="desc">Safe public summary derived from the uploaded RailYatri ticket. Sensitive PNR and reference identifiers are intentionally omitted.</desc>
+  <rect width="1080" height="1600" fill="#f2eee4"/>
+  <rect x="72" y="72" width="936" height="1456" rx="44" fill="#fbf8f0" stroke="#d8d0c1" stroke-width="3"/>
+  <rect x="72" y="72" width="936" height="220" rx="44" fill="#164d8c"/>
+  <path d="M72 248h936v44H72z" fill="#164d8c"/>
+  <text x="126" y="148" font-family="ui-monospace,monospace" font-size="28" letter-spacing="6" fill="#dce8f5">RETURN / 17 SEP 2026</text>
+  <text x="126" y="225" font-family="system-ui,sans-serif" font-size="56" font-weight="800" fill="#fff">Gujarat SF Express</text>
+  <text x="126" y="352" font-family="ui-monospace,monospace" font-size="25" letter-spacing="4" fill="#5e5b53">TRAIN 22953 · 2S · CONFIRMED</text>
+
+  <g transform="translate(126 430)">
+    <text x="0" y="0" font-family="ui-monospace,monospace" font-size="24" fill="#5e5b53">BOARD</text>
+    <text x="0" y="72" font-family="system-ui,sans-serif" font-size="66" font-weight="800" fill="#1b1d1a">05:40</text>
+    <text x="0" y="124" font-family="system-ui,sans-serif" font-size="34" font-weight="700" fill="#164d8c">Mumbai Central · MMCT</text>
+
+    <path d="M0 205H828" stroke="#d8d0c1" stroke-width="3" stroke-dasharray="12 12"/>
+    <circle cx="18" cy="205" r="16" fill="#efa728"/>
+    <circle cx="810" cy="205" r="16" fill="#3f7359"/>
+
+    <text x="0" y="286" font-family="ui-monospace,monospace" font-size="24" fill="#5e5b53">ARRIVE</text>
+    <text x="0" y="358" font-family="system-ui,sans-serif" font-size="66" font-weight="800" fill="#1b1d1a">13:14</text>
+    <text x="0" y="410" font-family="system-ui,sans-serif" font-size="34" font-weight="700" fill="#164d8c">Nadiad Junction · ND</text>
+  </g>
+
+  <g transform="translate(126 930)">
+    <rect width="828" height="260" rx="30" fill="#f2eee4" stroke="#d8d0c1" stroke-width="2"/>
+    <text x="40" y="62" font-family="ui-monospace,monospace" font-size="23" letter-spacing="3" fill="#5e5b53">PASSENGER</text>
+    <text x="40" y="126" font-family="system-ui,sans-serif" font-size="44" font-weight="800" fill="#1b1d1a">Het Gandhi</text>
+    <text x="40" y="196" font-family="ui-monospace,monospace" font-size="28" fill="#164d8c">COACH / BERTH  D1/2/NC</text>
+  </g>
+
+  <g transform="translate(126 1260)">
+    <text x="0" y="0" font-family="ui-monospace,monospace" font-size="22" letter-spacing="3" fill="#9a4d35">IMPORTANT</text>
+    <text x="0" y="48" font-family="system-ui,sans-serif" font-size="27" fill="#1b1d1a">Re-check final railway timing before boarding.</text>
+    <text x="0" y="92" font-family="system-ui,sans-serif" font-size="24" fill="#5e5b53">This public offline copy intentionally omits PNR and booking reference.</text>
+  </g>
+
+  <text x="126" y="1460" font-family="ui-monospace,monospace" font-size="19" letter-spacing="3" fill="#5e5b53">MUMBAI TRIPOS · SAFE OFFLINE BOARDING COPY</text>
+</svg>

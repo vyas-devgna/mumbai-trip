@@ -20,7 +20,7 @@ import {
 } from "../lib.js";
 import { DockAwarePanel } from "../ui.jsx";
 
-const EARLY_DEPARTURES = new Set(["05:00", "05:52"]);
+const EARLY_DEPARTURES = new Set(["05:00", "05:40", "05:52"]);
 const BAG_DAYS = new Set(["2026-09-14", "2026-09-16", "2026-09-17"]);
 
 export default function Plan({ day, setDay, setResource, sunrises }) {
@@ -87,6 +87,7 @@ export default function Plan({ day, setDay, setResource, sunrises }) {
         )}
       </DockAwarePanel>
 
+      <BranchBoard day={day} />
       <MobilityPlan day={day} />
       <ExplorationLane day={day} />
       {day === "2026-09-15" && <StayDecisionBoard />}
@@ -143,6 +144,64 @@ function Item({ a, i, setResource, sunrise }) {
       </div>
     </motion.article>
   );
+}
+
+function BranchBoard({ day }) {
+  const branches = (data.branches || []).filter((branch) => branch.date === day);
+  if (!branches.length) return null;
+  return branches.map((branch) => {
+    const checkpoint = branch.rejoinCheckpointId
+      ? byId(data.checkpoints || [], branch.rejoinCheckpointId)
+      : null;
+    return (
+      <DockAwarePanel className="panel branch-board" key={branch.id}>
+        <div className="panel-head">
+          <span>SUBGROUP BRANCH</span>
+          <b>{branch.label}</b>
+        </div>
+        {branch.notes?.[0] && <p className="branch-note">{branch.notes[0]}</p>}
+        <div className="branch-lanes">
+          {(branch.lanes || []).map((lane, index) => (
+            <article className="branch-lane" key={lane.id}>
+              <span className="branch-lane-index">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <div className="branch-lane-copy">
+                <b>{lane.label}</b>
+                <div className="branch-people">
+                  {(lane.participants || []).map((memberId) => (
+                    <span key={memberId}>{byId(data.members, memberId)?.initials}</span>
+                  ))}
+                </div>
+                {(lane.activityIds || []).map((activityId) => {
+                  const activity = byId(data.activities, activityId);
+                  if (!activity) return null;
+                  return (
+                    <div className="branch-lane-activity" key={activityId}>
+                      <span>{activity.title}</span>
+                      <time>{timingLabel(activity)}</time>
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+        {checkpoint && (
+          <div className="branch-checkpoint">
+            <i>JOIN</i>
+            <div>
+              <b>{checkpoint.label}</b>
+              <span>
+                {checkpoint.targetTime} · {byId(data.places, checkpoint.placeId)?.name}
+              </span>
+              <small>{checkpoint.departurePolicy}</small>
+            </div>
+          </div>
+        )}
+      </DockAwarePanel>
+    );
+  });
 }
 
 function MobilityPlan({ day }) {

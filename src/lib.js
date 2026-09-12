@@ -1,5 +1,27 @@
-import data from "./data/trip.json";
+import coreData from "./data/trip.json";
+import returnBranch from "./data/return-branch.json";
 import SunCalc from "suncalc";
+
+const append = (key) => [
+  ...(coreData[key] || []),
+  ...(returnBranch[key] || []),
+];
+
+const data = {
+  ...coreData,
+  members: append("members"),
+  places: append("places"),
+  activities: append("activities"),
+  travelLegs: append("travelLegs"),
+  branches: append("branches"),
+  checkpoints: append("checkpoints"),
+  fallbacks: append("fallbacks"),
+  candidates: append("candidates"),
+  expenses: append("expenses"),
+  reimbursements: append("reimbursements"),
+  signals: append("signals"),
+  resources: append("resources"),
+};
 
 export { data };
 export const BASE = import.meta.env.BASE_URL;
