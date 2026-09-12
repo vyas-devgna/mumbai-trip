@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  AnimatePresence,
-  LayoutGroup,
-  motion,
-  useReducedMotion,
-} from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   data,
   PRESS_SPRING,
@@ -42,10 +37,7 @@ const onboardingDone = () => {
 };
 
 function migrateLocalExpense(expense) {
-  const hasLegacyAmount = Object.prototype.hasOwnProperty.call(
-    expense,
-    "amount",
-  );
+  const hasLegacyAmount = Object.prototype.hasOwnProperty.call(expense, "amount");
   if (Number.isSafeInteger(expense.amountPaise) && !hasLegacyAmount)
     return expense;
   let amountPaise = 0;
@@ -424,24 +416,21 @@ export default function App() {
       <main className="page-motion" key={tab}>
         {screen}
       </main>
-      <LayoutGroup id="tripos-command">
-        <SideNav
-          active={tab}
-          onChange={setTab}
-          onCommand={() => setSheet("command")}
-          onInstall={installApp}
-          installed={installed}
-        />
-        <AnimatePresence>
-          {sheet && (
-            <CommandSheet
-              mode={sheet}
-              onClose={() => setSheet(null)}
-              {...ctx}
-            />
-          )}
-        </AnimatePresence>
-      </LayoutGroup>
+      <SideNav
+        active={tab}
+        onChange={setTab}
+        onInstall={installApp}
+        installed={installed}
+      />
+      <AnimatePresence>
+        {sheet && (
+          <CommandSheet
+            mode={sheet}
+            onClose={() => setSheet(null)}
+            {...ctx}
+          />
+        )}
+      </AnimatePresence>
       {resource && (
         <ResourceViewer
           resource={resource}
