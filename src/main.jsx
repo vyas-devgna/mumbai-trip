@@ -13,6 +13,7 @@ import './bottom-dock.css'
 import './map-upgrade.css'
 import './stay-planning.css'
 import './branch-board.css'
+import './app-guide.css'
 import {data} from './lib.js'
 import App from './App.jsx'
 
