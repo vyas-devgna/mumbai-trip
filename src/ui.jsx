@@ -6,19 +6,7 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import QRCode from "qrcode";
-import {
-  CalendarDays,
-  Download,
-  Gauge,
-  MapPinned,
-  Maximize2,
-  Minimize2,
-  MoreHorizontal,
-  Plus,
-  Share2,
-  Users,
-  X,
-} from "lucide-react";
+import { Maximize2, Minimize2, Share2, X } from "lucide-react";
 import {
   BASE,
   data,
@@ -89,63 +77,6 @@ export function Topbar({ now, update, day, onDaySelect }) {
   );
 }
 
-export function SideNav({ active, onChange, onCommand, onInstall, installed }) {
-  const tabs = [
-    ["Now", Gauge],
-    ["Plan", CalendarDays],
-    ["Map", MapPinned],
-    ["Group", Users],
-    ["More", MoreHorizontal],
-  ];
-  return (
-    <nav className="side-nav" aria-label="Trip dashboard navigation">
-      <motion.button
-        layoutId="command-surface"
-        className="quick"
-        whileTap={{ scale: 0.92 }}
-        whileHover={{ scale: 1.04 }}
-        transition={PRESS_SPRING}
-        onClick={onCommand}
-        aria-label="Add or change trip"
-      >
-        <Plus />
-        <b>Add</b>
-      </motion.button>
-      <div className="side-nav-sep" />
-      {tabs.map(([tab, Icon]) => (
-        <motion.button
-          key={tab}
-          className={active === tab ? "active" : ""}
-          whileTap={{ scale: 0.92 }}
-          whileHover={{ x: -2 }}
-          transition={PRESS_SPRING}
-          onClick={() => onChange(tab)}
-          aria-current={active === tab ? "page" : undefined}
-        >
-          <Icon />
-          <b>{tab}</b>
-        </motion.button>
-      ))}
-      {!installed && (
-        <>
-          <div className="side-nav-sep" />
-          <motion.button
-            className="install-nav"
-            whileTap={{ scale: 0.92 }}
-            whileHover={{ scale: 1.03 }}
-            transition={PRESS_SPRING}
-            onClick={onInstall}
-            aria-label="Install TripOS"
-          >
-            <Download />
-            <b>Install</b>
-          </motion.button>
-        </>
-      )}
-    </nav>
-  );
-}
-
 export function DockAwarePanel({ className = "", children, ...props }) {
   const slotRef = useRef(null),
     panelRef = useRef(null),
@@ -182,7 +113,7 @@ export function DockAwarePanel({ className = "", children, ...props }) {
     const slot = slotRef.current,
       panel = panelRef.current,
       probe = probeRef.current,
-      dock = document.querySelector(".side-nav");
+      dock = document.querySelector(".bottom-dock");
     if (
       !slot ||
       !probe ||
@@ -310,12 +241,7 @@ export function DockAwarePanel({ className = "", children, ...props }) {
     controls.stop();
     const yieldStateChanged = lastYieldingRef.current !== yielding;
     lastYieldingRef.current = yielding;
-    if (
-      reduced ||
-      !onScreen ||
-      !pageVisible ||
-      !yieldStateChanged
-    ) {
+    if (reduced || !onScreen || !pageVisible || !yieldStateChanged) {
       morphingRef.current = false;
       controls.set(target);
       return;
