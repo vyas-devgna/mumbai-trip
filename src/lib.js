@@ -9,6 +9,7 @@ const append = (key) => [
 
 const data = {
   ...coreData,
+  finance: { ...(coreData.finance || {}), ...(returnBranch.finance || {}) },
   members: append("members"),
   places: append("places"),
   activities: append("activities"),
