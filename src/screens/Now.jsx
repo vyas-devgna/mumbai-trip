@@ -11,9 +11,13 @@ import {
   timingLabel,
   vibrate,
 } from "../lib.js";
+import {
+  buildFinanceSnapshot,
+  formatPercentFromBasisPoints,
+} from "../finance.js";
 import { DockAwarePanel } from "../ui.jsx";
 
-const EARLY_DEPARTURES = new Set(["05:00", "05:52"]);
+const EARLY_DEPARTURES = new Set(["05:00", "05:40", "05:52"]);
 const toRadians = (value) => (value * Math.PI) / 180;
 const toDegrees = (value) => (value * 180) / Math.PI;
 
@@ -59,26 +63,11 @@ export default function Now({
       () => fixed.find((a) => activityStart(a) > now) || fixed.at(-1),
       [fixed, now],
     ),
-    place = next?.placeId && byId(data.places, next.placeId);
+    place = next?.placeId && byId(data.places, next.placeId),
+    finance = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]);
   const tripStart = new Date(`${data.trip.startDate}T05:00:00+05:30`),
-    hours = Math.max(0, Math.round((tripStart - now) / 3600000));
-  const paidExpenses = expenses.filter((expense) => expense.status === "paid"),
-    spendPaise = paidExpenses.reduce((sum, expense) => {
-      if (!Number.isSafeInteger(expense.amountPaise)) return sum;
-      return sum + expense.amountPaise;
-    }, 0),
-    ceilingPaise =
-      data.trip.budget.targetPerPersonPaise *
-      data.trip.budget.groupSizeBudgeted;
-  const progress = ceilingPaise
-      ? Math.min(
-          100,
-          Number(
-            (BigInt(spendPaise) * 100n + BigInt(ceilingPaise) / 2n) /
-              BigInt(ceilingPaise),
-          ),
-        )
-      : 0,
+    hours = Math.max(0, Math.round((tripStart - now) / 3600000)),
+    progress = Math.min(100, finance.forecastBudgetBasisPoints / 100),
     canLocate =
       typeof navigator !== "undefined" &&
       Boolean(navigator.geolocation) &&
@@ -125,9 +114,7 @@ export default function Now({
       : "";
   return (
     <section className="dash">
-      <DockAwarePanel
-        className="panel mission span2"
-      >
+      <DockAwarePanel className="panel mission span2">
         <div className="panel-head">
           <span>01 / NEXT ANCHOR</span>
           <b>{next?.timing.type}</b>
@@ -193,22 +180,30 @@ export default function Now({
 
       <DockAwarePanel className="panel metric">
         <div className="panel-head">
-          <span>02 / ACTUAL SPEND</span>
+          <span>02 / MONEY SNAPSHOT</span>
           <button onClick={() => setSheet("expense")}>+ draft</button>
         </div>
-        <strong className="metric-number">{formatINR(spendPaise)}</strong>
-        <p>confirmed paid spend · {Math.round(progress)}% of planning ceiling</p>
+        <strong className="metric-number">{formatINR(finance.recordedPaidPaise)}</strong>
+        <p>
+          confirmed spend · core forecast {formatINR(finance.forecastCorePaise)} / {formatINR(finance.ceilingPaise)}
+        </p>
         <div className="progress">
           <i style={{ width: `${progress}%` }} />
         </div>
         <div className="metric-pair">
           <span>
-            <b>{formatINR(data.trip.budget.targetPerPersonPaise)}</b> / person
+            <b>{formatPercentFromBasisPoints(finance.forecastBudgetBasisPoints)}</b> core budget used
           </span>
           <span>
-            <b>{paidExpenses.length}</b> paid costs
+            <b>{formatINR(finance.remainingCorePaise)}</b> buffer
           </span>
         </div>
+        {finance.personalPaidPaise > 0 && (
+          <p className="muted">
+            {formatINR(finance.personalPaidPaise)} personal/outside-core spend is
+            recorded but excluded from the five-person budget meter.
+          </p>
+        )}
       </DockAwarePanel>
 
       <DockAwarePanel className="panel alerts">
