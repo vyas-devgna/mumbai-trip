@@ -340,12 +340,4 @@
   .group-status-grid {
     grid-template-columns: 1fr;
   }
-  .side-nav {
-    max-height: calc(100dvh - 16px);
-    overflow-y: auto;
-    scrollbar-width: none;
-  }
-  .side-nav::-webkit-scrollbar {
-    display: none;
-  }
 }
