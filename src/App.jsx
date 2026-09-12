@@ -20,7 +20,6 @@ import Plan from "./screens/Plan.jsx";
 import MapScreen from "./screens/Map.jsx";
 import Group from "./screens/Group.jsx";
 import Finance from "./screens/Finance.jsx";
-import More from "./screens/More.jsx";
 import SideNav from "./navigation.jsx";
 import {
   CommandSheet,
@@ -30,7 +29,7 @@ import {
 } from "./ui.jsx";
 
 const MAP_PREFETCH_ZOOMS = [11, 13, 14];
-const TABS = new Set(["Now", "Plan", "Map", "Group", "Finance", "More"]);
+const TABS = new Set(["Now", "Plan", "Map", "Group", "Finance"]);
 const isStandalone = () =>
   window.matchMedia?.("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
@@ -167,8 +166,7 @@ function AmbientBackdrop({ live }) {
 }
 
 export default function App() {
-  const initialRoute = useRef(readRoute()).current,
-    reduced = useReducedMotion();
+  const initialRoute = useRef(readRoute()).current;
   const now = useTripClock(React),
     update = useAutoUpdate(React),
     sunrises = useSunrise(React);
@@ -399,29 +397,17 @@ export default function App() {
     setLocalExpenses,
     setResource,
     setSheet,
-    installPrompt,
-    setInstallPrompt,
-    installed,
-    update,
     setTab,
-    onInstall: installApp,
     sunrises,
-    onReplayOnboarding: () => setShowOnboarding(true),
   };
-  const screen =
-    tab === "Now" ? (
-      <Now {...ctx} />
-    ) : tab === "Plan" ? (
-      <Plan {...ctx} />
-    ) : tab === "Map" ? (
-      <MapScreen {...ctx} />
-    ) : tab === "Group" ? (
-      <Group {...ctx} />
-    ) : tab === "Finance" ? (
-      <Finance {...ctx} />
-    ) : (
-      <More {...ctx} />
-    );
+  const screens = {
+    Now: <Now {...ctx} />,
+    Plan: <Plan {...ctx} />,
+    Map: <MapScreen {...ctx} />,
+    Group: <Group {...ctx} />,
+    Finance: <Finance {...ctx} />,
+  };
+  const screen = screens[tab] || screens.Now;
 
   return (
     <div className="app-shell">
