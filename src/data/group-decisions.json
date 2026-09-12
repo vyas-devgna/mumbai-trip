@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-12T12:01:00+05:30",
+  "source": {
+    "type": "group-chat-screenshots",
+    "date": "2026-09-12",
+    "note": "Private chat screenshots were used as planning evidence only; the screenshots themselves are not committed."
+  },
+  "decisions": [
+    {
+      "id": "arrival-terminates-bandra",
+      "status": "confirmed",
+      "label": "Outbound train terminates at Bandra Terminus",
+      "detail": "The four outbound passengers get off at Bandra Terminus (BDTS) at 12:30, then continue to Dadar."
+    },
+    {
+      "id": "dadar-cloak-room-hub",
+      "status": "confirmed-group-decision",
+      "label": "Use Dadar railway as the luggage hub",
+      "detail": "Do not plan the first luggage drop at Bandra. Continue from Bandra Terminus to Dadar and use the Dadar railway cloak-room/storage plan, subject to the existing access re-verification signal."
+    },
+    {
+      "id": "arrival-transfer-mode",
+      "status": "choose-on-arrival",
+      "label": "Bandra Terminus → Dadar transfer mode remains situational",
+      "detail": "The group discussed metro, but Bandra Terminus is not the BKC Metro station. Current route data shows a direct Aqua Line ride from BKC to Dadar at about ₹20, so using metro requires a separate transfer from BDTS to BKC. With four people plus backpacks, default to a direct cab/taxi unless live traffic makes rail/metro materially better. Do not rely on the chat estimate of 10–15 minutes by road as a guaranteed travel time."
+    },
+    {
+      "id": "physical-card-backup",
+      "status": "confirmed-group-decision",
+      "label": "Carry at least one physical debit/credit card",
+      "detail": "Keep one physical debit or credit card accessible as a cash-access/payment fallback; do not rely only on phones/UPI."
+    }
+  ],
+  "signals": [
+    {
+      "id": "arrival-transfer-live-check",
+      "type": "travel",
+      "label": "At Bandra arrival, compare live cab vs rail/metro to Dadar before leaving BDTS",
+      "severity": "attention",
+      "status": "needs-live-check",
+      "lastVerifiedAt": "2026-09-12T12:01:00+05:30"
+    },
+    {
+      "id": "physical-card-ready",
+      "type": "group",
+      "label": "Confirm one person is carrying an active physical debit/credit card before departure",
+      "severity": "attention",
+      "status": "needs-confirmation",
+      "lastVerifiedAt": "2026-09-12T12:01:00+05:30"
+    }
+  ],
+  "research": [
+    {
+      "claim": "BKC → Dadar is a direct Aqua Line metro ride; current route aggregators show roughly ₹20 and about 7–12 minutes in-train.",
+      "confidence": "medium",
+      "checkedAt": "2026-09-12",
+      "sources": [
+        "https://mumbaimetro.info/metro-route/bandra-kurla-complex-to-dadar",
+        "https://yometro.com/from-bandra-kurla-complex-metro-station-mumbai-to-dadar-metro-station-mumbai"
+      ],
+      "limitation": "This does not include the separate Bandra Terminus → BKC transfer, station walking, ticketing, queues, or festival-day conditions."
+    }
+  ]
+}
