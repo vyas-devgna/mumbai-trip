@@ -108,7 +108,7 @@ export default function Finance({ expenses, setSheet }) {
           <b>{formatINR(snapshot.personalPaidPaise)} personal / outside core</b>
           <span>
             Included in recorded trip spend, excluded from the five-person core
-            budget. {hetReturn ? `Het's ${formatINR(hetReturn.amountPaise)} return ticket is paid by Het and allocated only to Het.` : "Personal costs remain settlement-neutral for other members."}
+            budget and shared settlement. {hetReturn ? `Het's ${formatINR(hetReturn.amountPaise)} return ticket was paid by Het and stays entirely personal.` : "Personal costs remain settlement-neutral for other members."}
           </span>
         </div>
       )}
@@ -244,38 +244,40 @@ export default function Finance({ expenses, setSheet }) {
       <DockAwarePanel className="panel">
         <div className="panel-head">
           <span>PER-PERSON ACCOUNTS</span>
-          <b>CONFIRMED COSTS ONLY</b>
+          <b>CORE SETTLEMENT ONLY</b>
         </div>
         <p className="muted">
           "Share" is the allocated trip cost. "Credit" is a confirmed
           reimbursement covering that share. Planned costs are shown separately
-          and do not create debt.
+          and do not create debt. Personal members such as Het stay outside this settlement.
         </p>
         <div className="finance-accounts">
-          {data.members.map((person) => {
-            const row = settlement.rows[person.id],
-              obligation = obligationLabel(row.netPaise),
-              plannedShare = snapshot.plannedShareByMember[person.id] || 0;
-            return (
-              <div className="finance-account" key={person.id}>
-                <div className="finance-account-id">{person.initials}</div>
-                <div>
-                  <b>{person.name}</b>
-                  <small>
-                    share {formatINR(row.sharePaise)} · merchant paid {formatINR(row.merchantPaidPaise)}
-                    {row.coverageCreditPaise > 0
-                      ? ` · credit ${formatINR(row.coverageCreditPaise)}`
-                      : ""}
-                  </small>
-                  <small>
-                    recorded cash position {formatINR(row.cashPositionPaise)}
-                    {plannedShare > 0 ? ` · planned share +${formatINR(plannedShare)}` : ""}
-                  </small>
+          {data.members
+            .filter((person) => snapshot.budgetMembers.includes(person.id))
+            .map((person) => {
+              const row = settlement.rows[person.id],
+                obligation = obligationLabel(row.netPaise),
+                plannedShare = snapshot.plannedShareByMember[person.id] || 0;
+              return (
+                <div className="finance-account" key={person.id}>
+                  <div className="finance-account-id">{person.initials}</div>
+                  <div>
+                    <b>{person.name}</b>
+                    <small>
+                      share {formatINR(row.sharePaise)} · merchant paid {formatINR(row.merchantPaidPaise)}
+                      {row.coverageCreditPaise > 0
+                        ? ` · credit ${formatINR(row.coverageCreditPaise)}`
+                        : ""}
+                    </small>
+                    <small>
+                      recorded cash position {formatINR(row.cashPositionPaise)}
+                      {plannedShare > 0 ? ` · planned share +${formatINR(plannedShare)}` : ""}
+                    </small>
+                  </div>
+                  <strong className={obligation.className}>{obligation.text}</strong>
                 </div>
-                <strong className={obligation.className}>{obligation.text}</strong>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </DockAwarePanel>
 
