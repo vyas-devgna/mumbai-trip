@@ -251,30 +251,32 @@ export default function Finance({ expenses, setSheet }) {
           and do not create debt.
         </p>
         <div className="finance-accounts">
-          {data.members.map((person) => {
-            const row = settlement.rows[person.id],
-              obligation = obligationLabel(row.netPaise),
-              plannedShare = snapshot.plannedShareByMember[person.id] || 0;
-            return (
-              <div className="finance-account" key={person.id}>
-                <div className="finance-account-id">{person.initials}</div>
-                <div>
-                  <b>{person.name}</b>
-                  <small>
-                    share {formatINR(row.sharePaise)} · merchant paid {formatINR(row.merchantPaidPaise)}
-                    {row.coverageCreditPaise > 0
-                      ? ` · credit ${formatINR(row.coverageCreditPaise)}`
-                      : ""}
-                  </small>
-                  <small>
-                    recorded cash position {formatINR(row.cashPositionPaise)}
-                    {plannedShare > 0 ? ` · planned share +${formatINR(plannedShare)}` : ""}
-                  </small>
+          {data.members
+            .filter((person) => snapshot.budgetMembers.includes(person.id))
+            .map((person) => {
+              const row = settlement.rows[person.id],
+                obligation = obligationLabel(row.netPaise),
+                plannedShare = snapshot.plannedShareByMember[person.id] || 0;
+              return (
+                <div className="finance-account" key={person.id}>
+                  <div className="finance-account-id">{person.initials}</div>
+                  <div>
+                    <b>{person.name}</b>
+                    <small>
+                      share {formatINR(row.sharePaise)} · merchant paid {formatINR(row.merchantPaidPaise)}
+                      {row.coverageCreditPaise > 0
+                        ? ` · credit ${formatINR(row.coverageCreditPaise)}`
+                        : ""}
+                    </small>
+                    <small>
+                      recorded cash position {formatINR(row.cashPositionPaise)}
+                      {plannedShare > 0 ? ` · planned share +${formatINR(plannedShare)}` : ""}
+                    </small>
+                  </div>
+                  <strong className={obligation.className}>{obligation.text}</strong>
                 </div>
-                <strong className={obligation.className}>{obligation.text}</strong>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </DockAwarePanel>
 
