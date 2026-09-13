@@ -1,6 +1,6 @@
 const BUILD_VERSION = "__TRIPOS_BUILD_SHA__";
-const SHELL_CACHE = `mumbai-tripos-shell-v9-${BUILD_VERSION.slice(0, 12)}`;
-const RUNTIME_CACHE = "mumbai-tripos-runtime-v8";
+const SHELL_CACHE = `mumbai-tripos-shell-v10-${BUILD_VERSION.slice(0, 12)}`;
+const RUNTIME_CACHE = "mumbai-tripos-runtime-v9";
 const MAP_CACHE = "mumbai-tripos-map-v4";
 const BASE = new URL("./", self.location.href).pathname;
 
@@ -12,6 +12,13 @@ const CRITICAL_PRECACHE = [
   `${BASE}icon-512.png`,
   `${BASE}version.json`,
 ];
+
+const INSTALL_ASSET_PATHS = new Set([
+  `${BASE}manifest.webmanifest`,
+  `${BASE}icon-180.png`,
+  `${BASE}icon-192.png`,
+  `${BASE}icon-512.png`,
+]);
 
 const VAULT_URLS = [
   `${BASE}resources/outbound-karnavati.pdf`,
@@ -185,8 +192,10 @@ self.addEventListener("fetch", (event) => {
 
   if (
     url.origin === self.location.origin &&
-    url.pathname === `${BASE}version.json`
+    (url.pathname === `${BASE}version.json` || INSTALL_ASSET_PATHS.has(url.pathname))
   ) {
+    // Installation metadata and icons must never be served stale. Chromium may
+    // validate and package these assets during the install transaction itself.
     event.respondWith(networkFirst(event.request));
     return;
   }
