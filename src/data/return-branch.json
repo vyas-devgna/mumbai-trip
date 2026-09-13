@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "finance": {
-    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "pratham", "het"],
-    "scopeNote": "Merged finance cohort: Vyas, Tirth, Nishit, Milan, Pratham and Het are equal group members. Each expense still uses its own participantIds so only actual participants share that transaction."
+    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
+    "scopeNote": "Finance uses the five-member shared-cost cohort. Expense participation remains transaction-specific so only named participants share each transaction."
   },
   "members": [
     {
