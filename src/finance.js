@@ -28,14 +28,15 @@ export function budgetMemberIds(data) {
   return (data.members || []).slice(0, Math.max(0, count)).map((member) => member.id);
 }
 
+const financeMemberSet = (data) => new Set(budgetMemberIds(data));
+const financeParticipants = (data, ids) =>
+  uniqueKnownIds(ids, financeMemberSet(data));
+
 export function expenseBudgetScope(data, expense) {
-  if (expense.budgetScope === "core" || expense.budgetScope === "personal")
-    return expense.budgetScope;
-  const core = new Set(budgetMemberIds(data)),
-    participants = expense.participantIds || [];
-  return participants.length && participants.every((id) => core.has(id))
-    ? "core"
-    : "personal";
+  if (expense.budgetScope === "personal") return "personal";
+  const participants = financeParticipants(data, expense.participantIds);
+  if (expense.budgetScope === "core") return participants.length ? "core" : "personal";
+  return participants.length ? "core" : "personal";
 }
 
 export function ratioBasisPoints(numeratorPaise, denominatorPaise) {
@@ -53,22 +54,28 @@ export function formatPercentFromBasisPoints(basisPoints) {
 }
 
 function groupPaidExpenses(data, expenses, diagnostics) {
-  const valid = new Set((data.members || []).map((member) => member.id)),
+  const financeMembers = financeMemberSet(data),
+    knownMembers = new Set((data.members || []).map((member) => member.id)),
     groups = new Map(),
     signatures = new Map();
 
   for (const expense of expenses) {
     if (expense.status !== "paid") continue;
     const amountPaise = safePaise(expense.amountPaise),
-      participants = uniqueKnownIds(expense.participantIds, valid);
+      participants = uniqueKnownIds(expense.participantIds, financeMembers),
+      declared = [...new Set(expense.participantIds || [])];
     if (!amountPaise) {
       diagnostics.push(`${expense.id}: invalid paid amount`);
       continue;
     }
-    if (!participants.length) {
-      diagnostics.push(`${expense.id}: no valid participants`);
+    if (declared.some((id) => !knownMembers.has(id))) {
+      diagnostics.push(`${expense.id}: unknown participant`);
       continue;
     }
+    // Transactions with no finance-cohort participant are deliberately omitted
+    // from settlement. They may still exist in the wider itinerary data.
+    if (!participants.length) continue;
+
     const baseGroupId = expense.settlementGroupId || expense.id,
       signature = `${expense.payerId || ""}|${participants.join(",")}`,
       seen = signatures.get(baseGroupId);
@@ -91,7 +98,7 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 }
 
 export function buildSettlement(data, expenses) {
-  const valid = new Set((data.members || []).map((member) => member.id)),
+  const financeMembers = financeMemberSet(data),
     rows = Object.fromEntries(
       (data.members || []).map((member) => [
         member.id,
@@ -112,10 +119,11 @@ export function buildSettlement(data, expenses) {
     confirmedReimbursementPaise = 0;
 
   for (const group of groupPaidExpenses(data, expenses, diagnostics)) {
-    if (valid.has(group.payerId)) rows[group.payerId].merchantPaidPaise += group.amountPaise;
+    if (financeMembers.has(group.payerId))
+      rows[group.payerId].merchantPaidPaise += group.amountPaise;
     else {
       unassignedPaidPaise += group.amountPaise;
-      diagnostics.push(`${group.id}: payer is not a known member`);
+      diagnostics.push(`${group.id}: payer is outside finance cohort`);
     }
     const shares = splitPaiseExact(group.amountPaise, group.participants.length);
     group.participants.forEach((id, index) => {
@@ -126,16 +134,18 @@ export function buildSettlement(data, expenses) {
   for (const payment of data.reimbursements || []) {
     if (payment.status !== "received") continue;
     const amountPaise = safePaise(payment.amountPaise),
-      covered = uniqueKnownIds(payment.coversMemberIds, valid);
-    if (!amountPaise || !covered.length || !valid.has(payment.toMemberId)) {
-      diagnostics.push(`${payment.id}: invalid confirmed reimbursement`);
+      covered = uniqueKnownIds(payment.coversMemberIds, financeMembers);
+    if (
+      !amountPaise ||
+      !covered.length ||
+      !financeMembers.has(payment.toMemberId) ||
+      !financeMembers.has(payment.fromMemberId)
+    )
       continue;
-    }
+
     confirmedReimbursementPaise += amountPaise;
     rows[payment.toMemberId].reimbursementReceivedPaise += amountPaise;
-    if (valid.has(payment.fromMemberId))
-      rows[payment.fromMemberId].reimbursementSentPaise += amountPaise;
-    else diagnostics.push(`${payment.id}: sender is not a known member`);
+    rows[payment.fromMemberId].reimbursementSentPaise += amountPaise;
 
     const credits = splitPaiseExact(amountPaise, covered.length);
     covered.forEach((id, index) => {
@@ -143,7 +153,8 @@ export function buildSettlement(data, expenses) {
     });
   }
 
-  for (const row of Object.values(rows)) {
+  for (const [id, row] of Object.entries(rows)) {
+    if (!financeMembers.has(id)) continue;
     row.cashPositionPaise =
       row.merchantPaidPaise +
       row.reimbursementSentPaise -
@@ -158,6 +169,7 @@ export function buildSettlement(data, expenses) {
   const creditors = [],
     debtors = [];
   for (const [id, row] of Object.entries(rows)) {
+    if (!financeMembers.has(id)) continue;
     if (row.netPaise > 0) creditors.push({ id, amountPaise: row.netPaise });
     if (row.netPaise < 0) debtors.push({ id, amountPaise: -row.netPaise });
   }
@@ -186,19 +198,21 @@ export function buildSettlement(data, expenses) {
     if (debtors[debtorIndex].amountPaise === 0) debtorIndex++;
   }
 
-  const merchantPaidPaise = Object.values(rows).reduce(
+  const financeRows = [...financeMembers].map((id) => rows[id]),
+    merchantPaidPaise = financeRows.reduce(
       (sum, row) => sum + row.merchantPaidPaise,
       0,
     ),
-    allocatedSharePaise = Object.values(rows).reduce(
+    allocatedSharePaise = financeRows.reduce(
       (sum, row) => sum + row.sharePaise,
       0,
     ),
-    netBalancePaise = Object.values(rows).reduce(
+    netBalancePaise = financeRows.reduce(
       (sum, row) => sum + row.netPaise,
       0,
     );
-  unallocatedSharePaise = merchantPaidPaise + unassignedPaidPaise - allocatedSharePaise;
+  unallocatedSharePaise =
+    merchantPaidPaise + unassignedPaidPaise - allocatedSharePaise;
 
   return {
     rows,
@@ -214,7 +228,7 @@ export function buildSettlement(data, expenses) {
 }
 
 function addPlannedShares(data, expenses) {
-  const valid = new Set((data.members || []).map((member) => member.id)),
+  const valid = financeMemberSet(data),
     plannedByMember = Object.fromEntries(
       (data.members || []).map((member) => [member.id, 0]),
     );
@@ -243,9 +257,16 @@ export function buildFinanceSnapshot(data, expenses) {
       (expense) => expenseBudgetScope(data, expense) === "core",
     ),
     budgetMembers = budgetMemberIds(data),
-    ceilingPaise = safePaise(data.trip?.budget?.targetPerPersonPaise) * budgetMembers.length,
-    recordedPaidPaise = paid.reduce((sum, expense) => sum + safePaise(expense.amountPaise), 0),
-    corePaidPaise = corePaid.reduce((sum, expense) => sum + safePaise(expense.amountPaise), 0),
+    ceilingPaise =
+      safePaise(data.trip?.budget?.targetPerPersonPaise) * budgetMembers.length,
+    recordedPaidPaise = paid.reduce(
+      (sum, expense) => sum + safePaise(expense.amountPaise),
+      0,
+    ),
+    corePaidPaise = corePaid.reduce(
+      (sum, expense) => sum + safePaise(expense.amountPaise),
+      0,
+    ),
     personalPaidPaise = personalPaid.reduce(
       (sum, expense) => sum + safePaise(expense.amountPaise),
       0,
@@ -277,7 +298,10 @@ export function buildFinanceSnapshot(data, expenses) {
     remainingCorePaise,
     overCorePaise,
     actualBudgetBasisPoints: ratioBasisPoints(corePaidPaise, ceilingPaise),
-    forecastBudgetBasisPoints: ratioBasisPoints(forecastCorePaise, ceilingPaise),
+    forecastBudgetBasisPoints: ratioBasisPoints(
+      forecastCorePaise,
+      ceilingPaise,
+    ),
     settlement,
     plannedShareByMember,
   };
