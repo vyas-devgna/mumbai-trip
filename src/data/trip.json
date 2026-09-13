@@ -472,17 +472,6 @@
       "sourceId": "resource-return-ticket"
     },
     {
-      "id": "expense-pretrip-dinner-sep13",
-      "amountPaise": 82000,
-      "payerId": "vyas",
-      "participantIds": ["vyas", "tirth", "nishit", "milan"],
-      "category": "food",
-      "date": "2026-09-13",
-      "label": "Pre-trip dinner · Jay Girr Kathiyawadi",
-      "status": "paid",
-      "note": "Pratham was not present; split equally between Vyas, Tirth, Nishit and Milan."
-    },
-    {
       "id": "expense-storage-sep14",
       "amountPaise": 20000,
       "payerId": "vyas",
