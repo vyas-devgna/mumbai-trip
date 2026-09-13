@@ -40,6 +40,30 @@ jobs:
           NODE
       - name: Validate canonical trip data
         run: npm run validate:data
+      - name: Validate install flow source
+        run: |
+          node - <<'NODE'
+          const fs = require('fs')
+          const main = fs.readFileSync('src/main.jsx', 'utf8')
+          const app = fs.readFileSync('src/App.jsx', 'utf8')
+          const ui = fs.readFileSync('src/ui.jsx', 'utf8')
+          const html = fs.readFileSync('index.html', 'utf8')
+
+          const checks = [
+            [main.includes('beforeinstallprompt'), 'early beforeinstallprompt capture'],
+            [main.includes('appinstalled'), 'appinstalled state handling'],
+            [app.includes('prompt.prompt()'), 'native install prompt invocation'],
+            [app.includes('setSheet("install")'), 'manual install fallback'],
+            [ui.includes('Chrome / Android'), 'Chromium/Android fallback guidance'],
+            [ui.includes('Safari / iPhone'), 'Safari/iPhone fallback guidance'],
+            [html.includes('rel="manifest"'), 'manifest link'],
+            [html.includes('apple-mobile-web-app-capable'), 'iOS standalone metadata'],
+            [html.includes('apple-touch-icon'), 'iOS install icon'],
+          ]
+          for (const [ok, label] of checks) {
+            if (!ok) throw new Error(`Missing install capability: ${label}`)
+          }
+          NODE
       - name: Build production PWA
         run: npm run build
       - name: Validate installable PWA output
