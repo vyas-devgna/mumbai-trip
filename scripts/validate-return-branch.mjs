@@ -170,6 +170,32 @@ else {
     errors.push("finance: Het return ticket must be outside the core budget");
 }
 
+const dinnerCore = (extra.expenses || []).find(
+    (expense) => expense.id === "expense-pretrip-dinner-core-sep13",
+  ),
+  dinnerHet = (extra.expenses || []).find(
+    (expense) => expense.id === "expense-pretrip-dinner-het-sep13",
+  );
+if (!dinnerCore || !dinnerHet) {
+  errors.push("finance: pre-trip dinner allocations are incomplete");
+} else {
+  if (dinnerCore.amountPaise + dinnerHet.amountPaise !== 82000)
+    errors.push("finance: pre-trip dinner allocations must total 82000 paise");
+  if (dinnerCore.amountPaise !== 65600 || dinnerHet.amountPaise !== 16400)
+    errors.push("finance: pre-trip dinner must be five equal ₹164 shares");
+  if (dinnerCore.payerId !== "vyas" || dinnerHet.payerId !== "vyas")
+    errors.push("finance: Vyas must be the pre-trip dinner payer");
+  const coreDinnerParticipants = [...(dinnerCore.participantIds || [])].sort();
+  if (
+    coreDinnerParticipants.join(",") !== ["milan", "nishit", "tirth", "vyas"].join(",")
+  )
+    errors.push("finance: dinner core allocation must cover Vyas, Tirth, Nishit and Milan");
+  if (dinnerHet.participantIds?.length !== 1 || dinnerHet.participantIds[0] !== "het")
+    errors.push("finance: dinner Het allocation must cover only Het");
+  if ((dinnerCore.participantIds || []).includes("pratham") || (dinnerHet.participantIds || []).includes("pratham"))
+    errors.push("finance: Pratham was absent from the pre-trip dinner");
+}
+
 const merged = {
   ...base,
   finance: { ...(base.finance || {}), ...(extra.finance || {}) },
@@ -187,16 +213,16 @@ const merged = {
   resources: all("resources"),
 };
 const finance = buildFinanceSnapshot(merged, merged.expenses),
-  financeWithoutHet = buildFinanceSnapshot(
+  financeWithoutHetTicket = buildFinanceSnapshot(
     merged,
     merged.expenses.filter((expense) => expense.id !== "expense-return-het"),
   );
-if (finance.corePaidPaise !== financeWithoutHet.corePaidPaise)
+if (finance.corePaidPaise !== financeWithoutHetTicket.corePaidPaise)
   errors.push("finance: Het personal ticket leaked into the core paid total");
-if (finance.recordedPaidPaise - financeWithoutHet.recordedPaidPaise !== 23315)
+if (finance.recordedPaidPaise - financeWithoutHetTicket.recordedPaidPaise !== 23315)
   errors.push("finance: Het ticket does not add exactly 23315 paise to recorded spend");
-if (finance.settlement.rows.het?.netPaise !== 0)
-  errors.push(`finance: Het net is ${finance.settlement.rows.het?.netPaise}, expected 0`);
+if (finance.settlement.rows.het?.netPaise !== -16400)
+  errors.push(`finance: Het net is ${finance.settlement.rows.het?.netPaise}, expected -16400 from dinner only`);
 if (finance.settlement.unassignedPaidPaise !== 0)
   errors.push(`finance: ${finance.settlement.unassignedPaidPaise} paise has no payer`);
 if (finance.settlement.unallocatedSharePaise !== 0)
