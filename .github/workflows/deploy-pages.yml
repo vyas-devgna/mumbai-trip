@@ -70,6 +70,7 @@ jobs:
         run: |
           node - <<'NODE'
           const fs = require('fs')
+          const zlib = require('zlib')
           const required = [
             'dist/index.html',
             'dist/manifest.webmanifest',
@@ -84,23 +85,47 @@ jobs:
             }
           }
 
-          const pngSize = file => {
+          const validatePng = (file, expected) => {
             const data = fs.readFileSync(file)
             const signature = data.subarray(0, 8).toString('hex')
             if (signature !== '89504e470d0a1a0a') throw new Error(`${file} is not PNG`)
-            return [data.readUInt32BE(16), data.readUInt32BE(20)]
+            const width = data.readUInt32BE(16)
+            const height = data.readUInt32BE(20)
+            if (width !== expected || height !== expected) {
+              throw new Error(`${file} is ${width}x${height}, expected ${expected}x${expected}`)
+            }
+
+            let offset = 8
+            let sawIend = false
+            const idat = []
+            while (offset < data.length) {
+              if (offset + 12 > data.length) throw new Error(`${file} has a truncated PNG chunk header`)
+              const length = data.readUInt32BE(offset)
+              const type = data.subarray(offset + 4, offset + 8).toString('ascii')
+              const end = offset + 12 + length
+              if (end > data.length) throw new Error(`${file} has a truncated ${type} chunk`)
+              if (type === 'IDAT') idat.push(data.subarray(offset + 8, offset + 8 + length))
+              if (type === 'IEND') {
+                sawIend = true
+                offset = end
+                break
+              }
+              offset = end
+            }
+            if (!sawIend) throw new Error(`${file} is missing IEND`)
+            if (!idat.length) throw new Error(`${file} is missing IDAT`)
+            try {
+              zlib.inflateSync(Buffer.concat(idat))
+            } catch (error) {
+              throw new Error(`${file} contains undecodable image data: ${error.message}`)
+            }
           }
 
           for (const [file, expected] of [
             ['dist/icon-180.png', 180],
             ['dist/icon-192.png', 192],
             ['dist/icon-512.png', 512],
-          ]) {
-            const [width, height] = pngSize(file)
-            if (width !== expected || height !== expected) {
-              throw new Error(`${file} is ${width}x${height}, expected ${expected}x${expected}`)
-            }
-          }
+          ]) validatePng(file, expected)
 
           const manifest = JSON.parse(fs.readFileSync('dist/manifest.webmanifest', 'utf8'))
           if (manifest.start_url !== '/mumbai-trip/' || manifest.scope !== '/mumbai-trip/') {
