@@ -36,8 +36,7 @@ function obligationLabel(netPaise) {
 export default function Finance({ expenses, setSheet }) {
   const snapshot = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]),
     [copied, setCopied] = useState(null),
-    settlement = snapshot.settlement,
-    hetReturn = snapshot.paid.find((expense) => expense.id === "expense-return-het");
+    settlement = snapshot.settlement;
 
   const copySettlement = async (transfer) => {
     const from = member(transfer.from)?.name,
@@ -105,10 +104,10 @@ export default function Finance({ expenses, setSheet }) {
 
       {snapshot.personalPaidPaise > 0 && (
         <div className="finance-scope-note">
-          <b>{formatINR(snapshot.personalPaidPaise)} personal / outside core</b>
+          <b>{formatINR(snapshot.personalPaidPaise)} personal / outside group</b>
           <span>
-            Included in recorded trip spend, excluded from the five-person core
-            budget. {hetReturn ? `Het's ${formatINR(hetReturn.amountPaise)} return ticket is paid by Het and allocated only to Het.` : "Personal costs remain settlement-neutral for other members."}
+            Included in recorded trip spend, excluded from the shared group
+            budget and settlement unless that expense explicitly names group participants.
           </span>
         </div>
       )}
@@ -121,8 +120,8 @@ export default function Finance({ expenses, setSheet }) {
           </div>
           <strong className="metric-number small">{formatINR(snapshot.ceilingPaise)}</strong>
           <p className="muted">
-            {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} core members.
-            Personal costs outside this cohort do not distort the budget meter.
+            {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} group members.
+            Expense participation is still transaction-specific, so absent members are never charged automatically.
           </p>
           <div className="system-rows">
             <div>

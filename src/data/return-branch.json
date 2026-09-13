@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "finance": {
-    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "pratham"],
-    "scopeNote": "The core planning budget remains the five-person Mumbai trip cohort. Het's individual return ticket is tracked as real trip spend but excluded from the core five-person budget and shared settlement."
+    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "pratham", "het"],
+    "scopeNote": "Merged finance cohort: Vyas, Tirth, Nishit, Milan, Pratham and Het are equal group members. Each expense still uses its own participantIds so only actual participants share that transaction."
   },
   "members": [
     {
@@ -110,28 +110,16 @@
   ],
   "expenses": [
     {
-      "id": "expense-pretrip-dinner-core-sep13",
-      "amountPaise": 65600,
+      "id": "expense-pretrip-dinner-sep13",
+      "amountPaise": 82000,
       "payerId": "vyas",
-      "participantIds": ["vyas", "tirth", "nishit", "milan"],
+      "participantIds": ["vyas", "tirth", "nishit", "milan", "het"],
       "category": "food",
       "date": "2026-09-13",
-      "label": "Pre-trip dinner · Jay Girr Kathiyawadi · core allocation",
+      "label": "Pre-trip dinner · Jay Girr Kathiyawadi",
       "status": "paid",
       "budgetScope": "core",
-      "note": "₹820 merchant bill split equally across Vyas, Tirth, Nishit, Milan and Het. This row records the four core shares: ₹164 each. Pratham was not present."
-    },
-    {
-      "id": "expense-pretrip-dinner-het-sep13",
-      "amountPaise": 16400,
-      "payerId": "vyas",
-      "participantIds": ["het"],
-      "category": "food",
-      "date": "2026-09-13",
-      "label": "Pre-trip dinner · Jay Girr Kathiyawadi · Het share",
-      "status": "paid",
-      "budgetScope": "personal",
-      "note": "Het attended the pre-trip dinner. Vyas paid the merchant; Het owes his ₹164 dinner share. His self-paid train ticket remains settlement-neutral."
+      "note": "Vyas paid ₹820. Five attendees—Vyas, Tirth, Nishit, Milan and Het—share equally at ₹164 each. Pratham was not present."
     },
     {
       "id": "expense-return-het",
@@ -142,7 +130,7 @@
       "date": "2026-09-11",
       "label": "Gujarat SF Express · Het · MMCT → ND",
       "status": "paid",
-      "budgetScope": "personal",
+      "budgetScope": "core",
       "sourceId": "resource-return-het-summary",
       "componentsPaise": {
         "baseFare": 19500,
@@ -151,7 +139,7 @@
         "travelInsurancePremium": 45,
         "pgCharges": 0
       },
-      "note": "Paid by Het. Individual return ticket; settlement-neutral for everyone else and excluded from the five-person core planning budget."
+      "note": "Paid by Het. Individual return ticket is allocated only to Het, so it contributes to group trip spend but creates no settlement debt or credit."
     }
   ],
   "signals": [
