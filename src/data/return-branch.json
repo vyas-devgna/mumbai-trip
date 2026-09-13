@@ -110,6 +110,30 @@
   ],
   "expenses": [
     {
+      "id": "expense-pretrip-dinner-core-sep13",
+      "amountPaise": 65600,
+      "payerId": "vyas",
+      "participantIds": ["vyas", "tirth", "nishit", "milan"],
+      "category": "food",
+      "date": "2026-09-13",
+      "label": "Pre-trip dinner · Jay Girr Kathiyawadi · core allocation",
+      "status": "paid",
+      "budgetScope": "core",
+      "note": "₹820 merchant bill split equally across Vyas, Tirth, Nishit, Milan and Het. This row records the four core shares: ₹164 each. Pratham was not present."
+    },
+    {
+      "id": "expense-pretrip-dinner-het-sep13",
+      "amountPaise": 16400,
+      "payerId": "vyas",
+      "participantIds": ["het"],
+      "category": "food",
+      "date": "2026-09-13",
+      "label": "Pre-trip dinner · Jay Girr Kathiyawadi · Het share",
+      "status": "paid",
+      "budgetScope": "personal",
+      "note": "Het attended the pre-trip dinner. Vyas paid the merchant; Het owes his ₹164 dinner share. His self-paid train ticket remains settlement-neutral."
+    },
+    {
       "id": "expense-return-het",
       "amountPaise": 23315,
       "payerId": "het",
