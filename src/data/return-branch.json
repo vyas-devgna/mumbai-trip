@@ -2,7 +2,50 @@
   "schemaVersion": 2,
   "finance": {
     "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
-    "scopeNote": "Finance uses the five-member shared-cost cohort. Expense participation remains transaction-specific so only named participants share each transaction."
+    "scopeNote": "Finance uses the five-member shared-cost cohort. Expense participation remains transaction-specific so only named participants share each transaction.",
+    "groupFund": {
+      "label": "Group account",
+      "currency": "INR",
+      "purpose": "Shared group expenses",
+      "contributions": [
+        {
+          "id": "group-fund-vyas-sep14",
+          "memberId": "vyas",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-tirth-sep14",
+          "memberId": "tirth",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-nishit-sep14",
+          "memberId": "nishit",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-milan-sep14",
+          "memberId": "milan",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-het-sep14",
+          "memberId": "het",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "status": "received"
+        }
+      ],
+      "outflows": []
+    }
   },
   "members": [
     {
