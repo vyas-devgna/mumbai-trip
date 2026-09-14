@@ -2,26 +2,42 @@ import coreData from "./data/trip.json";
 import returnBranch from "./data/return-branch.json";
 import SunCalc from "suncalc";
 
-const append = (key) => [
-  ...(coreData[key] || []),
-  ...(returnBranch[key] || []),
-];
+const mergeById = (key) => {
+  const merged = [...(coreData[key] || [])],
+    indexById = new Map(
+      merged
+        .map((item, index) => [item?.id, index])
+        .filter(([id]) => Boolean(id)),
+    );
+
+  for (const item of returnBranch[key] || []) {
+    const existingIndex = item?.id ? indexById.get(item.id) : undefined;
+    if (existingIndex != null) {
+      merged[existingIndex] = { ...merged[existingIndex], ...item };
+    } else {
+      if (item?.id) indexById.set(item.id, merged.length);
+      merged.push(item);
+    }
+  }
+  return merged;
+};
 
 const data = {
   ...coreData,
+  trip: { ...(coreData.trip || {}), ...(returnBranch.trip || {}) },
   finance: { ...(coreData.finance || {}), ...(returnBranch.finance || {}) },
-  members: append("members"),
-  places: append("places"),
-  activities: append("activities"),
-  travelLegs: append("travelLegs"),
-  branches: append("branches"),
-  checkpoints: append("checkpoints"),
-  fallbacks: append("fallbacks"),
-  candidates: append("candidates"),
-  expenses: append("expenses"),
-  reimbursements: append("reimbursements"),
-  signals: append("signals"),
-  resources: append("resources"),
+  members: mergeById("members"),
+  places: mergeById("places"),
+  activities: mergeById("activities"),
+  travelLegs: mergeById("travelLegs"),
+  branches: mergeById("branches"),
+  checkpoints: mergeById("checkpoints"),
+  fallbacks: mergeById("fallbacks"),
+  candidates: mergeById("candidates"),
+  expenses: mergeById("expenses"),
+  reimbursements: mergeById("reimbursements"),
+  signals: mergeById("signals"),
+  resources: mergeById("resources"),
 };
 
 export { data };
