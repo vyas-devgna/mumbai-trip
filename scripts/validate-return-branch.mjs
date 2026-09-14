@@ -8,29 +8,47 @@ const base = read("../src/data/trip.json");
 const extra = read("../src/data/return-branch.json");
 const errors = [];
 
-const all = (key) => [...(base[key] || []), ...(extra[key] || [])];
+const all = (key) => {
+  const merged = [...(base[key] || [])],
+    indexById = new Map(
+      merged
+        .map((item, index) => [item?.id, index])
+        .filter(([id]) => Boolean(id)),
+    );
+  for (const item of extra[key] || []) {
+    const existingIndex = item?.id ? indexById.get(item.id) : undefined;
+    if (existingIndex != null) merged[existingIndex] = { ...merged[existingIndex], ...item };
+    else {
+      if (item?.id) indexById.set(item.id, merged.length);
+      merged.push(item);
+    }
+  }
+  return merged;
+};
 const ids = (key) => new Set(all(key).map((item) => item.id));
 const assert = (condition, message) => {
   if (!condition) errors.push(message);
 };
 
-for (const key of [
-  "members",
-  "places",
-  "activities",
-  "travelLegs",
-  "branches",
-  "checkpoints",
-  "resources",
-  "signals",
-  "expenses",
-  "reimbursements",
-]) {
-  const seen = new Set();
-  for (const item of all(key)) {
-    if (!item?.id) errors.push(`${key}: missing id`);
-    else if (seen.has(item.id)) errors.push(`${key}: duplicate id ${item.id}`);
-    else seen.add(item.id);
+for (const [sourceLabel, source] of [["base", base], ["extra", extra]]) {
+  for (const key of [
+    "members",
+    "places",
+    "activities",
+    "travelLegs",
+    "branches",
+    "checkpoints",
+    "resources",
+    "signals",
+    "expenses",
+    "reimbursements",
+  ]) {
+    const seen = new Set();
+    for (const item of source[key] || []) {
+      if (!item?.id) errors.push(`${sourceLabel}/${key}: missing id`);
+      else if (seen.has(item.id)) errors.push(`${sourceLabel}/${key}: duplicate id ${item.id}`);
+      else seen.add(item.id);
+    }
   }
 }
 
@@ -161,6 +179,7 @@ if (hetTicket) {
 
 const merged = {
   ...base,
+  trip: { ...(base.trip || {}), ...(extra.trip || {}) },
   finance: { ...(base.finance || {}), ...(extra.finance || {}) },
   members: all("members"),
   places: all("places"),
@@ -229,8 +248,8 @@ assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `f
 assert(finance.recordedPaidPaise === 271215, "finance: recorded paid mismatch");
 assert(finance.corePaidPaise === 271215, "finance: core paid mismatch");
 assert(finance.personalPaidPaise === 0, "finance: unexpected personal paid amount");
-assert(finance.corePlannedPaise === 40000, "finance: planned shared costs mismatch");
-assert(finance.forecastCorePaise === 311215, "finance: forecast mismatch");
+assert(finance.corePlannedPaise === 20000, "finance: planned shared costs mismatch");
+assert(finance.forecastCorePaise === 291215, "finance: forecast mismatch");
 assert(finance.ceilingPaise === 3000000, "finance: five-person budget ceiling must be ₹30,000");
 assert(finance.plannedShareByMember.pratham === 0, "finance: Pratham received a planned budget share");
 assert(finance.settlement.rows.pratham?.netPaise === 0, "finance: Pratham received a settlement balance");
@@ -246,6 +265,16 @@ assert(finance.settlement.unassignedPaidPaise === 0, "finance: unassigned paid m
 assert(finance.settlement.unallocatedSharePaise === 0, "finance: unallocated share exists");
 assert(finance.settlement.netBalancePaise === 0, "finance: settlement does not net to zero");
 assert(finance.settlement.diagnostics.length === 0, `finance: ${finance.settlement.diagnostics.join("; ")}`);
+
+const hotel = merged.places.find((place) => place.id === "hotel-blue-stone"),
+  arrival = merged.activities.find((activity) => activity.id === "sep14-arrival-storage"),
+  arrivalLeg = merged.travelLegs.find((leg) => leg.id === "leg-bandra-hotel"),
+  sep14Storage = merged.expenses.find((expense) => expense.id === "expense-storage-sep14");
+assert(Boolean(hotel), "plan: Hotel Blue Stone is missing");
+assert(arrival?.placeId === "hotel-blue-stone", "plan: arrival must go directly to Hotel Blue Stone");
+assert(arrivalLeg?.fromPlaceId === "bandra-terminus" && arrivalLeg?.toPlaceId === "hotel-blue-stone", "plan: Bandra Terminus → hotel leg is missing");
+assert(arrivalLeg?.mode === "walk", "plan: default Bandra Terminus → hotel mode must be walk");
+assert(sep14Storage?.status === "cancelled", "finance: obsolete 14 Sep railway storage must be cancelled");
 
 if (errors.length) {
   console.error(errors.join("\n"));
