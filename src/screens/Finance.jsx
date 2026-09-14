@@ -37,7 +37,7 @@ function balanceLabel(netPaise) {
     };
   if (netPaise < 0)
     return {
-      kicker: "OWES",
+      kicker: "OWES FRIENDS",
       amount: formatINR(-netPaise),
       className: "net-negative",
     };
@@ -102,21 +102,21 @@ export default function Finance({ expenses, setSheet }) {
     groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise,
     groupFundTargetPaise =
       groupFundTargetPerMemberPaise * groupFundMembers.length,
-    groupFundOutstandingPaise = groupFundMembers.reduce(
-      (sum, id) =>
-        sum +
+    groupFundOutstandingByMember = Object.fromEntries(
+      groupFundMembers.map((id) => [
+        id,
         Math.max(
           0,
           groupFundTargetPerMemberPaise -
             (groupFundCollectedByMember[id] || 0),
         ),
-      0,
+      ]),
     ),
+    groupFundOutstandingPaise = Object.values(
+      groupFundOutstandingByMember,
+    ).reduce((sum, amount) => sum + amount, 0),
     groupFundFullyFundedCount = groupFundMembers.filter(
-      (id) =>
-        groupFundTargetPerMemberPaise > 0 &&
-        (groupFundCollectedByMember[id] || 0) >=
-          groupFundTargetPerMemberPaise,
+      (id) => (groupFundOutstandingByMember[id] || 0) === 0,
     ).length,
     fundAdvances = receivedFundContributions.filter(
       (item) =>
@@ -125,6 +125,8 @@ export default function Finance({ expenses, setSheet }) {
     groupFundExpensePaise = snapshot.paid
       .filter((expense) => expense.fundingSource === "groupFund")
       .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
+    directlyFundedExpensePaise =
+      snapshot.recordedPaidPaise - groupFundExpensePaise,
     groupFundReconciliationPaise = groupFundExpensePaise - groupFundSpentPaise,
     receivedPayments = (data.reimbursements || []).filter(
       (payment) => payment.status === "received",
@@ -143,6 +145,17 @@ export default function Finance({ expenses, setSheet }) {
     budgetProgress = Math.min(
       100,
       Math.max(0, snapshot.forecastBudgetBasisPoints / 100),
+    ),
+    displayExpenses = snapshot.paid
+      .map((expense, index) => ({ ...expense, _displayIndex: index }))
+      .sort(
+        (a, b) =>
+          String(b.date || "").localeCompare(String(a.date || "")) ||
+          b._displayIndex - a._displayIndex,
+      ),
+    displayOutflows = [...paidFundOutflows].reverse(),
+    poolDebtors = groupFundMembers.filter(
+      (id) => (groupFundOutstandingByMember[id] || 0) > 0,
     );
 
   const copySettlement = async (transfer) => {
@@ -162,101 +175,25 @@ export default function Finance({ expenses, setSheet }) {
       <div className="page-title finance-title">
         <span>MONEY</span>
         <h1>Finance</h1>
-        <p>One screen for what was spent, what cash is left, and who pays whom.</p>
+        <p>Cash first. Then expenses. Then who still owes what.</p>
       </div>
-
-      <div className="finance-overview-grid">
-        <article className="finance-overview-card primary">
-          <span>TRIP SPENT</span>
-          <strong>{formatINR(snapshot.recordedPaidPaise)}</strong>
-          <small>all confirmed purchases</small>
-        </article>
-        <article className="finance-overview-card cash">
-          <span>SHARED CASH NOW</span>
-          <strong>{formatINR(groupFundBalancePaise)}</strong>
-          <small>still available in the group pool</small>
-        </article>
-        <article className="finance-overview-card">
-          <span>BUDGET LEFT</span>
-          <strong>
-            {snapshot.overCorePaise
-              ? `-${formatINR(snapshot.overCorePaise)}`
-              : formatINR(snapshot.remainingCorePaise)}
-          </strong>
-          <small>{budgetPercent} of {formatINR(snapshot.ceilingPaise)} used</small>
-        </article>
-      </div>
-
-      <div className="finance-legend-strip" role="note">
-        <div>
-          <b>Trip spent</b>
-          <span>money already paid to hotels, food, trains, etc.</span>
-        </div>
-        <div>
-          <b>Shared cash</b>
-          <span>money still sitting in the common expense pool.</span>
-        </div>
-        <div>
-          <b>Pay now</b>
-          <span>friend-to-friend settlement after every confirmed entry.</span>
-        </div>
-      </div>
-
-      <DockAwarePanel className="panel finance-action-panel">
-        <div className="finance-section-heading">
-          <div>
-            <span>PAY NOW</span>
-            <h2>Who needs to pay whom</h2>
-          </div>
-          <b>
-            {settlement.transfers.length
-              ? `${settlement.transfers.length} TRANSFER${settlement.transfers.length === 1 ? "" : "S"}`
-              : "ALL SETTLED"}
-          </b>
-        </div>
-
-        {settlement.transfers.length ? (
-          <div className="settlement-simple-list">
-            {settlement.transfers.map((transfer, index) => {
-              const key = `${transfer.from}-${transfer.to}`;
-              return (
-                <div className="settlement-simple-row" key={`${key}-${index}`}>
-                  <div className="settlement-person-flow">
-                    <span className="settlement-avatar">
-                      {member(transfer.from)?.initials || "?"}
-                    </span>
-                    <div>
-                      <small>{firstName(transfer.from)} pays</small>
-                      <b>{firstName(transfer.to)}</b>
-                    </div>
-                  </div>
-                  <strong>{formatINR(transfer.amountPaise)}</strong>
-                  <button onClick={() => copySettlement(transfer)}>
-                    {copied === key ? "Copied" : "Copy"}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="finance-empty-state">
-            <b>Everyone is settled.</b>
-            <span>No member-to-member transfer is required right now.</span>
-          </div>
-        )}
-        <p className="finance-footnote">
-          These transfers already include confirmed reimbursements and any money one member fronted for another.
-        </p>
-      </DockAwarePanel>
 
       {groupFund && (
-        <DockAwarePanel className="panel finance-pool-panel">
+        <DockAwarePanel className="panel finance-pool-panel finance-cash-first">
           <div className="finance-section-heading">
             <div>
-              <span>SHARED EXPENSE POOL</span>
-              <h2>{formatINR(groupFundBalancePaise)} available</h2>
+              <span>01 · CASH</span>
+              <h2>Shared cash available</h2>
             </div>
-            <b>{groupFundFullyFundedCount}/{groupFundMembers.length} FULL</b>
+            <b>{formatINR(groupFundBalancePaise)}</b>
+          </div>
+
+          <div className="finance-cash-hero">
+            <span>CURRENT GROUP CASH</span>
+            <strong>{formatINR(groupFundBalancePaise)}</strong>
+            <small>
+              This is money still available to spend. It is not the same as total trip spending.
+            </small>
           </div>
 
           <div className="finance-cash-equation" aria-label="Shared cash calculation">
@@ -266,94 +203,135 @@ export default function Finance({ expenses, setSheet }) {
             </div>
             <i>−</i>
             <div>
-              <span>SPENT</span>
+              <span>PAID OUT</span>
               <b>{formatINR(groupFundSpentPaise)}</b>
             </div>
             <i>=</i>
             <div className="result">
-              <span>AVAILABLE</span>
+              <span>CASH LEFT</span>
               <b>{formatINR(groupFundBalancePaise)}</b>
             </div>
           </div>
 
           <div className="finance-pool-status">
             <span>
-              Target {formatINR(groupFundTargetPerMemberPaise)} each · {formatINR(groupFundTargetPaise)} total
+              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)}
             </span>
             <b>{formatINR(groupFundOutstandingPaise)} still to collect</b>
           </div>
 
-          <div className="finance-contribution-list">
-            {groupFundMembers.map((memberId) => {
-              const collected = groupFundCollectedByMember[memberId] || 0,
-                outstanding = Math.max(
-                  0,
-                  groupFundTargetPerMemberPaise - collected,
-                ),
-                advances = groupFundAdvancedByMember[memberId] || [];
+          {displayOutflows.length > 0 && (
+            <div className="finance-cash-subsection">
+              <div className="finance-subhead">
+                <b>Cash paid from the pool</b>
+                <span>{formatINR(groupFundSpentPaise)} total</span>
+              </div>
+              <div className="finance-spend-list finance-cash-outflows">
+                {displayOutflows.map((outflow) => (
+                  <div className="finance-spend-row" key={outflow.id}>
+                    <div>
+                      <b>{outflow.label || "Group expense"}</b>
+                      <small>{outflow.date} · paid from shared cash</small>
+                    </div>
+                    <strong>-{formatINR(outflow.amountPaise)}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-              return (
-                <div className="finance-contribution-row" key={memberId}>
-                  <span className="finance-member-avatar">
-                    {member(memberId)?.initials || "?"}
-                  </span>
-                  <div>
-                    <b>{member(memberId)?.name || memberId}</b>
-                    <small>
-                      {outstanding > 0
-                        ? `${formatINR(outstanding)} still due to pool`
-                        : "pool target complete"}
-                    </small>
-                    {advances.map((advance, index) => (
-                      <small className="advance-note" key={`${memberId}-advance-${index}`}>
-                        {firstName(advance.paidByMemberId)} fronted {formatINR(advance.amountPaise)} for this member
-                      </small>
-                    ))}
-                  </div>
-                  <div className="finance-contribution-amount">
-                    <strong>{formatINR(collected)}</strong>
-                    <span className={outstanding > 0 ? "status-due" : "status-paid"}>
-                      {outstanding > 0 ? "PARTIAL" : "FUNDED"}
+          <div className="finance-cash-subsection">
+            <div className="finance-subhead">
+              <b>Who has put money into the pool</b>
+              <span>{groupFundFullyFundedCount}/{groupFundMembers.length} targets complete</span>
+            </div>
+            <div className="finance-contribution-list">
+              {groupFundMembers.map((memberId) => {
+                const collected = groupFundCollectedByMember[memberId] || 0,
+                  outstanding = groupFundOutstandingByMember[memberId] || 0,
+                  advances = groupFundAdvancedByMember[memberId] || [];
+
+                return (
+                  <div className="finance-contribution-row" key={memberId}>
+                    <span className="finance-member-avatar">
+                      {member(memberId)?.initials || "?"}
                     </span>
+                    <div>
+                      <b>{member(memberId)?.name || memberId}</b>
+                      <small>
+                        {outstanding > 0
+                          ? `${formatINR(outstanding)} still needs to be added to pool`
+                          : "pool target complete"}
+                      </small>
+                      {advances.map((advance, index) => (
+                        <small className="advance-note" key={`${memberId}-advance-${index}`}>
+                          {firstName(advance.paidByMemberId)} actually paid {formatINR(advance.amountPaise)} for {firstName(memberId)}
+                        </small>
+                      ))}
+                    </div>
+                    <div className="finance-contribution-amount">
+                      <strong>{formatINR(collected)}</strong>
+                      <span className={outstanding > 0 ? "status-due" : "status-paid"}>
+                        {outstanding > 0 ? "DUE" : "DONE"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {fundAdvances.length > 0 && (
             <div className="finance-callout">
-              <b>Fronted money is not lost.</b>
+              <b>Important: credited money and actual payer can differ.</b>
               <span>
                 {fundAdvances
                   .map(
                     (advance) =>
-                      `${firstName(advance.paidByMemberId)} fronted ${formatINR(advance.amountPaise)} for ${firstName(advance.memberId)}`,
+                      `${firstName(advance.paidByMemberId)} paid ${formatINR(advance.amountPaise)} for ${firstName(advance.memberId)}`,
                   )
-                  .join(" · ")}. It is automatically included in the Pay Now settlement above.
+                  .join(" · ")}. Those advances are handled later under settlements and do not change the cash balance above.
               </span>
             </div>
           )}
         </DockAwarePanel>
       )}
 
-      <DockAwarePanel className="panel">
+      <DockAwarePanel className="panel finance-expenses-panel">
         <div className="finance-section-heading">
           <div>
-            <span>SPENDING</span>
-            <h2>Where the money went</h2>
+            <span>02 · EXPENSES</span>
+            <h2>What the trip has actually cost</h2>
           </div>
           <button className="finance-secondary-button" onClick={() => setSheet("expense")}>
             Add draft
           </button>
         </div>
 
+        <div className="finance-overview-grid finance-expense-summary">
+          <article className="finance-overview-card primary">
+            <span>TOTAL SPENT</span>
+            <strong>{formatINR(snapshot.recordedPaidPaise)}</strong>
+            <small>all confirmed merchant payments</small>
+          </article>
+          <article className="finance-overview-card cash">
+            <span>FROM GROUP CASH</span>
+            <strong>{formatINR(groupFundExpensePaise)}</strong>
+            <small>hotel, Uber and other pool-funded costs</small>
+          </article>
+          <article className="finance-overview-card">
+            <span>PAID DIRECTLY</span>
+            <strong>{formatINR(directlyFundedExpensePaise)}</strong>
+            <small>paid personally by members</small>
+          </article>
+        </div>
+
         <div className="finance-spend-list">
-          {snapshot.paid.map((expense) => {
+          {displayExpenses.map((expense) => {
             const payer = member(expense.payerId),
               payerLabel =
                 expense.fundingSource === "groupFund"
-                  ? "Shared pool"
+                  ? "Group cash"
                   : payer?.name || "Unknown payer",
               scope = expenseBudgetScope(data, expense),
               components = Object.entries(expense.componentsPaise || {}).filter(
@@ -365,8 +343,8 @@ export default function Finance({ expenses, setSheet }) {
                 <div>
                   <b>{expense.label}</b>
                   <small>
-                    {payerLabel} paid · shared by {participantLabel(expense)}
-                    {scope !== "core" ? " · personal" : ""}
+                    {expense.date} · {payerLabel} paid · {participantLabel(expense)} involved
+                    {scope !== "core" ? " · outside shared budget" : ""}
                   </small>
                   {components.length > 0 && (
                     <small className="expense-components">
@@ -387,7 +365,7 @@ export default function Finance({ expenses, setSheet }) {
 
         {snapshot.localDrafts.length > 0 && (
           <div className="finance-draft-block">
-            <b>Device-only drafts</b>
+            <b>Device-only drafts · not counted above</b>
             {snapshot.localDrafts.map((expense) => (
               <div key={expense.id}>
                 <span>{expense.label}</span>
@@ -398,16 +376,104 @@ export default function Finance({ expenses, setSheet }) {
         )}
       </DockAwarePanel>
 
+      <DockAwarePanel className="panel finance-action-panel">
+        <div className="finance-section-heading">
+          <div>
+            <span>03 · SETTLEMENTS</span>
+            <h2>Money still owed</h2>
+          </div>
+          <b>
+            {formatINR(groupFundOutstandingPaise)} TO POOL
+          </b>
+        </div>
+
+        <div className="finance-settlement-explainer">
+          <b>Two different kinds of money can still be due.</b>
+          <span>
+            “To group cash” means someone has not finished their ₹3,000 pool contribution. “Between friends” covers personal expenses, reimbursements and money one friend fronted for another.
+          </span>
+        </div>
+
+        <div className="finance-settlement-block">
+          <div className="finance-subhead">
+            <b>A · Still owed to group cash</b>
+            <span>{formatINR(groupFundOutstandingPaise)} total</span>
+          </div>
+          {poolDebtors.length ? (
+            <div className="finance-pool-due-list">
+              {poolDebtors.map((memberId) => (
+                <div key={memberId}>
+                  <span>
+                    <b>{member(memberId)?.name || memberId}</b>
+                    <small>remaining pool contribution</small>
+                  </span>
+                  <strong>{formatINR(groupFundOutstandingByMember[memberId])}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="finance-empty-state">
+              <b>Pool is fully funded.</b>
+              <span>No contribution is currently outstanding.</span>
+            </div>
+          )}
+        </div>
+
+        <div className="finance-settlement-block">
+          <div className="finance-subhead">
+            <b>B · Between friends</b>
+            <span>
+              {settlement.transfers.length
+                ? `${settlement.transfers.length} transfer${settlement.transfers.length === 1 ? "" : "s"}`
+                : "settled"}
+            </span>
+          </div>
+          {settlement.transfers.length ? (
+            <div className="settlement-simple-list">
+              {settlement.transfers.map((transfer, index) => {
+                const key = `${transfer.from}-${transfer.to}`;
+                return (
+                  <div className="settlement-simple-row" key={`${key}-${index}`}>
+                    <div className="settlement-person-flow">
+                      <span className="settlement-avatar">
+                        {member(transfer.from)?.initials || "?"}
+                      </span>
+                      <div>
+                        <small>{firstName(transfer.from)} pays</small>
+                        <b>{firstName(transfer.to)}</b>
+                      </div>
+                    </div>
+                    <strong>{formatINR(transfer.amountPaise)}</strong>
+                    <button onClick={() => copySettlement(transfer)}>
+                      {copied === key ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="finance-empty-state">
+              <b>No friend-to-friend payment needed.</b>
+              <span>Personal settlement is currently balanced.</span>
+            </div>
+          )}
+        </div>
+
+        <p className="finance-footnote">
+          A person may appear in both A and B. That is not double-counting: one amount belongs to the shared pool, while the other belongs to a specific friend.
+        </p>
+      </DockAwarePanel>
+
       <DockAwarePanel className="panel">
         <div className="finance-section-heading">
           <div>
             <span>MEMBER BALANCES</span>
-            <h2>What each person currently owes</h2>
+            <h2>Friend-to-friend balance by person</h2>
           </div>
-          <b>CONFIRMED ONLY</b>
+          <b>EXCLUDES POOL DUES</b>
         </div>
         <p className="finance-section-copy">
-          Positive means that person should receive money. Negative means they still need to pay.
+          This table is only the personal settlement side. Pool contributions are shown separately above.
         </p>
 
         <div className="finance-balance-list">
@@ -429,7 +495,7 @@ export default function Finance({ expenses, setSheet }) {
                           ? `fronted ${formatINR(row.groupFundAdvancePaidPaise)} for others`
                           : row.coverageCreditPaise > 0
                             ? `${formatINR(row.coverageCreditPaise)} already covered`
-                            : `allocated trip share ${formatINR(row.sharePaise)}`}
+                            : `personal allocated share ${formatINR(row.sharePaise)}`}
                     </small>
                   </div>
                   <div className={`finance-balance-value ${status.className}`}>
@@ -457,7 +523,7 @@ export default function Finance({ expenses, setSheet }) {
 
         <div className="finance-budget-stats">
           <div>
-            <span>PAID</span>
+            <span>SPENT</span>
             <b>{formatINR(snapshot.corePaidPaise)}</b>
           </div>
           <div>
@@ -465,7 +531,7 @@ export default function Finance({ expenses, setSheet }) {
             <b>{formatINR(snapshot.corePlannedPaise)}</b>
           </div>
           <div>
-            <span>LEFT</span>
+            <span>BUDGET LEFT</span>
             <b>
               {snapshot.overCorePaise
                 ? `-${formatINR(snapshot.overCorePaise)}`
@@ -474,7 +540,7 @@ export default function Finance({ expenses, setSheet }) {
           </div>
         </div>
         <p className="finance-footnote">
-          Budget is {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Only people named on an expense share that expense.
+          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Pool contributions are not counted as expenses; only actual merchant payments use this budget.
         </p>
       </DockAwarePanel>
 
@@ -553,7 +619,7 @@ export default function Finance({ expenses, setSheet }) {
               </div>
             </div>
             <p className="finance-footnote">
-              All calculations use integer paise. Shared-pool purchases and person-to-person balances are reconciled separately so deposits are never mistaken for spending.
+              All calculations use integer paise. Shared-pool purchases and person-to-person balances are reconciled separately so contributions are never mistaken for spending.
             </p>
           </section>
         </div>
