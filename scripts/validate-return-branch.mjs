@@ -130,6 +130,13 @@ assert(train?.fundingSource === "groupFund" && !train?.payerId, "local train mus
 assert(trainOutflow?.amountPaise === 9000 && trainOutflow?.expenseId === train?.id, "local train outflow mismatch");
 assert([...(train?.participantIds || [])].sort().join(",") === expectedFinanceMembers.join(","), "local train participant set mismatch");
 
+const taxi = merged.expenses.find((e) => e.id === "expense-taxi-siddhivinayak-sep14");
+const taxiOutflow = outflows.find((item) => item.id === "group-fund-taxi-siddhivinayak-sep14");
+assert(taxi?.amountPaise === 30000 && taxi?.status === "paid", "Siddhivinayak taxi expense must be ₹300 paid");
+assert(taxi?.fundingSource === "groupFund" && !taxi?.payerId, "Siddhivinayak taxi must be funded from group cash");
+assert(taxiOutflow?.amountPaise === 30000 && taxiOutflow?.expenseId === taxi?.id, "Siddhivinayak taxi outflow mismatch");
+assert([...(taxi?.participantIds || [])].sort().join(",") === expectedFinanceMembers.join(","), "Siddhivinayak taxi participant set mismatch");
+
 const contributions = (fund?.contributions || []).filter((item) => item.status === "received");
 const cashByMember = Object.fromEntries(expectedFinanceMembers.map((id) => [id, 0]));
 const creditByMember = Object.fromEntries(expectedFinanceMembers.map((id) => [id, 0]));
@@ -142,14 +149,14 @@ assert(poolOutstanding.jugal === 150000, "Jugal pool outstanding must be ₹1,50
 assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 300000, "total pool outstanding must be ₹3,000");
 const cashCollected = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashSpent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
-assert(cashCollected === 1450000 && cashSpent === 825000 && cashCollected - cashSpent === 625000, "group cash must reconcile to ₹6,250");
+assert(cashCollected === 1450000 && cashSpent === 855000 && cashCollected - cashSpent === 595000, "group cash must reconcile to ₹5,950");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
-assert(finance.recordedPaidPaise === 1146215, "recorded paid must be ₹11,462.15");
-assert(finance.corePaidPaise === 1146215, "core paid must be ₹11,462.15");
+assert(finance.recordedPaidPaise === 1176215, "recorded paid must be ₹11,762.15");
+assert(finance.corePaidPaise === 1176215, "core paid must be ₹11,762.15");
 assert(finance.personalPaidPaise === 0, "unexpected personal paid amount");
 assert(finance.corePlannedPaise === 0, "planned core costs must be ₹0 after removing cloak-room expense");
-assert(finance.forecastCorePaise === 1146215, "forecast must equal paid costs after autos and local train");
+assert(finance.forecastCorePaise === 1176215, "forecast must equal paid costs after Siddhivinayak taxi");
 assert(finance.ceilingPaise === 3600000, "six-person budget ceiling must be ₹36,000");
 assert(finance.plannedShareByMember.pratham === 0, "Pratham received a planned budget share");
 assert(finance.settlement.rows.pratham?.netPaise === 0 && finance.settlement.rows.pratham?.sharePaise === 0, "Pratham entered settlement");
@@ -164,4 +171,4 @@ const actualTransfers = finance.settlement.transfers.map((t) => [t.from,t.to,t.a
 assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `transfer plan mismatch ${JSON.stringify(actualTransfers)}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`Return branch + finance valid: 6-member cohort, ₹${(finance.recordedPaidPaise / 100).toFixed(2)} spent, ₹3,000 pool outstanding, ₹6,250 cash`);
+console.log(`Return branch + finance valid: 6-member cohort, ₹${(finance.recordedPaidPaise / 100).toFixed(2)} spent, ₹3,000 pool outstanding, ₹5,950 cash`);
