@@ -56,6 +56,7 @@ for (const expense of extra.expenses || []) {
   assert(Number.isSafeInteger(expense.amountPaise) && expense.amountPaise > 0, `expense ${expense.id}: invalid amount`);
   if (expense.fundingSource === "groupFund") assert(!expense.payerId, `expense ${expense.id}: group-funded expense must not invent a payer`);
   else assert(members.has(expense.payerId), `expense ${expense.id}: unknown payer`);
+  if (expense.fundingSource === "groupFundMemberCredit") assert(Boolean(expense.groupFundCreditId), `expense ${expense.id}: missing group-fund credit link`);
   for (const id of expense.participantIds || []) assert(members.has(id), `expense ${expense.id}: unknown participant ${id}`);
 }
 
@@ -95,17 +96,27 @@ assert((arrival?.notes || []).some((note) => note.includes("room 204")), "room 2
 assert([...(arrival?.participants || [])].sort().join(",") === expectedFinanceMembers.join(","), "room 204 occupants mismatch");
 assert(arrivalLeg?.fromPlaceId === "bandra-terminus" && arrivalLeg?.toPlaceId === "hotel-blue-stone", "Bandra Terminus → hotel leg missing");
 
+const fund = merged.finance?.groupFund;
 const uber = merged.expenses.find((e) => e.id === "expense-uber-siddhivinayak-sep14");
-assert(uber?.amountPaise === 42086 && uber?.status === "paid", "Uber expense must be ₹420.86 paid");
-assert(uber?.fundingSource === "groupFund" && !uber?.payerId, "Uber must be funded by the group account without a personal payer");
+const uberCredit = (fund?.credits || []).find((c) => c.id === "group-fund-credit-nishit-uber-sep14");
+assert(uber?.amountPaise === 44000 && uber?.status === "paid", "Uber expense must be ₹440 paid");
+assert(uber?.payerId === "nishit", "Uber must be paid directly by Nishit");
+assert(uber?.fundingSource === "groupFundMemberCredit", "Uber must be credited against Nishit's pool target");
+assert(uber?.groupFundCreditId === uberCredit?.id && uberCredit?.amountPaise === 44000, "Uber pool credit mismatch");
 assert([...(uber?.participantIds || [])].sort().join(",") === expectedFinanceMembers.join(","), "Uber participant set mismatch");
+assert(!(fund?.outflows || []).some((item) => item.expenseId === uber?.id && item.status === "paid"), "Nishit-paid Uber must not reduce group cash");
+
+const snacks = merged.expenses.find((e) => e.id === "expense-snacks-sep14");
+assert(snacks?.amountPaise === 10000 && snacks?.status === "paid", "snacks expense must be ₹100 paid");
+assert(snacks?.fundingSource === "groupFund" && !snacks?.payerId, "snacks must be paid from group cash");
+assert([...(snacks?.participantIds || [])].sort().join(",") === expectedFinanceMembers.join(","), "snacks participant set mismatch");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
-assert(finance.recordedPaidPaise === 1113301, "recorded paid must be ₹11,133.01");
-assert(finance.corePaidPaise === 1113301, "core paid must be ₹11,133.01");
+assert(finance.recordedPaidPaise === 1125215, "recorded paid must be ₹11,252.15");
+assert(finance.corePaidPaise === 1125215, "core paid must be ₹11,252.15");
 assert(finance.personalPaidPaise === 0, "unexpected personal paid amount");
 assert(finance.corePlannedPaise === 0, "planned core costs must be ₹0 after removing cloak-room expense");
-assert(finance.forecastCorePaise === 1113301, "forecast must equal paid costs after the Uber expense");
+assert(finance.forecastCorePaise === 1125215, "forecast must equal paid costs after corrected Uber and snacks");
 assert(finance.ceilingPaise === 3600000, "six-person budget ceiling must be ₹36,000");
 assert(finance.plannedShareByMember.pratham === 0, "Pratham received a planned budget share");
 assert(finance.settlement.rows.pratham?.netPaise === 0 && finance.settlement.rows.pratham?.sharePaise === 0, "Pratham entered settlement");
@@ -120,4 +131,4 @@ const actualTransfers = finance.settlement.transfers.map((t) => [t.from,t.to,t.a
 assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `transfer plan mismatch ${JSON.stringify(actualTransfers)}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`Return branch + finance valid: 6-member finance cohort, ₹${(finance.recordedPaidPaise / 100).toFixed(2)} paid, no planned cloak-room cost`);
+console.log(`Return branch + finance valid: 6-member cohort, ₹${(finance.recordedPaidPaise / 100).toFixed(2)} spent, ₹3,060 pool outstanding`);

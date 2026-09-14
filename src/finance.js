@@ -61,10 +61,14 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 
   for (const expense of expenses) {
     if (expense.status !== "paid") continue;
-    // Shared-account purchases are real trip spend, but the merchant was paid
-    // by pooled cash rather than one member. They belong in spend totals and
-    // the group-fund ledger, not the person-to-person settlement engine.
-    if (expense.fundingSource === "groupFund") continue;
+    // Shared-account purchases and member-paid expenses credited against the
+    // shared-account target are real trip spend, but neither belongs in the
+    // friend-to-friend settlement engine. They are reconciled by the pool ledger.
+    if (
+      expense.fundingSource === "groupFund" ||
+      expense.fundingSource === "groupFundMemberCredit"
+    )
+      continue;
 
     const amountPaise = safePaise(expense.amountPaise),
       participants = uniqueKnownIds(expense.participantIds, financeMembers),

@@ -52,6 +52,9 @@ export default function Finance({ expenses, setSheet }) {
     receivedFundContributions = (groupFund?.contributions || []).filter(
       (item) => item.status === "received",
     ),
+    appliedFundCredits = (groupFund?.credits || []).filter(
+      (item) => item.status === "applied",
+    ),
     paidFundOutflows = (groupFund?.outflows || []).filter(
       (item) => item.status === "paid",
     ),
@@ -60,6 +63,9 @@ export default function Finance({ expenses, setSheet }) {
       groupFund?.targetPerMemberPaise,
     ),
     groupFundCollectedByMember = Object.fromEntries(
+      groupFundMembers.map((id) => [id, 0]),
+    ),
+    groupFundCreditByMember = Object.fromEntries(
       groupFundMembers.map((id) => [id, 0]),
     ),
     groupFundAdvancedByMember = Object.fromEntries(
@@ -91,7 +97,23 @@ export default function Finance({ expenses, setSheet }) {
       });
   }
 
+  for (const credit of appliedFundCredits) {
+    if (
+      Object.prototype.hasOwnProperty.call(
+        groupFundCreditByMember,
+        credit.memberId,
+      )
+    )
+      groupFundCreditByMember[credit.memberId] += safeFundAmount(
+        credit.amountPaise,
+      );
+  }
+
   const groupFundCollectedPaise = receivedFundContributions.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    groupFundCreditPaise = appliedFundCredits.reduce(
       (sum, item) => sum + safeFundAmount(item.amountPaise),
       0,
     ),
@@ -108,7 +130,8 @@ export default function Finance({ expenses, setSheet }) {
         Math.max(
           0,
           groupFundTargetPerMemberPaise -
-            (groupFundCollectedByMember[id] || 0),
+            (groupFundCollectedByMember[id] || 0) -
+            (groupFundCreditByMember[id] || 0),
         ),
       ]),
     ),
@@ -125,9 +148,13 @@ export default function Finance({ expenses, setSheet }) {
     groupFundExpensePaise = snapshot.paid
       .filter((expense) => expense.fundingSource === "groupFund")
       .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
+    memberCreditExpensePaise = snapshot.paid
+      .filter((expense) => expense.fundingSource === "groupFundMemberCredit")
+      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
     directlyFundedExpensePaise =
       snapshot.recordedPaidPaise - groupFundExpensePaise,
     groupFundReconciliationPaise = groupFundExpensePaise - groupFundSpentPaise,
+    memberCreditReconciliationPaise = memberCreditExpensePaise - groupFundCreditPaise,
     receivedPayments = (data.reimbursements || []).filter(
       (payment) => payment.status === "received",
     ),
@@ -138,7 +165,8 @@ export default function Finance({ expenses, setSheet }) {
     ledgerBalanced =
       allocationDifferencePaise === 0 &&
       settlement.netBalancePaise === 0 &&
-      groupFundReconciliationPaise === 0,
+      groupFundReconciliationPaise === 0 &&
+      memberCreditReconciliationPaise === 0,
     budgetPercent = formatPercentFromBasisPoints(
       snapshot.forecastBudgetBasisPoints,
     ),
@@ -192,18 +220,18 @@ export default function Finance({ expenses, setSheet }) {
             <span>CURRENT GROUP CASH</span>
             <strong>{formatINR(groupFundBalancePaise)}</strong>
             <small>
-              This is money still available to spend. It is not the same as total trip spending.
+              This is money still available to spend. Direct expenses credited to a member's pool target do not change this cash balance.
             </small>
           </div>
 
           <div className="finance-cash-equation" aria-label="Shared cash calculation">
             <div>
-              <span>COLLECTED</span>
+              <span>CASH COLLECTED</span>
               <b>{formatINR(groupFundCollectedPaise)}</b>
             </div>
             <i>−</i>
             <div>
-              <span>PAID OUT</span>
+              <span>CASH PAID OUT</span>
               <b>{formatINR(groupFundSpentPaise)}</b>
             </div>
             <i>=</i>
@@ -215,7 +243,7 @@ export default function Finance({ expenses, setSheet }) {
 
           <div className="finance-pool-status">
             <span>
-              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)}
+              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)} · {formatINR(groupFundCreditPaise)} direct-expense credit already counted
             </span>
             <b>{formatINR(groupFundOutstandingPaise)} still to collect</b>
           </div>
@@ -242,12 +270,13 @@ export default function Finance({ expenses, setSheet }) {
 
           <div className="finance-cash-subsection">
             <div className="finance-subhead">
-              <b>Who has put money into the pool</b>
+              <b>Who has covered their pool target</b>
               <span>{groupFundFullyFundedCount}/{groupFundMembers.length} targets complete</span>
             </div>
             <div className="finance-contribution-list">
               {groupFundMembers.map((memberId) => {
                 const collected = groupFundCollectedByMember[memberId] || 0,
+                  credit = groupFundCreditByMember[memberId] || 0,
                   outstanding = groupFundOutstandingByMember[memberId] || 0,
                   advances = groupFundAdvancedByMember[memberId] || [];
 
@@ -260,9 +289,14 @@ export default function Finance({ expenses, setSheet }) {
                       <b>{member(memberId)?.name || memberId}</b>
                       <small>
                         {outstanding > 0
-                          ? `${formatINR(outstanding)} still needs to be added to pool`
+                          ? `${formatINR(outstanding)} still needs to be covered`
                           : "pool target complete"}
                       </small>
+                      {credit > 0 && (
+                        <small className="advance-note">
+                          {formatINR(collected)} cash + {formatINR(credit)} direct expense credit
+                        </small>
+                      )}
                       {advances.map((advance, index) => (
                         <small className="advance-note" key={`${memberId}-advance-${index}`}>
                           {firstName(advance.paidByMemberId)} actually paid {formatINR(advance.amountPaise)} for {firstName(memberId)}
@@ -280,6 +314,20 @@ export default function Finance({ expenses, setSheet }) {
               })}
             </div>
           </div>
+
+          {appliedFundCredits.length > 0 && (
+            <div className="finance-callout">
+              <b>Direct expense credits reduce pool dues without changing cash on hand.</b>
+              <span>
+                {appliedFundCredits
+                  .map(
+                    (credit) =>
+                      `${firstName(credit.memberId)} paid ${formatINR(credit.amountPaise)} directly for a group expense`,
+                  )
+                  .join(" · ")}. The amount is counted toward that member's pool target, not added to the cash balance.
+              </span>
+            </div>
+          )}
 
           {fundAdvances.length > 0 && (
             <div className="finance-callout">
@@ -317,12 +365,12 @@ export default function Finance({ expenses, setSheet }) {
           <article className="finance-overview-card cash">
             <span>FROM GROUP CASH</span>
             <strong>{formatINR(groupFundExpensePaise)}</strong>
-            <small>hotel, Uber and other pool-funded costs</small>
+            <small>merchant payments made from pooled cash</small>
           </article>
           <article className="finance-overview-card">
             <span>PAID DIRECTLY</span>
             <strong>{formatINR(directlyFundedExpensePaise)}</strong>
-            <small>paid personally by members</small>
+            <small>paid personally by members, including pool credits</small>
           </article>
         </div>
 
@@ -332,7 +380,9 @@ export default function Finance({ expenses, setSheet }) {
               payerLabel =
                 expense.fundingSource === "groupFund"
                   ? "Group cash"
-                  : payer?.name || "Unknown payer",
+                  : expense.fundingSource === "groupFundMemberCredit"
+                    ? `${payer?.name || "Member"} · credited to pool target`
+                    : payer?.name || "Unknown payer",
               scope = expenseBudgetScope(data, expense),
               components = Object.entries(expense.componentsPaise || {}).filter(
                 ([, value]) => Number.isSafeInteger(value) && value > 0,
@@ -343,7 +393,7 @@ export default function Finance({ expenses, setSheet }) {
                 <div>
                   <b>{expense.label}</b>
                   <small>
-                    {expense.date} · {payerLabel} paid · {participantLabel(expense)} involved
+                    {expense.date} · {payerLabel} · {participantLabel(expense)} involved
                     {scope !== "core" ? " · outside shared budget" : ""}
                   </small>
                   {components.length > 0 && (
@@ -390,7 +440,7 @@ export default function Finance({ expenses, setSheet }) {
         <div className="finance-settlement-explainer">
           <b>Two different kinds of money can still be due.</b>
           <span>
-            “To group cash” means someone has not finished their ₹3,000 pool contribution. “Between friends” covers personal expenses, reimbursements and money one friend fronted for another.
+            “To group cash” is the member's remaining pool target after both cash deposits and approved direct-expense credits. “Between friends” covers personal expenses, reimbursements and money one friend fronted for another.
           </span>
         </div>
 
@@ -405,7 +455,12 @@ export default function Finance({ expenses, setSheet }) {
                 <div key={memberId}>
                   <span>
                     <b>{member(memberId)?.name || memberId}</b>
-                    <small>remaining pool contribution</small>
+                    <small>
+                      remaining after {formatINR(groupFundCollectedByMember[memberId] || 0)} cash
+                      {(groupFundCreditByMember[memberId] || 0) > 0
+                        ? ` + ${formatINR(groupFundCreditByMember[memberId])} expense credit`
+                        : ""}
+                    </small>
                   </span>
                   <strong>{formatINR(groupFundOutstandingByMember[memberId])}</strong>
                 </div>
@@ -473,7 +528,7 @@ export default function Finance({ expenses, setSheet }) {
           <b>EXCLUDES POOL DUES</b>
         </div>
         <p className="finance-section-copy">
-          This table is only the personal settlement side. Pool contributions are shown separately above.
+          This table is only the personal settlement side. Pool contributions and direct-expense credits are shown separately above.
         </p>
 
         <div className="finance-balance-list">
@@ -540,7 +595,7 @@ export default function Finance({ expenses, setSheet }) {
           </div>
         </div>
         <p className="finance-footnote">
-          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Pool contributions are not counted as expenses; only actual merchant payments use this budget.
+          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Pool contributions and expense credits are not expenses themselves; only actual merchant payments use this budget.
         </p>
       </DockAwarePanel>
 
@@ -594,20 +649,28 @@ export default function Finance({ expenses, setSheet }) {
             </div>
             <div className="finance-integrity-grid">
               <div>
-                <span>PERSONALLY FUNDED COSTS</span>
+                <span>PERSONALLY SETTLED COSTS</span>
                 <b>{formatINR(settlement.merchantPaidPaise)}</b>
               </div>
               <div>
-                <span>GROUP-FUNDED COSTS</span>
+                <span>GROUP-CASH COSTS</span>
                 <b>{formatINR(groupFundExpensePaise)}</b>
+              </div>
+              <div>
+                <span>POOL EXPENSE CREDITS</span>
+                <b>{formatINR(groupFundCreditPaise)}</b>
               </div>
               <div>
                 <span>PERSONAL ALLOCATION DIFFERENCE</span>
                 <b>{formatINR(Math.abs(allocationDifferencePaise))}</b>
               </div>
               <div>
-                <span>GROUP-FUND DIFFERENCE</span>
+                <span>GROUP-CASH DIFFERENCE</span>
                 <b>{formatINR(Math.abs(groupFundReconciliationPaise))}</b>
+              </div>
+              <div>
+                <span>EXPENSE-CREDIT DIFFERENCE</span>
+                <b>{formatINR(Math.abs(memberCreditReconciliationPaise))}</b>
               </div>
               <div>
                 <span>NET BALANCE SUM</span>
@@ -619,7 +682,7 @@ export default function Finance({ expenses, setSheet }) {
               </div>
             </div>
             <p className="finance-footnote">
-              All calculations use integer paise. Shared-pool purchases and person-to-person balances are reconciled separately so contributions are never mistaken for spending.
+              All calculations use integer paise. Shared cash, direct expense credits and person-to-person balances are reconciled separately so nothing is counted twice.
             </p>
           </section>
         </div>
