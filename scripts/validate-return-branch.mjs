@@ -95,10 +95,11 @@ const creditByMember = Object.fromEntries(expectedFinanceMembers.map((id) => [id
 for (const item of contributions) cashByMember[item.memberId] += item.amountPaise;
 for (const item of credits) creditByMember[item.memberId] += item.amountPaise;
 const poolOutstanding = Object.fromEntries(expectedFinanceMembers.map((id) => [id, Math.max(0, fund.targetPerMemberPaise - cashByMember[id] - creditByMember[id])]));
+assert(cashByMember.jugal === 200000, "Jugal cash contribution must total ₹2,000 after backfilled ₹500 morning payment");
 assert(poolOutstanding.nishit === 50000, "Nishit pool outstanding must be ₹500");
 assert(poolOutstanding.het === 100000, "Het pool outstanding must be ₹1,000");
-assert(poolOutstanding.jugal === 140000, "Jugal pool outstanding must be ₹1,400 after ₹100 auto credit");
-assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 290000, "total pool outstanding must be ₹2,900");
+assert(poolOutstanding.jugal === 90000, "Jugal pool outstanding must be ₹900 after ₹2,000 cash + ₹100 auto credit");
+assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 240000, "total pool outstanding must be ₹2,400");
 
 const jugalAuto = merged.expenses.find((e) => e.id === "expense-auto-jugal-sep14");
 assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
