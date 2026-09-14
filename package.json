@@ -10,7 +10,7 @@
     "prebuild": "npm run generate:icons",
     "build": "npm run validate:data && vite build",
     "preview": "vite preview",
-    "validate:data": "node scripts/validate-trip.mjs && node scripts/validate-return-branch.mjs"
+    "validate:data": "node scripts/validate-trip.mjs && node scripts/validate-return-branch.mjs && node scripts/validate-group-fund.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
