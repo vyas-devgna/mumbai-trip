@@ -95,12 +95,17 @@ assert((arrival?.notes || []).some((note) => note.includes("room 204")), "room 2
 assert([...(arrival?.participants || [])].sort().join(",") === expectedFinanceMembers.join(","), "room 204 occupants mismatch");
 assert(arrivalLeg?.fromPlaceId === "bandra-terminus" && arrivalLeg?.toPlaceId === "hotel-blue-stone", "Bandra Terminus → hotel leg missing");
 
+const uber = merged.expenses.find((e) => e.id === "expense-uber-siddhivinayak-sep14");
+assert(uber?.amountPaise === 42086 && uber?.status === "paid", "Uber expense must be ₹420.86 paid");
+assert(uber?.fundingSource === "groupFund" && !uber?.payerId, "Uber must be funded by the group account without a personal payer");
+assert([...(uber?.participantIds || [])].sort().join(",") === expectedFinanceMembers.join(","), "Uber participant set mismatch");
+
 const finance = buildFinanceSnapshot(merged, merged.expenses);
-assert(finance.recordedPaidPaise === 1071215, "recorded paid must be ₹10,712.15");
-assert(finance.corePaidPaise === 1071215, "core paid must be ₹10,712.15");
+assert(finance.recordedPaidPaise === 1113301, "recorded paid must be ₹11,133.01");
+assert(finance.corePaidPaise === 1113301, "core paid must be ₹11,133.01");
 assert(finance.personalPaidPaise === 0, "unexpected personal paid amount");
 assert(finance.corePlannedPaise === 0, "planned core costs must be ₹0 after removing cloak-room expense");
-assert(finance.forecastCorePaise === 1071215, "forecast must equal paid costs after removing cloak-room expense");
+assert(finance.forecastCorePaise === 1113301, "forecast must equal paid costs after the Uber expense");
 assert(finance.ceilingPaise === 3600000, "six-person budget ceiling must be ₹36,000");
 assert(finance.plannedShareByMember.pratham === 0, "Pratham received a planned budget share");
 assert(finance.settlement.rows.pratham?.netPaise === 0 && finance.settlement.rows.pratham?.sharePaise === 0, "Pratham entered settlement");
