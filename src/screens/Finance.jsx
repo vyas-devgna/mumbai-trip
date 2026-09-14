@@ -33,10 +33,29 @@ function obligationLabel(netPaise) {
   return { text: "SETTLED", className: "net-zero" };
 }
 
+const safeFundAmount = (value) =>
+  Number.isSafeInteger(value) && value > 0 ? value : 0;
+
 export default function Finance({ expenses, setSheet }) {
   const snapshot = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]),
     [copied, setCopied] = useState(null),
-    settlement = snapshot.settlement;
+    settlement = snapshot.settlement,
+    groupFund = data.finance?.groupFund,
+    receivedFundContributions = (groupFund?.contributions || []).filter(
+      (item) => item.status === "received",
+    ),
+    paidFundOutflows = (groupFund?.outflows || []).filter(
+      (item) => item.status === "paid",
+    ),
+    groupFundCollectedPaise = receivedFundContributions.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    groupFundSpentPaise = paidFundOutflows.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise;
 
   const copySettlement = async (transfer) => {
     const from = member(transfer.from)?.name,
@@ -101,6 +120,58 @@ export default function Finance({ expenses, setSheet }) {
           </small>
         </article>
       </div>
+
+      {groupFund && (
+        <DockAwarePanel className="panel">
+          <div className="panel-head">
+            <span>GROUP ACCOUNT</span>
+            <b>{receivedFundContributions.length}/{snapshot.budgetMembers.length} FUNDED</b>
+          </div>
+          <strong className="metric-number small">{formatINR(groupFundBalancePaise)}</strong>
+          <p className="muted">
+            Shared cash available for group expenses. Contributions are pooled money,
+            not trip spend and not settlement payments.
+          </p>
+          <div className="system-rows">
+            <div>
+              <b>Collected</b>
+              <span>{formatINR(groupFundCollectedPaise)}</span>
+            </div>
+            <div>
+              <b>Spent from account</b>
+              <span>{formatINR(groupFundSpentPaise)}</span>
+            </div>
+            <div>
+              <b>Available</b>
+              <span>{formatINR(groupFundBalancePaise)}</span>
+            </div>
+          </div>
+          <div className="ledger finance-ledger">
+            {receivedFundContributions.map((contribution) => (
+              <div key={contribution.id}>
+                <span>
+                  {member(contribution.memberId)?.name || contribution.memberId}
+                  <small>group account contribution · received</small>
+                </span>
+                <b>{formatINR(contribution.amountPaise)}</b>
+              </div>
+            ))}
+          </div>
+          {paidFundOutflows.length > 0 && (
+            <div className="ledger finance-ledger detailed-ledger">
+              {paidFundOutflows.map((outflow) => (
+                <div key={outflow.id}>
+                  <span>
+                    {outflow.label || "Group account expense"}
+                    <small>paid from shared group account</small>
+                  </span>
+                  <b>-{formatINR(outflow.amountPaise)}</b>
+                </div>
+              ))}
+            </div>
+          )}
+        </DockAwarePanel>
+      )}
 
       {snapshot.personalPaidPaise > 0 && (
         <div className="finance-scope-note">
