@@ -1,58 +1,136 @@
 {
   "schemaVersion": 2,
   "trip": {
+    "status": "live",
     "notes": [
       "Ganeshotsav period: crowd, road restriction and darshan timing assumptions must be re-verified close to travel.",
-      "Hotel Blue Stone in Kherwadi, Bandra East is the planned hotel/base. On 14 Sep go there directly from Bandra Terminus for bag drop/check-in arrangements; do not route via Dadar.",
+      "Hotel Blue Stone in Kherwadi, Bandra East is the active hotel/base. The group checked in on 14 Sep and is using room 204.",
       "The 14 Sep railway-storage plan is cancelled. Dadar storage remains only for the 16→17 Sep return-night luggage block unless changed later.",
       "The deployed Pages site is public. Ticket files are included because the group requested offline access; treat the URL as share-sensitive."
     ]
   },
   "finance": {
-    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
-    "scopeNote": "Finance uses the five-member shared-cost cohort. Expense participation remains transaction-specific so only named participants share each transaction.",
+    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal"],
+    "scopeNote": "Finance uses the six-member shared-cost cohort. Expense participation remains transaction-specific so only named participants share each transaction.",
     "groupFund": {
-      "label": "Group account",
+      "label": "Group expense account",
       "currency": "INR",
       "purpose": "Shared group expenses",
+      "targetPerMemberPaise": 300000,
+      "targetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal"],
       "contributions": [
         {
-          "id": "group-fund-vyas-sep14",
+          "id": "group-fund-vyas-morning-sep14",
           "memberId": "vyas",
+          "paidByMemberId": "vyas",
           "amountPaise": 100000,
           "date": "2026-09-14",
+          "phase": "morning",
           "status": "received"
         },
         {
-          "id": "group-fund-tirth-sep14",
+          "id": "group-fund-tirth-morning-sep14",
           "memberId": "tirth",
+          "paidByMemberId": "tirth",
           "amountPaise": 100000,
           "date": "2026-09-14",
+          "phase": "morning",
           "status": "received"
         },
         {
-          "id": "group-fund-nishit-sep14",
+          "id": "group-fund-nishit-morning-sep14",
           "memberId": "nishit",
+          "paidByMemberId": "nishit",
           "amountPaise": 100000,
           "date": "2026-09-14",
+          "phase": "morning",
           "status": "received"
         },
         {
-          "id": "group-fund-milan-sep14",
+          "id": "group-fund-milan-morning-sep14",
           "memberId": "milan",
+          "paidByMemberId": "milan",
           "amountPaise": 100000,
           "date": "2026-09-14",
+          "phase": "morning",
           "status": "received"
         },
         {
-          "id": "group-fund-het-sep14",
+          "id": "group-fund-het-morning-sep14",
           "memberId": "het",
+          "paidByMemberId": "het",
           "amountPaise": 100000,
           "date": "2026-09-14",
+          "phase": "morning",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-vyas-topup-sep14",
+          "memberId": "vyas",
+          "paidByMemberId": "vyas",
+          "amountPaise": 200000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-milan-topup-sep14",
+          "memberId": "milan",
+          "paidByMemberId": "vyas",
+          "amountPaise": 200000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
+          "status": "received",
+          "note": "Credited to Milan's group-fund target; physically funded by Vyas Devgna. This creates a ₹2,000 Milan → Vyas advance obligation without counting as trip spend."
+        },
+        {
+          "id": "group-fund-tirth-topup-sep14",
+          "memberId": "tirth",
+          "paidByMemberId": "tirth",
+          "amountPaise": 200000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-nishit-topup-sep14",
+          "memberId": "nishit",
+          "paidByMemberId": "nishit",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-het-topup-sep14",
+          "memberId": "het",
+          "paidByMemberId": "het",
+          "amountPaise": 100000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
+          "status": "received"
+        },
+        {
+          "id": "group-fund-jugal-sep14",
+          "memberId": "jugal",
+          "paidByMemberId": "jugal",
+          "amountPaise": 150000,
+          "date": "2026-09-14",
+          "phase": "hotel-checkin",
           "status": "received"
         }
       ],
-      "outflows": []
+      "outflows": [
+        {
+          "id": "group-fund-hotel-blue-stone-sep14",
+          "expenseId": "expense-hotel-blue-stone-sep14",
+          "amountPaise": 800000,
+          "date": "2026-09-14",
+          "category": "accommodation",
+          "label": "Hotel Blue Stone · Room 204",
+          "status": "paid"
+        }
+      ]
     }
   },
   "members": [
@@ -60,6 +138,11 @@
       "id": "het",
       "name": "Het Gandhi",
       "initials": "HG"
+    },
+    {
+      "id": "jugal",
+      "name": "Jugal",
+      "initials": "J"
     }
   ],
   "places": [
@@ -91,28 +174,27 @@
   "activities": [
     {
       "id": "sep14-arrival-storage",
-      "title": "Arrival → Hotel Blue Stone · walk + bag drop",
+      "title": "Hotel Blue Stone · checked in · Room 204",
       "placeId": "hotel-blue-stone",
       "date": "2026-09-14",
       "timing": {
         "type": "window",
         "earliest": "12:30",
-        "latest": "13:30"
+        "latest": "14:00"
       },
       "duration": {
         "minMinutes": 25,
-        "targetMinutes": 40,
-        "maxMinutes": 60
+        "targetMinutes": 60,
+        "maxMinutes": 90
       },
-      "participants": ["vyas", "tirth", "nishit", "milan"],
+      "participants": ["vyas", "tirth", "nishit", "milan", "het", "jugal"],
       "priority": "high",
-      "bookingStatus": "none",
-      "status": "planned",
+      "bookingStatus": "checked-in",
+      "status": "completed",
       "notes": [
-        "Go directly from Bandra Terminus to Hotel Blue Stone in Kherwadi; the old Dadar arrival-storage detour is removed.",
-        "Default is walking: budget roughly 15–20 minutes after exiting the station, plus platform-exit and bag-handling time.",
-        "If rain, heat or luggage makes the walk annoying, switch to an auto/cab for this short hop.",
-        "Drop bags or complete the available hotel check-in arrangement, eat if needed, then continue toward the first darshan block."
+        "Checked in at Hotel Blue Stone, Kherwadi, Bandra East. All six room occupants are together in room 204.",
+        "The old Dadar arrival-storage detour is cancelled; luggage is handled at the hotel.",
+        "The Hotel Blue Stone charge is ₹8,000 and was paid from the shared group expense account."
       ],
       "fallbackIds": [],
       "sourceIds": []
@@ -134,11 +216,11 @@
       },
       "participants": ["vyas", "tirth", "nishit", "milan", "pratham"],
       "priority": "high",
-      "bookingStatus": "unknown",
+      "bookingStatus": "checked-in",
       "status": "provisional",
       "notes": [
         "Return from Uran directly to Hotel Blue Stone after sunrise. Do not detour to Dadar for the old 14→15 Sep luggage-storage plan.",
-        "Use the hotel as the recovery base; confirm the exact room-access/check-in arrangement before relying on immediate room access."
+        "Hotel Blue Stone is already the active base."
       ],
       "fallbackIds": [],
       "sourceIds": []
@@ -277,7 +359,20 @@
       "date": "2026-09-14",
       "label": "Cancelled railway storage · 14→15 Sep",
       "status": "cancelled",
-      "note": "Cancelled because the arrival route now goes directly from Bandra Terminus to Hotel Blue Stone for luggage handling. No spend should be recorded unless an actual hotel/bag fee is later reported."
+      "note": "Cancelled because the arrival route goes directly to Hotel Blue Stone."
+    },
+    {
+      "id": "expense-hotel-blue-stone-sep14",
+      "amountPaise": 800000,
+      "participantIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal"],
+      "category": "accommodation",
+      "date": "2026-09-14",
+      "label": "Hotel Blue Stone · Room 204",
+      "status": "paid",
+      "budgetScope": "core",
+      "fundingSource": "groupFund",
+      "groupFundOutflowId": "group-fund-hotel-blue-stone-sep14",
+      "note": "₹8,000 paid from the shared group expense account for one room occupied by Vyas, Tirth, Nishit, Milan, Het and Jugal. Group-funded spend is counted as trip spend but is excluded from personal settlement because no single member paid the merchant."
     }
   ],
   "signals": [

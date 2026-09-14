@@ -47,7 +47,34 @@ export default function Finance({ expenses, setSheet }) {
     paidFundOutflows = (groupFund?.outflows || []).filter(
       (item) => item.status === "paid",
     ),
-    groupFundCollectedPaise = receivedFundContributions.reduce(
+    groupFundMembers = groupFund?.targetMemberIds || snapshot.budgetMembers,
+    groupFundTargetPerMemberPaise = safeFundAmount(
+      groupFund?.targetPerMemberPaise,
+    ),
+    groupFundCollectedByMember = Object.fromEntries(
+      groupFundMembers.map((id) => [id, 0]),
+    ),
+    groupFundAdvancedByMember = Object.fromEntries(
+      groupFundMembers.map((id) => [id, []]),
+    );
+
+  for (const contribution of receivedFundContributions) {
+    if (Object.prototype.hasOwnProperty.call(groupFundCollectedByMember, contribution.memberId))
+      groupFundCollectedByMember[contribution.memberId] += safeFundAmount(
+        contribution.amountPaise,
+      );
+    const paidBy = contribution.paidByMemberId || contribution.memberId;
+    if (
+      paidBy !== contribution.memberId &&
+      Object.prototype.hasOwnProperty.call(groupFundAdvancedByMember, contribution.memberId)
+    )
+      groupFundAdvancedByMember[contribution.memberId].push({
+        paidByMemberId: paidBy,
+        amountPaise: safeFundAmount(contribution.amountPaise),
+      });
+  }
+
+  const groupFundCollectedPaise = receivedFundContributions.reduce(
       (sum, item) => sum + safeFundAmount(item.amountPaise),
       0,
     ),
@@ -55,7 +82,34 @@ export default function Finance({ expenses, setSheet }) {
       (sum, item) => sum + safeFundAmount(item.amountPaise),
       0,
     ),
-    groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise;
+    groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise,
+    groupFundTargetPaise =
+      groupFundTargetPerMemberPaise * groupFundMembers.length,
+    groupFundOutstandingPaise = groupFundMembers.reduce(
+      (sum, id) =>
+        sum +
+        Math.max(
+          0,
+          groupFundTargetPerMemberPaise -
+            (groupFundCollectedByMember[id] || 0),
+        ),
+      0,
+    ),
+    groupFundFullyFundedCount = groupFundMembers.filter(
+      (id) =>
+        groupFundTargetPerMemberPaise > 0 &&
+        (groupFundCollectedByMember[id] || 0) >=
+          groupFundTargetPerMemberPaise,
+    ).length,
+    fundAdvances = receivedFundContributions.filter(
+      (item) =>
+        (item.paidByMemberId || item.memberId) !== item.memberId,
+    ),
+    groupFundExpensePaise = snapshot.paid
+      .filter((expense) => expense.fundingSource === "groupFund")
+      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
+    groupFundReconciliationPaise =
+      groupFundExpensePaise - groupFundSpentPaise;
 
   const copySettlement = async (transfer) => {
     const from = member(transfer.from)?.name,
@@ -75,7 +129,11 @@ export default function Finance({ expenses, setSheet }) {
     allocationDifferencePaise =
       settlement.merchantPaidPaise +
       settlement.unassignedPaidPaise -
-      settlement.allocatedSharePaise;
+      settlement.allocatedSharePaise,
+    ledgerBalanced =
+      allocationDifferencePaise === 0 &&
+      settlement.netBalancePaise === 0 &&
+      groupFundReconciliationPaise === 0;
 
   return (
     <section className="page">
@@ -83,8 +141,8 @@ export default function Finance({ expenses, setSheet }) {
         <span>MONEY CONTROL</span>
         <h1>Finance</h1>
         <p>
-          Real spend, planning estimates and member settlement are separate on
-          purpose. Transfers never count as new trip spend.
+          Real spend, shared cash and member settlement are tracked separately.
+          Moving money into the group account never counts as a new trip expense.
         </p>
       </div>
 
@@ -124,13 +182,13 @@ export default function Finance({ expenses, setSheet }) {
       {groupFund && (
         <DockAwarePanel className="panel">
           <div className="panel-head">
-            <span>GROUP ACCOUNT</span>
-            <b>{receivedFundContributions.length}/{snapshot.budgetMembers.length} FUNDED</b>
+            <span>GROUP EXPENSE ACCOUNT</span>
+            <b>{groupFundFullyFundedCount}/{groupFundMembers.length} TARGET MET</b>
           </div>
           <strong className="metric-number small">{formatINR(groupFundBalancePaise)}</strong>
           <p className="muted">
-            Shared cash available for group expenses. Contributions are pooled money,
-            not trip spend and not settlement payments.
+            Current shared cash after confirmed group-account spending. Member
+            deposits are funding, not expenses; only merchant outflows increase trip spend.
           </p>
           <div className="system-rows">
             <div>
@@ -142,20 +200,47 @@ export default function Finance({ expenses, setSheet }) {
               <span>{formatINR(groupFundSpentPaise)}</span>
             </div>
             <div>
-              <b>Available</b>
+              <b>Available now</b>
               <span>{formatINR(groupFundBalancePaise)}</span>
             </div>
+            <div>
+              <b>Still to collect</b>
+              <span>{formatINR(groupFundOutstandingPaise)}</span>
+            </div>
           </div>
+          {groupFundTargetPaise > 0 && (
+            <p className="system-copy">
+              Collection target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)}.
+            </p>
+          )}
           <div className="ledger finance-ledger">
-            {receivedFundContributions.map((contribution) => (
-              <div key={contribution.id}>
-                <span>
-                  {member(contribution.memberId)?.name || contribution.memberId}
-                  <small>group account contribution · received</small>
-                </span>
-                <b>{formatINR(contribution.amountPaise)}</b>
-              </div>
-            ))}
+            {groupFundMembers.map((memberId) => {
+              const collected = groupFundCollectedByMember[memberId] || 0,
+                outstanding = Math.max(
+                  0,
+                  groupFundTargetPerMemberPaise - collected,
+                ),
+                advances = groupFundAdvancedByMember[memberId] || [];
+              return (
+                <div key={memberId}>
+                  <span>
+                    {member(memberId)?.name || memberId}
+                    <small>
+                      target {formatINR(groupFundTargetPerMemberPaise)}
+                      {outstanding > 0
+                        ? ` · ${formatINR(outstanding)} outstanding`
+                        : " · funded"}
+                    </small>
+                    {advances.map((advance, index) => (
+                      <small key={`${memberId}-advance-${index}`}>
+                        {formatINR(advance.amountPaise)} funded by {firstName(advance.paidByMemberId)} · included in settlement
+                      </small>
+                    ))}
+                  </span>
+                  <b>{formatINR(collected)}</b>
+                </div>
+              );
+            })}
           </div>
           {paidFundOutflows.length > 0 && (
             <div className="ledger finance-ledger detailed-ledger">
@@ -169,6 +254,16 @@ export default function Finance({ expenses, setSheet }) {
                 </div>
               ))}
             </div>
+          )}
+          {fundAdvances.length > 0 && (
+            <p className="system-copy">
+              {fundAdvances
+                .map(
+                  (advance) =>
+                    `${firstName(advance.paidByMemberId)} fronted ${formatINR(advance.amountPaise)} for ${firstName(advance.memberId)}`,
+                )
+                .join(" · ")}. This changes who owes whom, but not group cash or trip spend.
+            </p>
           )}
         </DockAwarePanel>
       )}
@@ -192,7 +287,7 @@ export default function Finance({ expenses, setSheet }) {
           <strong className="metric-number small">{formatINR(snapshot.ceilingPaise)}</strong>
           <p className="muted">
             {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} group members.
-            Expense participation is still transaction-specific, so absent members are never charged automatically.
+            Expense participation is transaction-specific, so only named participants share a cost.
           </p>
           <div className="system-rows">
             <div>
@@ -236,12 +331,16 @@ export default function Finance({ expenses, setSheet }) {
           </div>
           <strong className="metric-number small">{formatINR(snapshot.recordedPaidPaise)}</strong>
           <p className="muted">
-            Confirmed merchant costs only. Reimbursements move money between
-            members and therefore never increase this total.
+            Confirmed merchant costs only. Contributions and reimbursements move
+            money between accounts and therefore never increase this total.
           </p>
           <div className="ledger finance-ledger detailed-ledger">
             {snapshot.paid.map((expense) => {
               const payer = member(expense.payerId),
+                payerLabel =
+                  expense.fundingSource === "groupFund"
+                    ? "Group account"
+                    : payer?.name || "Unknown payer",
                 scope = expenseBudgetScope(data, expense),
                 components = Object.entries(expense.componentsPaise || {}).filter(
                   ([, value]) => Number.isSafeInteger(value) && value > 0,
@@ -251,7 +350,7 @@ export default function Finance({ expenses, setSheet }) {
                   <span>
                     {expense.label}
                     <small>
-                      {payer?.name || "Unknown payer"} paid · allocated to {participantLabel(expense)} · {scope === "core" ? "core" : "personal"}
+                      {payerLabel} paid · allocated to {participantLabel(expense)} · {scope === "core" ? "core" : "personal"}
                     </small>
                     {components.length > 0 && (
                       <small className="expense-components">
@@ -314,12 +413,11 @@ export default function Finance({ expenses, setSheet }) {
       <DockAwarePanel className="panel">
         <div className="panel-head">
           <span>PER-PERSON ACCOUNTS</span>
-          <b>CONFIRMED COSTS ONLY</b>
+          <b>CONFIRMED PERSONAL FLOWS</b>
         </div>
         <p className="muted">
-          "Share" is the allocated trip cost. "Credit" is a confirmed
-          reimbursement covering that share. Planned costs are shown separately
-          and do not create debt.
+          Group-account merchant costs stay in the shared-cash ledger. This block
+          shows only direct member-funded costs, reimbursements and member-to-member advances.
         </p>
         <div className="finance-accounts">
           {data.members
@@ -341,6 +439,12 @@ export default function Finance({ expenses, setSheet }) {
                     </small>
                     <small>
                       recorded cash position {formatINR(row.cashPositionPaise)}
+                      {row.groupFundAdvancePaidPaise > 0
+                        ? ` · fronted ${formatINR(row.groupFundAdvancePaidPaise)}`
+                        : ""}
+                      {row.groupFundAdvanceCoveredPaise > 0
+                        ? ` · advance received ${formatINR(row.groupFundAdvanceCoveredPaise)}`
+                        : ""}
                       {plannedShare > 0 ? ` · planned share +${formatINR(plannedShare)}` : ""}
                     </small>
                   </div>
@@ -387,34 +491,38 @@ export default function Finance({ expenses, setSheet }) {
       <DockAwarePanel className="panel finance-integrity-panel">
         <div className="panel-head">
           <span>LEDGER INTEGRITY</span>
-          <b>
-            {allocationDifferencePaise === 0 && settlement.netBalancePaise === 0
-              ? "BALANCED TO THE PAISA"
-              : "CHECK REQUIRED"}
-          </b>
+          <b>{ledgerBalanced ? "BALANCED TO THE PAISA" : "CHECK REQUIRED"}</b>
         </div>
         <div className="finance-integrity-grid">
           <div>
-            <span>PAID TO MERCHANTS</span>
+            <span>PERSONALLY FUNDED COSTS</span>
             <b>{formatINR(settlement.merchantPaidPaise)}</b>
           </div>
           <div>
-            <span>ALLOCATED SHARES</span>
-            <b>{formatINR(settlement.allocatedSharePaise)}</b>
+            <span>GROUP-FUNDED COSTS</span>
+            <b>{formatINR(groupFundExpensePaise)}</b>
           </div>
           <div>
-            <span>ALLOCATION DIFFERENCE</span>
+            <span>PERSONAL ALLOCATION DIFFERENCE</span>
             <b>{formatINR(Math.abs(allocationDifferencePaise))}</b>
+          </div>
+          <div>
+            <span>GROUP-FUND DIFFERENCE</span>
+            <b>{formatINR(Math.abs(groupFundReconciliationPaise))}</b>
           </div>
           <div>
             <span>NET BALANCE SUM</span>
             <b>{formatINR(Math.abs(settlement.netBalancePaise))}</b>
           </div>
+          <div>
+            <span>MEMBER ADVANCES</span>
+            <b>{formatINR(settlement.groupFundAdvancePaise)}</b>
+          </div>
         </div>
         <p className="system-copy">
-          Exact integer paise are used end-to-end. Equal splits distribute any
-          remainder deterministically; no floating-point rupee arithmetic is used
-          for settlement.
+          Exact integer paise are used end-to-end. Shared-account expenses are
+          reconciled against fund outflows; direct member spending and advances
+          are reconciled separately so pooled cash is never mistaken for personal payment.
         </p>
       </DockAwarePanel>
     </section>

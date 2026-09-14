@@ -61,6 +61,11 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 
   for (const expense of expenses) {
     if (expense.status !== "paid") continue;
+    // Shared-account purchases are real trip spend, but the merchant was paid
+    // by pooled cash rather than one member. They belong in spend totals and
+    // the group-fund ledger, not the person-to-person settlement engine.
+    if (expense.fundingSource === "groupFund") continue;
+
     const amountPaise = safePaise(expense.amountPaise),
       participants = uniqueKnownIds(expense.participantIds, financeMembers),
       declared = [...new Set(expense.participantIds || [])];
@@ -72,8 +77,6 @@ function groupPaidExpenses(data, expenses, diagnostics) {
       diagnostics.push(`${expense.id}: unknown participant`);
       continue;
     }
-    // Transactions with no finance-cohort participant are deliberately omitted
-    // from settlement. They may still exist in the wider itinerary data.
     if (!participants.length) continue;
 
     const baseGroupId = expense.settlementGroupId || expense.id,
@@ -97,6 +100,27 @@ function groupPaidExpenses(data, expenses, diagnostics) {
   return [...groups.values()];
 }
 
+function applyGroupFundAdvances(data, rows, financeMembers, diagnostics) {
+  let advancePaise = 0;
+  for (const contribution of data.finance?.groupFund?.contributions || []) {
+    if (contribution.status !== "received") continue;
+    const amountPaise = safePaise(contribution.amountPaise),
+      memberId = contribution.memberId,
+      paidByMemberId = contribution.paidByMemberId || memberId;
+    if (!amountPaise) continue;
+    if (!financeMembers.has(memberId) || !financeMembers.has(paidByMemberId)) {
+      diagnostics.push(`${contribution.id}: invalid group-fund member`);
+      continue;
+    }
+    if (memberId === paidByMemberId) continue;
+
+    rows[paidByMemberId].groupFundAdvancePaidPaise += amountPaise;
+    rows[memberId].groupFundAdvanceCoveredPaise += amountPaise;
+    advancePaise += amountPaise;
+  }
+  return advancePaise;
+}
+
 export function buildSettlement(data, expenses) {
   const financeMembers = financeMemberSet(data),
     rows = Object.fromEntries(
@@ -108,6 +132,8 @@ export function buildSettlement(data, expenses) {
           coverageCreditPaise: 0,
           reimbursementSentPaise: 0,
           reimbursementReceivedPaise: 0,
+          groupFundAdvancePaidPaise: 0,
+          groupFundAdvanceCoveredPaise: 0,
           cashPositionPaise: 0,
           netPaise: 0,
         },
@@ -153,17 +179,27 @@ export function buildSettlement(data, expenses) {
     });
   }
 
+  const groupFundAdvancePaise = applyGroupFundAdvances(
+    data,
+    rows,
+    financeMembers,
+    diagnostics,
+  );
+
   for (const [id, row] of Object.entries(rows)) {
     if (!financeMembers.has(id)) continue;
     row.cashPositionPaise =
       row.merchantPaidPaise +
       row.reimbursementSentPaise -
-      row.reimbursementReceivedPaise;
+      row.reimbursementReceivedPaise +
+      row.groupFundAdvancePaidPaise;
     row.netPaise =
       row.merchantPaidPaise -
       row.sharePaise +
       row.coverageCreditPaise -
-      row.reimbursementReceivedPaise;
+      row.reimbursementReceivedPaise +
+      row.groupFundAdvancePaidPaise -
+      row.groupFundAdvanceCoveredPaise;
   }
 
   const creditors = [],
@@ -221,6 +257,7 @@ export function buildSettlement(data, expenses) {
     merchantPaidPaise,
     allocatedSharePaise,
     confirmedReimbursementPaise,
+    groupFundAdvancePaise,
     unassignedPaidPaise,
     unallocatedSharePaise,
     netBalancePaise,

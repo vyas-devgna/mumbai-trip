@@ -21,7 +21,7 @@ import {
 import { DockAwarePanel } from "../ui.jsx";
 
 const EARLY_DEPARTURES = new Set(["05:00", "05:40", "05:52"]);
-const BAG_DAYS = new Set(["2026-09-14", "2026-09-16", "2026-09-17"]);
+const BAG_DAYS = new Set(["2026-09-16", "2026-09-17"]);
 
 export default function Plan({ day, setDay, setResource, sunrises }) {
   const items = dayItems(day),
@@ -246,6 +246,53 @@ function ExplorationLane({ day }) {
 }
 
 function StayDecisionBoard() {
+  if (operations.status === "confirmed" && operations.currentStay) {
+    const stay = operations.currentStay;
+    return (
+      <DockAwarePanel className="panel stay-panel">
+        <div className="panel-head">
+          <span>CURRENT STAY · BANDRA EAST</span>
+          <b>{stay.status}</b>
+        </div>
+        <div className="stay-list">
+          <article className="stay-card recommended">
+            <div className="stay-card-head">
+              <span>ACTIVE BASE</span>
+              <em>ROOM {stay.room}</em>
+            </div>
+            <div className="stay-score-row">
+              <div>
+                <h3>{stay.name}</h3>
+                <strong>{stay.guests} room occupants</strong>
+              </div>
+              <b>{stay.room}</b>
+            </div>
+            <p>{stay.address}</p>
+            <div className="stay-facts">
+              <span>
+                <b>STATUS</b>
+                Checked in on 14 Sep
+              </span>
+              <span>
+                <b>GROUP COST</b>
+                {stay.costLabel}
+              </span>
+              <span>
+                <b>LUGGAGE</b>
+                Arrival bags are handled here; the old 14→15 Dadar storage plan is cancelled.
+              </span>
+            </div>
+            <div className="stay-actions">
+              <a href={stay.mapsUrl} target="_blank" rel="noreferrer">
+                <MapPin aria-hidden="true" /> Map
+              </a>
+            </div>
+          </article>
+        </div>
+      </DockAwarePanel>
+    );
+  }
+
   return (
     <DockAwarePanel className="panel stay-panel">
       <div className="panel-head">
@@ -254,16 +301,16 @@ function StayDecisionBoard() {
       </div>
       <p className="ops-note">{operations.researchNote}</p>
       <div className="stay-window">
-        <b>{operations.stayWindow.targetCheckIn}</b>
+        <b>{operations.stayWindow?.targetCheckIn}</b>
         <span>→</span>
-        <b>{operations.stayWindow.checkOut}</b>
+        <b>{operations.stayWindow?.checkOut}</b>
       </div>
-      <div className="stay-budget">{operations.stayWindow.planningEnvelope}</div>
-      <p className="ops-note">{operations.stayWindow.selectionRule}</p>
+      <div className="stay-budget">{operations.stayWindow?.planningEnvelope}</div>
+      <p className="ops-note">{operations.stayWindow?.selectionRule}</p>
 
       <div className="decision-protocol">
         <b>CALL ORDER</b>
-        {operations.decisionProtocol.map((item, index) => (
+        {(operations.decisionProtocol || []).map((item, index) => (
           <p key={item}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             {item}
@@ -272,7 +319,7 @@ function StayDecisionBoard() {
       </div>
 
       <div className="stay-list">
-        {operations.stays.map((stay) => (
+        {(operations.stays || []).map((stay) => (
           <article
             className={`stay-card ${stay.rank === 1 ? "recommended" : ""}`}
             key={stay.id}
@@ -295,7 +342,7 @@ function StayDecisionBoard() {
                 {stay.stationAccess}
               </span>
               <span>
-                <b>5-PERSON FIT</b>
+                <b>GROUP FIT</b>
                 {stay.groupFit}
               </span>
               <span>
@@ -312,9 +359,11 @@ function StayDecisionBoard() {
               </span>
             </div>
             <div className="stay-actions">
-              <a href={stay.phoneHref}>
-                <Phone aria-hidden="true" /> Call
-              </a>
+              {stay.phoneHref && (
+                <a href={stay.phoneHref}>
+                  <Phone aria-hidden="true" /> Call
+                </a>
+              )}
               {stay.whatsappHref && (
                 <a href={stay.whatsappHref} target="_blank" rel="noreferrer">
                   <MessageCircle aria-hidden="true" /> WhatsApp
@@ -334,36 +383,29 @@ function StayDecisionBoard() {
                 </a>
               )}
             </div>
-            <small className="stay-contact">
-              {stay.phone}
-              {stay.alternatePhone ? ` · ${stay.alternatePhone}` : ""}
-              {stay.secondAlternatePhone ? ` · ${stay.secondAlternatePhone}` : ""}
-            </small>
-            <small className="stay-warning">{stay.watch}</small>
+            {stay.phone && <small className="stay-contact">{stay.phone}</small>}
+            {stay.watch && <small className="stay-warning">{stay.watch}</small>}
           </article>
         ))}
       </div>
 
-      <div className="call-checklist">
-        <b>DO NOT PAY UNTIL ALL OF THESE ARE ANSWERED</b>
-        {operations.callChecklist.map((item, index) => (
-          <p key={item}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            {item}
-          </p>
-        ))}
-      </div>
+      {(operations.callChecklist || []).length > 0 && (
+        <div className="call-checklist">
+          <b>DO NOT PAY UNTIL ALL OF THESE ARE ANSWERED</b>
+          {operations.callChecklist.map((item, index) => (
+            <p key={item}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              {item}
+            </p>
+          ))}
+        </div>
+      )}
     </DockAwarePanel>
   );
 }
 
 function LuggagePlan({ day }) {
-  const useLabel =
-    day === "2026-09-14"
-      ? "14→15 STORAGE"
-      : day === "2026-09-16"
-        ? "16→17 STORAGE"
-        : "04:30 PICKUP";
+  const useLabel = day === "2026-09-16" ? "16→17 STORAGE" : "04:30 PICKUP";
   return (
     <DockAwarePanel className="panel luggage-panel">
       <div className="panel-head">
