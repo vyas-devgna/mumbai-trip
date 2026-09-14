@@ -145,6 +145,84 @@
   margin-bottom: 14px;
 }
 
+/* Finance management: make uncollected pool money the second-most visible figure after cash on hand. */
+.finance-cash-first .finance-pool-status {
+  margin: 12px 0 4px;
+  padding: 14px 15px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 5px;
+  border: 2px solid #d4b15d;
+  border-radius: 13px;
+  background: #fff6dc;
+  box-shadow: 0 5px 14px rgba(80, 61, 24, .07);
+}
+
+.finance-cash-first .finance-pool-status b {
+  display: grid;
+  gap: 4px;
+  color: #765212;
+  font: 700 clamp(21px, 6vw, 30px)/1 var(--mono);
+  letter-spacing: -.035em;
+  white-space: normal;
+}
+
+.finance-cash-first .finance-pool-status b::before {
+  content: "OUTSTANDING TO COLLECT";
+  color: #8b6b2a;
+  font: 700 8px/1.2 var(--mono);
+  letter-spacing: .09em;
+}
+
+.finance-cash-first .finance-pool-status span {
+  font-size: 9px;
+  line-height: 1.45;
+  color: #74684f;
+}
+
+/* Put people who still owe the group account first and make the exact due amount dominant. */
+.finance-cash-first .finance-contribution-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.finance-cash-first .finance-contribution-row:has(.status-due) {
+  order: -1;
+  padding-left: 8px;
+  border-left: 4px solid #c8873a;
+  background: #fff9e8;
+}
+
+.finance-cash-first .finance-contribution-row:has(.status-due) > div:nth-child(2) small:first-of-type {
+  margin-top: 2px;
+  color: #7a5618;
+  font: 700 12px/1.35 var(--mono);
+  letter-spacing: -.015em;
+}
+
+.finance-cash-first .finance-contribution-row:has(.status-due) .finance-contribution-amount strong {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.finance-cash-first .finance-contribution-row:has(.status-due) .finance-contribution-amount strong::before {
+  content: "PAID ";
+  font-size: 7px;
+  letter-spacing: .06em;
+}
+
+.finance-cash-first .finance-contribution-row:has(.status-due) .status-due {
+  padding: 5px 8px;
+  background: #f2d89d;
+  color: #65460f;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.finance-cash-first .finance-contribution-row:not(:has(.status-due)) {
+  opacity: .82;
+}
+
 @media (max-width: 560px) {
   .finance-expense-summary {
     grid-template-columns: 1fr 1fr;
@@ -160,6 +238,10 @@
 
   .finance-cash-hero {
     padding: 14px;
+  }
+
+  .finance-cash-first .finance-pool-status {
+    padding: 13px 14px;
   }
 }
 
@@ -184,5 +266,9 @@
 
   .finance-pool-due-list > div {
     align-items: flex-start;
+  }
+
+  .finance-cash-first .finance-contribution-row:has(.status-due) > div:nth-child(2) small:first-of-type {
+    font-size: 11px;
   }
 }
