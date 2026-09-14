@@ -102,8 +102,8 @@ const expectedCredited = {
   jugal: 150000,
 };
 const expectedPhysical = {
-  vyas: 500000,
-  milan: 100000,
+  vyas: 600000,
+  milan: 0,
   tirth: 300000,
   nishit: 200000,
   het: 200000,
@@ -122,12 +122,22 @@ for (const [memberId, expectedPaise] of Object.entries(expectedPhysical))
 assert(contributions.length === 11, `expected 11 received contribution records, got ${contributions.length}`);
 assert(collectedPaise === 1450000, `group fund collected ${collectedPaise}, expected 1450000`);
 
-const milanAdvance = contributions.find(
-  (item) => item.id === "group-fund-milan-topup-sep14",
+const milanMorningAdvance = contributions.find(
+    (item) => item.id === "group-fund-milan-morning-sep14",
+  ),
+  milanTopupAdvance = contributions.find(
+    (item) => item.id === "group-fund-milan-topup-sep14",
+  );
+assert(milanMorningAdvance?.memberId === "milan", "Milan morning ₹1,000 credit is missing");
+assert(milanMorningAdvance?.paidByMemberId === "vyas", "Milan morning ₹1,000 must be physically funded by Vyas");
+assert(milanMorningAdvance?.amountPaise === 100000, "Milan morning advance must be ₹1,000");
+assert(milanTopupAdvance?.memberId === "milan", "Milan ₹2,000 top-up credit is missing");
+assert(milanTopupAdvance?.paidByMemberId === "vyas", "Milan ₹2,000 top-up must be physically funded by Vyas");
+assert(milanTopupAdvance?.amountPaise === 200000, "Milan top-up advance must be ₹2,000");
+assert(
+  milanMorningAdvance.amountPaise + milanTopupAdvance.amountPaise === 300000,
+  "Vyas must have funded Milan's full ₹3,000 group contribution",
 );
-assert(milanAdvance?.memberId === "milan", "Milan ₹2,000 top-up credit is missing");
-assert(milanAdvance?.paidByMemberId === "vyas", "Milan ₹2,000 top-up must be physically funded by Vyas");
-assert(milanAdvance?.amountPaise === 200000, "Milan advance must be ₹2,000");
 
 const outstandingByMember = Object.fromEntries(
   expectedMembers.map((memberId) => [
@@ -185,13 +195,13 @@ assert(finance.ceilingPaise === 3600000, "six-person planning ceiling must be �
 assert(finance.settlement.netBalancePaise === 0, "settlement conservation failed");
 assert(finance.settlement.merchantPaidPaise === 271215, "personally funded merchant costs must remain ₹2,712.15");
 assert(finance.settlement.allocatedSharePaise === 271215, "personal settlement shares must remain ₹2,712.15");
-assert(finance.settlement.groupFundAdvancePaise === 200000, "member advance total must be ₹2,000");
+assert(finance.settlement.groupFundAdvancePaise === 300000, "member advance total must be ₹3,000");
 
 const expectedNet = {
-  vyas: 307075,
+  vyas: 407075,
   tirth: -16400,
   nishit: -16400,
-  milan: -257875,
+  milan: -357875,
   het: -16400,
   jugal: 0,
   pratham: 0,
@@ -203,7 +213,7 @@ for (const [memberId, amountPaise] of Object.entries(expectedNet))
   );
 
 const expectedTransfers = [
-  ["milan", "vyas", 257875],
+  ["milan", "vyas", 357875],
   ["het", "vyas", 16400],
   ["nishit", "vyas", 16400],
   ["tirth", "vyas", 16400],
@@ -224,5 +234,5 @@ if (errors.length) {
 }
 
 console.log(
-  "Group expense account valid: ₹14,500 collected − ₹8,000 hotel = ₹6,500 cash; ₹3,500 outstanding; Vyas ₹2,000 Milan advance preserved",
+  "Group expense account valid: ₹14,500 collected − ₹8,000 hotel = ₹6,500 cash; ₹3,500 outstanding; Vyas funded Milan's full ₹3,000 contribution",
 );
