@@ -56,8 +56,8 @@ const collected = contributions.reduce((sum, item) => sum + item.amountPaise, 0)
 const outflows = (fund?.outflows || []).filter((item) => item.status === "paid");
 const spent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 assert(collected === 1450000, `group fund collected ${collected}, expected ₹14,500`);
-assert(spent === 800000, `group fund spent ${spent}, expected ₹8,000`);
-assert(collected - spent === 650000, "current group cash must be ₹6,500");
+assert(spent === 842086, `group fund spent ${spent}, expected ₹8,420.86`);
+assert(collected - spent === 607914, "current group cash must be ₹6,079.14");
 
 const outstanding = Object.fromEntries(members.map((id) => [id, Math.max(0, 300000 - credited[id])]));
 assert(outstanding.nishit === 100000, "Nishit must have ₹1,000 outstanding");
@@ -76,11 +76,21 @@ assert(hotel?.amountPaise === 800000 && hotel?.status === "paid", "Hotel Blue St
 assert(hotel?.fundingSource === "groupFund", "hotel must be group-funded");
 assert(!hotel?.payerId, "group-funded hotel must not invent a personal payer");
 
+const uber = merged.expenses.find((e) => e.id === "expense-uber-siddhivinayak-sep14");
+const uberOutflow = outflows.find((e) => e.id === "group-fund-uber-siddhivinayak-sep14");
+assert(uber?.amountPaise === 42086 && uber?.status === "paid", "Uber must be recorded as ₹420.86 paid");
+assert(uber?.fundingSource === "groupFund" && !uber?.payerId, "Uber must be group-funded without a personal payer");
+assert(uberOutflow?.amountPaise === 42086 && uberOutflow?.expenseId === uber?.id, "Uber group-fund outflow mismatch");
+
+const groupFundExpenses = merged.expenses.filter((e) => e.status === "paid" && e.fundingSource === "groupFund");
+const groupFundExpenseTotal = groupFundExpenses.reduce((sum, e) => sum + e.amountPaise, 0);
+assert(groupFundExpenseTotal === spent, `group-fund expense/outflow mismatch ${groupFundExpenseTotal} vs ${spent}`);
+
 const finance = buildFinanceSnapshot(merged, merged.expenses);
-assert(finance.recordedPaidPaise === 1071215, "recorded trip spend must be ₹10,712.15");
-assert(finance.corePaidPaise === 1071215, "core trip spend must be ₹10,712.15");
+assert(finance.recordedPaidPaise === 1113301, "recorded trip spend must be ₹11,133.01");
+assert(finance.corePaidPaise === 1113301, "core trip spend must be ₹11,133.01");
 assert(finance.corePlannedPaise === 0, "planned shared costs must be ₹0 after cloak-room removal");
-assert(finance.forecastCorePaise === 1071215, "known forecast must equal paid spend after cloak-room removal");
+assert(finance.forecastCorePaise === 1113301, "known forecast must equal paid spend including Uber");
 assert(finance.ceilingPaise === 3600000, "six-person planning ceiling must be ₹36,000");
 assert(finance.settlement.groupFundAdvancePaise === 300000, "Vyas → Milan advance must total ₹3,000");
 assert(finance.settlement.netBalancePaise === 0, "settlement conservation failed");
@@ -92,4 +102,4 @@ const actualTransfers = finance.settlement.transfers.map((t) => [t.from, t.to, t
 assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `transfer plan mismatch ${JSON.stringify(actualTransfers)}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log("Group expense account valid: ₹6,500 cash; no planned cloak-room cost; settlement balanced to the paisa");
+console.log("Group expense account valid: ₹6,079.14 cash after ₹420.86 Uber; settlement balanced to the paisa");
