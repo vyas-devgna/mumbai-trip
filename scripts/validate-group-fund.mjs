@@ -84,7 +84,6 @@ assert(paidCreditExpenses.length === credits.length, "every member-paid pool-cre
 
 const collectedPaise = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const spentPaise = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
-const creditPaise = credits.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashBalancePaise = collectedPaise - spentPaise;
 assert(cashBalancePaise >= 0, "group cash cannot be negative");
 
@@ -98,15 +97,17 @@ assert(cashByMember.milan === 300000, "Milan must remain credited ₹3,000 to th
 assert(physicalPaidByMember.vyas === 600000, "Vyas must physically fund his own ₹3,000 plus Milan's ₹3,000");
 assert(physicalPaidByMember.milan === 0, "Milan must remain physically unpaid to the pool until he repays Vyas");
 assert(creditByMember.nishit === 50000, "Nishit direct-expense credits must total ₹500");
+assert(creditByMember.jugal === 10000, "Jugal direct-expense credit must be ₹100");
 assert(outstandingByMember.nishit === 50000, "Nishit pool outstanding must be ₹500");
 assert(outstandingByMember.het === 100000, "Het pool outstanding must be ₹1,000");
-assert(outstandingByMember.jugal === 150000, "Jugal pool outstanding must be ₹1,500");
-assert(outstandingPaise === 300000, "total pool outstanding must be ₹3,000");
+assert(outstandingByMember.jugal === 140000, "Jugal pool outstanding must be ₹1,400 after his ₹100 auto credit");
+assert(outstandingPaise === 290000, "total pool outstanding must be ₹2,900");
 
-const donation = expenseById.get("expense-daan-peti-siddhivinayak-sep14");
-assert(donation?.amountPaise === 10000, "Siddhivinayak daan peti must be ₹100");
-assert(donation?.fundingSource === "groupFund", "Siddhivinayak daan peti must be paid from group cash");
-assert(donation?.category === "donation", "Siddhivinayak daan peti category must be donation");
+const jugalAuto = expenseById.get("expense-auto-jugal-sep14");
+assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
+assert(jugalAuto?.fundingSource === "groupFundMemberCredit", "Jugal auto must reduce his pool outstanding");
+const groupAuto = expenseById.get("expense-auto-90-sep14");
+assert(groupAuto?.amountPaise === 9000 && groupAuto?.fundingSource === "groupFund", "₹90 auto must be paid from group cash");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
