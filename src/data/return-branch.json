@@ -49,11 +49,12 @@
         {
           "id": "group-fund-milan-morning-sep14",
           "memberId": "milan",
-          "paidByMemberId": "milan",
+          "paidByMemberId": "vyas",
           "amountPaise": 100000,
           "date": "2026-09-14",
           "phase": "morning",
-          "status": "received"
+          "status": "received",
+          "note": "Credited to Milan's group-fund target; physically funded by Vyas Devgna. This is part of the full ₹3,000 Milan → Vyas advance obligation."
         },
         {
           "id": "group-fund-het-morning-sep14",
@@ -81,7 +82,7 @@
           "date": "2026-09-14",
           "phase": "hotel-checkin",
           "status": "received",
-          "note": "Credited to Milan's group-fund target; physically funded by Vyas Devgna. This creates a ₹2,000 Milan → Vyas advance obligation without counting as trip spend."
+          "note": "Credited to Milan's group-fund target; physically funded by Vyas Devgna. Together with Milan's morning ₹1,000, Vyas funded Milan's full ₹3,000 group contribution and Milan owes Vyas the full ₹3,000 advance."
         },
         {
           "id": "group-fund-tirth-topup-sep14",
