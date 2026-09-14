@@ -60,20 +60,18 @@ for (const item of credits) {
   assert(Boolean(item.expenseId), `expense credit ${item.id} must reference an expense`);
   if (expenseCredit[item.memberId] != null) expenseCredit[item.memberId] += item.amountPaise;
 }
-assert(credits.length === 4, `expected 4 direct-expense credits, found ${credits.length}`);
-assert(expenseCredit.nishit === 50000, "Nishit must have ₹500 total direct-expense credit: ₹440 Uber + ₹60 auto");
-assert(expenseCredit.vyas === 1000, "Vyas must have ₹10 direct-expense credit for auto 2");
-assert(expenseCredit.tirth === 5000, "Tirth must have ₹50 direct-expense credit for auto 2");
-assert(expenseCredit.milan === 0 && expenseCredit.het === 0 && expenseCredit.jugal === 0, "unexpected direct-expense credit");
+assert(credits.length === 2, `expected 2 direct-expense credits, found ${credits.length}`);
+assert(expenseCredit.nishit === 50000, "Nishit must have ₹500 total direct-expense credit: ₹440 Uber + ₹60 auto 1");
+assert(expenseCredit.vyas === 0 && expenseCredit.tirth === 0 && expenseCredit.milan === 0 && expenseCredit.het === 0 && expenseCredit.jugal === 0, "only Nishit should have direct-expense credits");
 
 const collected = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const creditTotal = credits.reduce((sum, item) => sum + item.amountPaise, 0);
 const outflows = (fund?.outflows || []).filter((item) => item.status === "paid");
 const spent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 assert(collected === 1450000, `cash collected ${collected}, expected ₹14,500`);
-assert(creditTotal === 56000, `direct-expense credits ${creditTotal}, expected ₹560`);
-assert(spent === 819000, `group cash spent ${spent}, expected ₹8,190`);
-assert(collected - spent === 631000, "current group cash must be ₹6,310");
+assert(creditTotal === 50000, `direct-expense credits ${creditTotal}, expected ₹500`);
+assert(spent === 825000, `group cash spent ${spent}, expected ₹8,250`);
+assert(collected - spent === 625000, "current group cash must be ₹6,250");
 
 const outstanding = Object.fromEntries(
   members.map((id) => [
@@ -81,18 +79,11 @@ const outstanding = Object.fromEntries(
     Math.max(0, 300000 - creditedCash[id] - expenseCredit[id]),
   ]),
 );
-assert(outstanding.nishit === 50000, "Nishit must have ₹500 outstanding after Uber + auto credits");
+assert(outstanding.nishit === 50000, "Nishit must have ₹500 outstanding after Uber + auto 1 credits");
 assert(outstanding.het === 100000, "Het must have ₹1,000 outstanding");
 assert(outstanding.jugal === 150000, "Jugal must have ₹1,500 outstanding");
 assert(outstanding.vyas === 0 && outstanding.tirth === 0 && outstanding.milan === 0, "fully funded members must not show pool dues");
 assert(Object.values(outstanding).reduce((a, b) => a + b, 0) === 300000, "total outstanding must be ₹3,000");
-
-const overCredit = Object.fromEntries(
-  members.map((id) => [id, Math.max(0, creditedCash[id] + expenseCredit[id] - 300000)]),
-);
-assert(overCredit.vyas === 1000, "Vyas must be ₹10 over target from auto 2 direct spend");
-assert(overCredit.tirth === 5000, "Tirth must be ₹50 over target from auto 2 direct spend");
-assert(Object.values(overCredit).reduce((a, b) => a + b, 0) === 6000, "extra direct spend beyond completed targets must total ₹60");
 
 const storage14 = merged.expenses.find((e) => e.id === "expense-storage-sep14");
 const storage16 = merged.expenses.find((e) => e.id === "expense-storage-sep16");
@@ -115,12 +106,13 @@ const auto1 = merged.expenses.find((e) => e.id === "expense-auto-1-sep14");
 assert(auto1?.amountPaise === 6000 && auto1?.payerId === "nishit", "auto 1 must be ₹60 paid by Nishit");
 assert(auto1?.fundingSource === "groupFundMemberCredit", "auto 1 must be a direct group-account credit");
 
-const auto2Vyas = merged.expenses.find((e) => e.id === "expense-auto-2-vyas-part-sep14");
-const auto2Tirth = merged.expenses.find((e) => e.id === "expense-auto-2-tirth-part-sep14");
-assert(auto2Vyas?.amountPaise === 1000 && auto2Vyas?.payerId === "vyas", "auto 2 Vyas part must be ₹10");
-assert(auto2Tirth?.amountPaise === 5000 && auto2Tirth?.payerId === "tirth", "auto 2 Tirth part must be ₹50");
-assert(auto2Vyas?.transactionGroupId === "auto-2-sep14" && auto2Tirth?.transactionGroupId === "auto-2-sep14", "auto 2 split must stay linked");
-assert(auto2Vyas.amountPaise + auto2Tirth.amountPaise === 6000, "auto 2 total must be ₹60");
+const auto2 = merged.expenses.find((e) => e.id === "expense-auto-2-sep14");
+const auto2Outflow = outflows.find((e) => e.id === "group-fund-auto-2-sep14");
+assert(auto2?.amountPaise === 6000 && auto2?.status === "paid", "auto 2 must be ₹60 paid");
+assert(auto2?.fundingSource === "groupFund" && !auto2?.payerId, "auto 2 must be paid from group cash");
+assert(auto2Outflow?.amountPaise === 6000 && auto2Outflow?.expenseId === auto2?.id, "auto 2 group-fund outflow mismatch");
+assert(!merged.expenses.some((e) => e.id === "expense-auto-2-vyas-part-sep14" || e.id === "expense-auto-2-tirth-part-sep14"), "old auto 2 personal split must be removed");
+assert(!credits.some((e) => e.memberId === "vyas" || e.memberId === "tirth"), "Vyas/Tirth auto 2 credits must be removed");
 
 const snacks = merged.expenses.find((e) => e.id === "expense-snacks-sep14");
 assert(snacks?.amountPaise === 10000 && snacks?.fundingSource === "groupFund", "snacks must be ₹100 from group cash");
@@ -154,4 +146,4 @@ const actualTransfers = finance.settlement.transfers.map((t) => [t.from, t.to, t
 assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `transfer plan mismatch ${JSON.stringify(actualTransfers)}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log("Group expense account valid: ₹6,310 cash; ₹3,000 outstanding; autos + local train reconciled; settlement balanced");
+console.log("Group expense account valid: ₹6,250 cash; ₹3,000 outstanding; auto 2 charged to pool; settlement balanced");
