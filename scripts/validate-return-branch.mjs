@@ -237,8 +237,8 @@ const expectedCredited = {
   jugal: 150000,
 };
 const expectedPhysical = {
-  vyas: 500000,
-  milan: 100000,
+  vyas: 600000,
+  milan: 0,
   tirth: 300000,
   nishit: 200000,
   het: 200000,
@@ -257,10 +257,18 @@ assert(outstanding.het === 100000, "group fund: Het must have ₹1,000 outstandi
 assert(outstanding.jugal === 150000, "group fund: Jugal must have ₹1,500 outstanding");
 assert(Object.values(outstanding).reduce((sum, value) => sum + value, 0) === 350000, "group fund: total outstanding must be ₹3,500");
 
-const milanAdvance = contributions.find((item) => item.id === "group-fund-milan-topup-sep14");
-assert(milanAdvance?.memberId === "milan", "group fund: Milan top-up credit missing");
-assert(milanAdvance?.paidByMemberId === "vyas", "group fund: Milan ₹2,000 top-up must be physically funded by Vyas");
-assert(milanAdvance?.amountPaise === 200000, "group fund: Milan advance amount must be ₹2,000");
+const milanMorningAdvance = contributions.find((item) => item.id === "group-fund-milan-morning-sep14"),
+  milanTopupAdvance = contributions.find((item) => item.id === "group-fund-milan-topup-sep14");
+assert(milanMorningAdvance?.memberId === "milan", "group fund: Milan morning credit missing");
+assert(milanMorningAdvance?.paidByMemberId === "vyas", "group fund: Milan morning ₹1,000 must be physically funded by Vyas");
+assert(milanMorningAdvance?.amountPaise === 100000, "group fund: Milan morning advance must be ₹1,000");
+assert(milanTopupAdvance?.memberId === "milan", "group fund: Milan top-up credit missing");
+assert(milanTopupAdvance?.paidByMemberId === "vyas", "group fund: Milan ₹2,000 top-up must be physically funded by Vyas");
+assert(milanTopupAdvance?.amountPaise === 200000, "group fund: Milan top-up advance must be ₹2,000");
+assert(
+  milanMorningAdvance.amountPaise + milanTopupAdvance.amountPaise === 300000,
+  "group fund: Vyas must have funded Milan's full ₹3,000 contribution",
+);
 
 const hotelExpense = merged.expenses.find((expense) => expense.id === "expense-hotel-blue-stone-sep14"),
   hotelOutflow = outflows.find((outflow) => outflow.id === "group-fund-hotel-blue-stone-sep14"),
@@ -273,10 +281,10 @@ assert(hotelParticipants.join(",") === expectedFinanceMembers.join(","), "hotel:
 assert(!hotelParticipants.includes("pratham"), "hotel: room 204 expense must not include Pratham");
 
 const finalNet = {
-  vyas: 307075,
+  vyas: 407075,
   tirth: -16400,
   nishit: -16400,
-  milan: -257875,
+  milan: -357875,
   pratham: 0,
   het: -16400,
   jugal: 0,
@@ -284,7 +292,7 @@ const finalNet = {
 expectNet(finalNet, "final settlement");
 
 const expectedTransfers = [
-  ["milan", "vyas", 257875],
+  ["milan", "vyas", 357875],
   ["het", "vyas", 16400],
   ["nishit", "vyas", 16400],
   ["tirth", "vyas", 16400],
@@ -308,7 +316,7 @@ assert(
 assert(finance.settlement.merchantPaidPaise === 271215, "finance: personally funded merchant total mismatch");
 assert(finance.settlement.allocatedSharePaise === 271215, "finance: personal allocated shares mismatch");
 assert(finance.settlement.confirmedReimbursementPaise === 82950, "finance: reimbursement total mismatch");
-assert(finance.settlement.groupFundAdvancePaise === 200000, "finance: member advance total must be ₹2,000");
+assert(finance.settlement.groupFundAdvancePaise === 300000, "finance: member advance total must be ₹3,000");
 assert(finance.settlement.unassignedPaidPaise === 0, "finance: unassigned personal paid money exists");
 assert(finance.settlement.unallocatedSharePaise === 0, "finance: unallocated personal share exists");
 assert(finance.settlement.netBalancePaise === 0, "finance: settlement does not net to zero");
