@@ -70,8 +70,8 @@ const outflows = (fund?.outflows || []).filter((item) => item.status === "paid")
 const spent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 assert(collected === 1450000, `cash collected ${collected}, expected ₹14,500`);
 assert(creditTotal === 50000, `direct-expense credits ${creditTotal}, expected ₹500`);
-assert(spent === 825000, `group cash spent ${spent}, expected ₹8,250`);
-assert(collected - spent === 625000, "current group cash must be ₹6,250");
+assert(spent === 855000, `group cash spent ${spent}, expected ₹8,550`);
+assert(collected - spent === 595000, "current group cash must be ₹5,950");
 
 const outstanding = Object.fromEntries(
   members.map((id) => [
@@ -123,6 +123,12 @@ assert(localTrain?.amountPaise === 9000 && localTrain?.status === "paid", "local
 assert(localTrain?.fundingSource === "groupFund" && !localTrain?.payerId, "local train must be a group-cash expense");
 assert(localTrainOutflow?.amountPaise === 9000 && localTrainOutflow?.expenseId === localTrain?.id, "local train group-fund outflow mismatch");
 
+const taxi = merged.expenses.find((e) => e.id === "expense-taxi-siddhivinayak-sep14");
+const taxiOutflow = outflows.find((e) => e.id === "group-fund-taxi-siddhivinayak-sep14");
+assert(taxi?.amountPaise === 30000 && taxi?.status === "paid", "Siddhivinayak taxi must be ₹300 paid");
+assert(taxi?.fundingSource === "groupFund" && !taxi?.payerId, "Siddhivinayak taxi must be paid from group cash");
+assert(taxiOutflow?.amountPaise === 30000 && taxiOutflow?.expenseId === taxi?.id, "Siddhivinayak taxi group-fund outflow mismatch");
+
 const groupFundExpenses = merged.expenses.filter((e) => e.status === "paid" && e.fundingSource === "groupFund");
 const groupFundExpenseTotal = groupFundExpenses.reduce((sum, e) => sum + e.amountPaise, 0);
 assert(groupFundExpenseTotal === spent, `group-cash expense/outflow mismatch ${groupFundExpenseTotal} vs ${spent}`);
@@ -131,10 +137,10 @@ const memberCreditExpenseTotal = memberCreditExpenses.reduce((sum, e) => sum + e
 assert(memberCreditExpenseTotal === creditTotal, `member credit/expense mismatch ${memberCreditExpenseTotal} vs ${creditTotal}`);
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
-assert(finance.recordedPaidPaise === 1146215, "recorded trip spend must be ₹11,462.15");
-assert(finance.corePaidPaise === 1146215, "core trip spend must be ₹11,462.15");
+assert(finance.recordedPaidPaise === 1176215, "recorded trip spend must be ₹11,762.15");
+assert(finance.corePaidPaise === 1176215, "core trip spend must be ₹11,762.15");
 assert(finance.corePlannedPaise === 0, "planned shared costs must be ₹0 after cloak-room removal");
-assert(finance.forecastCorePaise === 1146215, "known forecast must equal paid spend after autos and local train");
+assert(finance.forecastCorePaise === 1176215, "known forecast must equal paid spend after Siddhivinayak taxi");
 assert(finance.ceilingPaise === 3600000, "six-person planning ceiling must be ₹36,000");
 assert(finance.settlement.groupFundAdvancePaise === 300000, "Vyas → Milan advance must total ₹3,000");
 assert(finance.settlement.netBalancePaise === 0, "settlement conservation failed");
@@ -146,4 +152,4 @@ const actualTransfers = finance.settlement.transfers.map((t) => [t.from, t.to, t
 assert(JSON.stringify(actualTransfers) === JSON.stringify(expectedTransfers), `transfer plan mismatch ${JSON.stringify(actualTransfers)}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log("Group expense account valid: ₹6,250 cash; ₹3,000 outstanding; auto 2 charged to pool; settlement balanced");
+console.log("Group expense account valid: ₹5,950 cash; ₹3,000 outstanding; Siddhivinayak taxi charged to pool; settlement balanced");
