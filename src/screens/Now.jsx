@@ -66,10 +66,24 @@ export default function Now({
     ),
     place = next?.placeId && byId(data.places, next.placeId),
     finance = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]),
-    visibleSignals = [...data.signals, ...(groupDecisions.signals || [])];
+    visibleSignals = [...data.signals, ...(groupDecisions.signals || [])],
+    openSignals = visibleSignals.filter((signal) => signal.status !== "resolved");
   const tripStart = new Date(`${data.trip.startDate}T05:00:00+05:30`),
-    hours = Math.max(0, Math.round((tripStart - now) / 3600000)),
+    tripStarted = now >= tripStart,
+    countdownTarget = tripStarted && next ? activityStart(next) : tripStart,
+    hours = Math.max(0, Math.round((countdownTarget - now) / 3600000)),
+    countdownLabel = tripStarted ? "to next fixed" : "to outbound",
     progress = Math.min(100, finance.forecastBudgetBasisPoints / 100),
+    activeFund = data.finance?.groupFund,
+    spendablePaise = Number.isSafeInteger(activeFund?.spendableBalancePaise)
+      ? activeFund.spendableBalancePaise
+      : null,
+    physicalCashPaise = Number.isSafeInteger(activeFund?.physicalCashBalancePaise)
+      ? activeFund.physicalCashBalancePaise
+      : null,
+    reservedPaise = Number.isSafeInteger(activeFund?.reservedPayablesPaise)
+      ? activeFund.reservedPayablesPaise
+      : null,
     canLocate =
       typeof navigator !== "undefined" &&
       Boolean(navigator.geolocation) &&
@@ -132,7 +146,7 @@ export default function Now({
           </div>
           <div className="count">
             <strong>{hours > 48 ? Math.ceil(hours / 24) : hours}</strong>
-            <span>{hours > 48 ? "days" : "hours"} to outbound</span>
+            <span>{hours > 48 ? "days" : "hours"} {countdownLabel}</span>
           </div>
         </div>
         {locationState === "granted" && anchorReading && (
@@ -189,6 +203,11 @@ export default function Now({
         <p>
           confirmed spend · core forecast {formatINR(finance.forecastCorePaise)} / {formatINR(finance.ceilingPaise)}
         </p>
+        {spendablePaise != null && physicalCashPaise != null && reservedPaise != null && (
+          <p className="muted">
+            active 8-person fund · {formatINR(spendablePaise)} spendable · {formatINR(physicalCashPaise)} physical cash · {formatINR(reservedPaise)} reserved
+          </p>
+        )}
         <div className="progress">
           <i style={{ width: `${progress}%` }} />
         </div>
@@ -203,7 +222,7 @@ export default function Now({
         {finance.personalPaidPaise > 0 && (
           <p className="muted">
             {formatINR(finance.personalPaidPaise)} personal/outside-core spend is
-            recorded but excluded from the five-person budget meter.
+            recorded but excluded from the {finance.budgetMembers.length}-person budget meter.
           </p>
         )}
       </DockAwarePanel>
@@ -211,7 +230,7 @@ export default function Now({
       <DockAwarePanel className="panel alerts">
         <div className="panel-head">
           <span>03 / SIGNALS</span>
-          <b>{visibleSignals.length} OPEN</b>
+          <b>{openSignals.length} OPEN</b>
         </div>
         {visibleSignals.map((s) => (
           <div className="alert" key={s.id}>
