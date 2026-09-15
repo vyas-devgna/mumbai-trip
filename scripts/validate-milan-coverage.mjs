@@ -95,6 +95,17 @@ assert(
   `Devgna must be the actual payer of Milan's ₹3,200 group contributions, got ${vyas?.groupFundAdvancePaidPaise || 0} paise`,
 );
 
+const pinnedRepayment = (settlement.transfers || []).find(
+  (transfer) =>
+    transfer.from === "milan" &&
+    transfer.to === "vyas" &&
+    transfer.policyId === "vyas-covers-milan-trip",
+);
+assert(
+  pinnedRepayment?.amountPaise === storedLiability,
+  `Milan must repay the full ₹${(storedLiability / 100).toFixed(2)} directly to Devgna at trip end`,
+);
+
 const breakdown = coveragePolicy?.currentKnownLiabilityBreakdown || [];
 assert(
   breakdown.reduce((sum, item) => sum + (item.amountPaise || 0), 0) ===
@@ -122,7 +133,7 @@ if (errors.length) {
 }
 
 console.log(
-  `Milan coverage valid: settlement and source ledger both equal ₹${(
+  `Milan coverage valid: settlement, source ledger and direct Milan → Devgna transfer all equal ₹${(
     storedLiability / 100
-  ).toFixed(2)} owed to Devgna after trip`,
+  ).toFixed(2)}`,
 );
