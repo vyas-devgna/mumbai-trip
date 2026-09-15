@@ -86,7 +86,7 @@ const collectedPaise = contributions.reduce((sum, item) => sum + item.amountPais
 const spentPaise = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashBalancePaise = collectedPaise - spentPaise;
 assert(cashBalancePaise >= 0, "group cash cannot be negative");
-assert(cashBalancePaise === 520000, "reconciled physical group cash must be ₹5,200");
+assert(cashBalancePaise === 470000, "corrected historical physical group cash checkpoint must be ₹4,700");
 
 const outstandingByMember = Object.fromEntries(
   financeMembers.map((id) => [id, Math.max(0, fund.targetPerMemberPaise - (cashByMember[id] || 0) - (creditByMember[id] || 0))]),
@@ -98,17 +98,22 @@ assert(cashByMember.tirth === 300000, "Tirth cash contribution must total ₹3,0
 assert(cashByMember.nishit === 250000, "Nishit cash contribution must total ₹2,500 plus ₹500 direct-expense credits");
 assert(cashByMember.milan === 300000, "Milan must remain credited ₹3,000 to the pool");
 assert(cashByMember.het === 300000, "Het cash contribution must total ₹3,000");
-assert(cashByMember.jugal === 290000, "Jugal cash contribution must total ₹2,900 plus ₹100 direct-expense credit");
+assert(cashByMember.jugal === 240000, "historical base must show only ₹2,400 actual Jugal cash before his later ₹500 replacement");
 assert(physicalPaidByMember.vyas === 600000, "Vyas must physically fund his own ₹3,000 plus Milan's ₹3,000");
 assert(physicalPaidByMember.milan === 0, "Milan must remain physically unpaid to the pool until he repays Vyas");
 assert(physicalPaidByMember.nishit === 250000, "Nishit must physically contribute ₹2,500 cash to the pool");
 assert(physicalPaidByMember.het === 300000, "Het must physically contribute ₹3,000 cash to the pool");
-assert(physicalPaidByMember.jugal === 290000, "Jugal must physically contribute ₹2,900 cash to the pool");
+assert(physicalPaidByMember.jugal === 240000, "historical base Jugal physical cash must be ₹2,400 before replacement");
 assert(creditByMember.nishit === 50000, "Nishit direct-expense credits must total ₹500");
 assert(creditByMember.jugal === 10000, "Jugal direct-expense credit must be ₹100");
-for (const id of financeMembers) assert(outstandingByMember[id] === 0, `${id} pool outstanding must be ₹0`);
-assert(outstandingPaise === 0, "total pool outstanding must be ₹0");
+for (const id of financeMembers) {
+  const expected = id === "jugal" ? 50000 : 0;
+  assert(outstandingByMember[id] === expected, `${id} historical pool outstanding mismatch`);
+}
+assert(outstandingPaise === 50000, "historical base must retain ₹500 Jugal outstanding until live replacement is applied");
 
+const jugalMorning = (fund?.contributions || []).find((item) => item.id === "group-fund-jugal-morning-sep14");
+assert(jugalMorning?.amountPaise === 50000 && jugalMorning?.status === "not-received", "Jugal morning ₹500 must be explicitly marked not received");
 const jugalAuto = expenseById.get("expense-auto-jugal-sep14");
 assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
 assert(jugalAuto?.fundingSource === "groupFundMemberCredit", "Jugal auto must reduce his pool outstanding");
@@ -119,7 +124,7 @@ assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "group
 const sep15TeaCoffee = expenseById.get("expense-tea-coffee-sep15");
 assert(sep15TeaCoffee?.amountPaise === 7000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must total ₹70 from group cash");
 const sep15Reconciliation = expenseById.get("expense-cash-reconciliation-sep15");
-assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹462 unidentified variance");
+assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep historical cash reconciliation must retain ₹462 unidentified variance");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
@@ -131,4 +136,4 @@ assert(finance.settlement.netBalancePaise === 0, "settlement conservation failed
 assert(finance.settlement.diagnostics.length === 0, `finance diagnostics: ${finance.settlement.diagnostics.join("; ")}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`Group expense account valid: ₹${(cashBalancePaise / 100).toFixed(2)} cash; ₹${(outstandingPaise / 100).toFixed(2)} outstanding; ₹${(finance.recordedPaidPaise / 100).toFixed(2)} trip spend; ledger balanced`);
+console.log(`Historical group account valid: ₹${(cashBalancePaise / 100).toFixed(2)} corrected checkpoint cash; ₹${(outstandingPaise / 100).toFixed(2)} Jugal outstanding before live replacement; ₹${(finance.recordedPaidPaise / 100).toFixed(2)} trip spend; ledger balanced`);
