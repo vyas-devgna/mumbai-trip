@@ -106,7 +106,8 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 
 function applyGroupFundAdvances(data, rows, financeMembers, diagnostics) {
   let advancePaise = 0;
-  for (const contribution of data.finance?.groupFund?.contributions || []) {
+  const advanceFund = data.finance?.legacyGroupFund || data.finance?.groupFund;
+  for (const contribution of advanceFund?.contributions || []) {
     if (contribution.status !== "received") continue;
     const amountPaise = safePaise(contribution.amountPaise),
       memberId = contribution.memberId,
