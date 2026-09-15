@@ -113,7 +113,8 @@
       ],
       "outflows": [
         {"id":"group-eight-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","note":"₹80 paid from new eight-person group cash."},
-        {"id":"group-eight-vadapav-160-sep15","expenseId":"expense-vadapav-160-sep15","amountPaise":16000,"date":"2026-09-15","category":"food","label":"Vada pav","status":"paid","note":"₹160 vada pav paid directly from the active eight-person group expense account."}
+        {"id":"group-eight-vadapav-160-sep15","expenseId":"expense-vadapav-160-sep15","amountPaise":16000,"date":"2026-09-15","category":"food","label":"Vada pav","status":"paid","note":"₹160 vada pav paid directly from the active eight-person group expense account."},
+        {"id":"group-eight-water-40-sep15","expenseId":"expense-water-40-sep15","amountPaise":4000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","note":"₹40 water bottle paid directly from the active eight-person group expense account."}
       ],
       "interPoolPayables": [
         {"id":"group-eight-payable-old-pool-taxi-sep15","amountPaise":20000,"date":"2026-09-15","toGroupFundId":"group-fund-six-sep14","expenseId":"expense-taxi-mumbai-cha-raja-old-pool-sep15","status":"due","label":"Reimburse old pool · taxi","note":"Old six-person pool paid ₹200 for one Mumbai Cha Raja taxi belonging to this new account."}
@@ -125,26 +126,27 @@
       "charges": [
         {"id":"group-eight-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"fundingBreakdown":[{"kind":"new-group-cash","amountPaise":8000}]},
         {"id":"group-eight-vadapav-160-sep15","expenseId":"expense-vadapav-160-sep15","amountPaise":16000,"date":"2026-09-15","category":"food","label":"Vada pav","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"fundingBreakdown":[{"kind":"new-group-cash","amountPaise":16000}],"note":"₹160 paid directly from active eight-person cash. Milan's share is already funded through the ₹200 active contribution Vyas paid for him, so this charge is not added again to Milan's personal liability."},
+        {"id":"group-eight-water-40-sep15","expenseId":"expense-water-40-sep15","amountPaise":4000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"fundingBreakdown":[{"kind":"new-group-cash","amountPaise":4000}],"note":"₹40 paid directly from active eight-person cash."},
         {"id":"group-eight-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"date":"2026-09-15","category":"transport","label":"Taxi · Mumbai Cha Raja · two taxis","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"expenseIds":["expense-taxi-mumbai-cha-raja-old-pool-sep15","expense-taxi-mumbai-cha-raja-pratham-sep15"],"fundingBreakdown":[{"kind":"old-group-advance","amountPaise":20000,"fromGroupFundId":"group-fund-six-sep14"},{"kind":"member-advance","amountPaise":20000,"memberId":"pratham"}],"note":"₹400 total = ₹200 old six-person pool for one taxi + ₹200 Pratham personally for the second taxi."},
         {"id":"group-eight-pass-mumbai-cha-raja-sep15","amountPaise":24000,"date":"2026-09-15","category":"admission","label":"Mumbai Cha Raja · pass","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"expenseIds":["expense-mumbai-cha-raja-pass-contribution-sep15","expense-mumbai-cha-raja-pass-extra-sep15"],"paidByMemberId":"tirth","fundingBreakdown":[{"kind":"member-contribution-credit","amountPaise":20000,"memberId":"tirth"},{"kind":"member-advance","amountPaise":4000,"memberId":"tirth"}],"note":"Tirth personally paid ₹240. ₹200 counts as his new-group contribution and only ₹40 remains a reimbursement due to him."}
       ],
       "cashCollectedPaise": 140000,
       "contributionCreditPaise": 20000,
       "effectiveContributionPaise": 160000,
-      "cashPaidOutPaise": 24000,
-      "physicalCashBalancePaise": 116000,
+      "cashPaidOutPaise": 28000,
+      "physicalCashBalancePaise": 112000,
       "interPoolPayablePaise": 20000,
       "memberPayablePaise": 24000,
       "reservedPayablesPaise": 44000,
-      "spendableBalancePaise": 72000,
+      "spendableBalancePaise": 68000,
       "targetTotalPaise": 160000,
       "outstandingContributionPaise": 0,
       "outstandingMemberIds": [],
-      "totalChargedPaise": 88000,
-      "fundedChargedPaise": 88000,
+      "totalChargedPaise": 92000,
+      "fundedChargedPaise": 92000,
       "unfundedChargedPaise": 0,
-      "perMemberExpenseSharePaise": 11000,
-      "note": "Contribution target is fully covered: ₹1,400 cash from seven members + ₹200 of Tirth's pass payment = ₹1,600. Milan's ₹200 cash contribution is part of the ₹1,400 but was physically funded by Vyas. Active-group cash outflows are ₹80 water + ₹160 vada pav = ₹240, leaving ₹1,160 physical cash. Reserve ₹200 for the old pool, ₹200 for Pratham and ₹40 for Tirth, leaving ₹720 genuinely free to spend. Current active-group charges total ₹880, or ₹110 per person. No one still owes the ₹200 contribution to the group account; Milan's ₹200 remains a personal trip-end debt to Vyas."
+      "perMemberExpenseSharePaise": 11500,
+      "note": "Contribution target is fully covered: ₹1,400 cash from seven members + ₹200 of Tirth's pass payment = ₹1,600. Milan's ₹200 cash contribution is part of the ₹1,400 but was physically funded by Vyas. Active-group cash outflows are ₹80 water + ₹160 vada pav + ₹40 water = ₹280, leaving ₹1,120 physical cash. Reserve ₹200 for the old pool, ₹200 for Pratham and ₹40 for Tirth, leaving ₹680 genuinely free to spend. Current active-group charges total ₹920, or ₹115 per person. No one still owes the ₹200 contribution to the group account; Milan's ₹200 remains a personal trip-end debt to Vyas."
     }
   },
   "members": [
@@ -153,6 +155,7 @@
   "expenses": [
     {"id":"expense-water-80-sep15","amountPaise":8000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"food","date":"2026-09-15","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","groupFundOutflowId":"group-eight-water-80-sep15","note":"₹80 paid from the new eight-person group cash."},
     {"id":"expense-vadapav-160-sep15","amountPaise":16000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"food","date":"2026-09-15","label":"Vada pav","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","groupFundOutflowId":"group-eight-vadapav-160-sep15","note":"₹160 paid directly from the active eight-person group expense account. This is separate from the historical ₹150 vada pav in the old six-person pool."},
+    {"id":"expense-water-40-sep15","amountPaise":4000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"food","date":"2026-09-15","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","groupFundOutflowId":"group-eight-water-40-sep15","note":"₹40 paid directly from the active eight-person group expense account."},
     {"id":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"transport","date":"2026-09-15","label":"Taxi · Mumbai Cha Raja","status":"superseded","budgetScope":"core","note":"Superseded by two ₹200 funding rows: one paid from the old pool and one paid personally by Pratham."},
     {"id":"expense-taxi-mumbai-cha-raja-old-pool-sep15","amountPaise":20000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"transport","date":"2026-09-15","label":"Taxi 1 · Mumbai Cha Raja","status":"paid","budgetScope":"core","fundingSource":"groupFundExternalAdvance","groupFundId":"group-fund-eight-sep15","paymentSourceGroupFundId":"group-fund-six-sep14","note":"₹200 for one taxi was paid from the old six-person group account on behalf of the new eight-person group. New group owes this ₹200 back to old group."},
     {"id":"expense-taxi-mumbai-cha-raja-pratham-sep15","amountPaise":20000,"payerId":"pratham","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"transport","date":"2026-09-15","label":"Taxi 2 · Mumbai Cha Raja","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-eight-sep15","note":"Pratham personally paid ₹200 for the second taxi. His separate ₹200 group contribution was already paid, so this ₹200 is reimbursable from the new group account."},
@@ -164,7 +167,7 @@
   ],
   "signals": [
     {"id":"milan-covered-by-vyas","type":"finance","label":"Devgna covers all Milan trip costs; current known Milan → Devgna trip-end repayment ₹3,778.75 with source-by-source records across both group ledgers and personal expenses","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
-    {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person account fully funded: ₹1,400 cash + ₹200 Tirth pass credit; ₹1,160 physical cash after ₹80 water + ₹160 vada pav; reserve ₹440 (old pool ₹200 + Pratham ₹200 + Tirth ₹40); ₹720 free","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
+    {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person account fully funded: ₹1,400 cash + ₹200 Tirth pass credit; ₹1,120 physical cash after ₹80 water + ₹160 vada pav + ₹40 water; reserve ₹440 (old pool ₹200 + Pratham ₹200 + Tirth ₹40); ₹680 free","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
     {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool is separate: current cash ₹5,000 + ₹200 receivable from active pool = ₹5,200 economic balance; historical ₹462 variance remains unresolved","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
   ]
 }
