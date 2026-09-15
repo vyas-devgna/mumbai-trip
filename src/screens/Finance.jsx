@@ -9,6 +9,8 @@ import { DockAwarePanel } from "../ui.jsx";
 
 const member = (id) => data.members.find((item) => item.id === id);
 const firstName = (id) => member(id)?.name?.split(" ")[0] || id;
+const safeAmount = (value) =>
+  Number.isSafeInteger(value) && value >= 0 ? value : 0;
 
 const componentLabels = {
   baseFare: "base fare",
@@ -17,9 +19,6 @@ const componentLabels = {
   travelInsurancePremium: "insurance",
   pgCharges: "PG charge",
 };
-
-const safeFundAmount = (value) =>
-  Number.isSafeInteger(value) && value > 0 ? value : 0;
 
 function participantLabel(expense) {
   const ids = expense.participantIds || [];
@@ -44,215 +43,290 @@ function balanceLabel(netPaise) {
   return { kicker: "SETTLED", amount: "₹0", className: "net-zero" };
 }
 
+function fundingLabel(part) {
+  if (part.kind === "new-group-cash") return "active group cash";
+  if (part.kind === "old-group-advance") return "previous 6-person pool advance";
+  if (part.kind === "member-advance")
+    return `${firstName(part.memberId)} personal advance`;
+  if (part.kind === "member-contribution-credit")
+    return `${firstName(part.memberId)} contribution credit`;
+  return String(part.kind || "funding").replaceAll("-", " ");
+}
+
+function LedgerRows({ rows, empty = "No records." }) {
+  if (!rows.length)
+    return (
+      <div className="finance-empty-state">
+        <b>{empty}</b>
+      </div>
+    );
+
+  return (
+    <div className="finance-audit-list">
+      {rows.map((row) => (
+        <div key={row.id}>
+          <span>
+            <b>{row.label}</b>
+            <small>{row.meta}</small>
+            {row.note && <small>{row.note}</small>}
+            <small>ID · {row.id}</small>
+          </span>
+          <strong>{row.sign || ""}{formatINR(row.amountPaise)}</strong>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Finance({ expenses, setSheet }) {
   const snapshot = useMemo(() => buildFinanceSnapshot(data, expenses), [expenses]),
     [copied, setCopied] = useState(null),
+    [accountView, setAccountView] = useState("active"),
     settlement = snapshot.settlement,
-    groupFund = data.finance?.groupFund,
-    legacyGroupFund = data.finance?.legacyGroupFund,
+    activeFund = data.finance?.groupFund,
+    legacyFund = data.finance?.legacyGroupFund,
     interAccountLinks = data.finance?.interAccountLinks || [],
     coveragePolicy = (data.finance?.memberCoveragePolicies || []).find(
       (item) => item.id === "vyas-covers-milan-trip",
-    ),
-    receivedFundContributions = (groupFund?.contributions || []).filter(
-      (item) => item.status === "received",
-    ),
-    appliedFundCredits = (groupFund?.credits || []).filter(
-      (item) => item.status === "applied",
-    ),
-    paidFundOutflows = (groupFund?.outflows || []).filter(
-      (item) => item.status === "paid",
-    ),
-    interPoolPayables = (groupFund?.interPoolPayables || []).filter(
-      (item) => item.status === "due",
-    ),
-    memberPayables = (groupFund?.memberPayables || []).filter(
-      (item) => item.status === "due",
-    ),
-    groupFundMembers = groupFund?.targetMemberIds || snapshot.budgetMembers,
-    groupFundTargetPerMemberPaise = safeFundAmount(
-      groupFund?.targetPerMemberPaise,
-    ),
-    groupFundCollectedByMember = Object.fromEntries(
-      groupFundMembers.map((id) => [id, 0]),
-    ),
-    groupFundCreditByMember = Object.fromEntries(
-      groupFundMembers.map((id) => [id, 0]),
-    ),
-    groupFundAdvancedByMember = Object.fromEntries(
-      groupFundMembers.map((id) => [id, []]),
     );
 
-  for (const contribution of receivedFundContributions) {
-    if (
-      Object.prototype.hasOwnProperty.call(
-        groupFundCollectedByMember,
-        contribution.memberId,
-      )
-    )
-      groupFundCollectedByMember[contribution.memberId] += safeFundAmount(
-        contribution.amountPaise,
-      );
-
-    const paidBy = contribution.paidByMemberId || contribution.memberId;
-    if (
-      paidBy !== contribution.memberId &&
-      Object.prototype.hasOwnProperty.call(
-        groupFundAdvancedByMember,
-        contribution.memberId,
-      )
-    )
-      groupFundAdvancedByMember[contribution.memberId].push({
-        paidByMemberId: paidBy,
-        amountPaise: safeFundAmount(contribution.amountPaise),
-      });
-  }
-
-  for (const credit of appliedFundCredits) {
-    if (
-      Object.prototype.hasOwnProperty.call(
-        groupFundCreditByMember,
-        credit.memberId,
-      )
-    )
-      groupFundCreditByMember[credit.memberId] += safeFundAmount(
-        credit.amountPaise,
-      );
-  }
-
-  const groupFundCollectedPaise = receivedFundContributions.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
+  const activeContributions = (activeFund?.contributions || []).filter(
+      (item) => item.status === "received",
+    ),
+    activeCredits = (activeFund?.credits || []).filter(
+      (item) => item.status === "applied",
+    ),
+    activeOutflows = (activeFund?.outflows || []).filter(
+      (item) => item.status === "paid",
+    ),
+    activePoolPayables = (activeFund?.interPoolPayables || []).filter(
+      (item) => item.status === "due",
+    ),
+    activeMemberPayables = (activeFund?.memberPayables || []).filter(
+      (item) => item.status === "due",
+    ),
+    activeMembers = activeFund?.targetMemberIds || snapshot.budgetMembers,
+    activeTargetPerMember = safeAmount(activeFund?.targetPerMemberPaise),
+    activeTarget = activeTargetPerMember * activeMembers.length,
+    activeCashCollected = activeContributions.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
-    groupFundCreditPaise = appliedFundCredits.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
+    activeCreditTotal = activeCredits.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
-    groupFundSpentPaise = paidFundOutflows.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
+    activeCashOut = activeOutflows.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
-    groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise,
-    groupFundPhysicalCashPaise = Number.isSafeInteger(
-      groupFund?.physicalCashBalancePaise,
-    )
-      ? groupFund.physicalCashBalancePaise
-      : groupFundBalancePaise,
-    groupFundReservedPaise = Number.isSafeInteger(groupFund?.reservedPayablesPaise)
-      ? groupFund.reservedPayablesPaise
-      : [...interPoolPayables, ...memberPayables].reduce(
-          (sum, item) => sum + safeFundAmount(item.amountPaise),
+    activePhysicalCash = Number.isSafeInteger(activeFund?.physicalCashBalancePaise)
+      ? activeFund.physicalCashBalancePaise
+      : activeCashCollected - activeCashOut,
+    activeReserved = Number.isSafeInteger(activeFund?.reservedPayablesPaise)
+      ? activeFund.reservedPayablesPaise
+      : [...activePoolPayables, ...activeMemberPayables].reduce(
+          (sum, item) => sum + safeAmount(item.amountPaise),
           0,
         ),
-    groupFundSpendablePaise = Number.isSafeInteger(groupFund?.spendableBalancePaise)
-      ? groupFund.spendableBalancePaise
-      : Math.max(0, groupFundPhysicalCashPaise - groupFundReservedPaise),
-    groupFundTargetPaise =
-      groupFundTargetPerMemberPaise * groupFundMembers.length,
-    groupFundOutstandingByMember = Object.fromEntries(
-      groupFundMembers.map((id) => [
+    activeSpendable = Number.isSafeInteger(activeFund?.spendableBalancePaise)
+      ? activeFund.spendableBalancePaise
+      : Math.max(0, activePhysicalCash - activeReserved),
+    activeContributionByMember = Object.fromEntries(
+      activeMembers.map((id) => [id, 0]),
+    ),
+    activeCreditByMember = Object.fromEntries(
+      activeMembers.map((id) => [id, 0]),
+    );
+
+  for (const item of activeContributions)
+    activeContributionByMember[item.memberId] =
+      (activeContributionByMember[item.memberId] || 0) + safeAmount(item.amountPaise);
+  for (const item of activeCredits)
+    activeCreditByMember[item.memberId] =
+      (activeCreditByMember[item.memberId] || 0) + safeAmount(item.amountPaise);
+
+  const activeOutstandingByMember = Object.fromEntries(
+      activeMembers.map((id) => [
         id,
         Math.max(
           0,
-          groupFundTargetPerMemberPaise -
-            (groupFundCollectedByMember[id] || 0) -
-            (groupFundCreditByMember[id] || 0),
+          activeTargetPerMember -
+            (activeContributionByMember[id] || 0) -
+            (activeCreditByMember[id] || 0),
         ),
       ]),
     ),
-    groupFundOutstandingPaise = Object.values(
-      groupFundOutstandingByMember,
-    ).reduce((sum, amount) => sum + amount, 0),
-    groupFundFullyFundedCount = groupFundMembers.filter(
-      (id) => (groupFundOutstandingByMember[id] || 0) === 0,
-    ).length,
-    fundAdvances = receivedFundContributions.filter(
-      (item) =>
-        (item.paidByMemberId || item.memberId) !== item.memberId,
+    activeOutstanding = Object.values(activeOutstandingByMember).reduce(
+      (sum, amount) => sum + amount,
+      0,
+    );
+
+  const legacyContributions = (legacyFund?.contributions || []).filter(
+      (item) => item.status === "received",
     ),
-    activeGroupFundExpensePaise = snapshot.paid
+    legacyCredits = (legacyFund?.credits || []).filter(
+      (item) => item.status === "applied",
+    ),
+    legacyOutflows = (legacyFund?.outflows || []).filter(
+      (item) => item.status === "paid",
+    ),
+    legacyMerchantOutflows = legacyOutflows.filter(
+      (item) => item.category !== "reconciliation",
+    ),
+    legacyAuditRows = legacyOutflows.filter(
+      (item) => item.category === "reconciliation",
+    ),
+    legacyContributionTotal = legacyContributions.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
+      0,
+    ),
+    legacyCreditTotal = legacyCredits.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
+      0,
+    ),
+    legacyConfirmedSpend = legacyMerchantOutflows.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
+      0,
+    ),
+    legacyAuditControlTotal = legacyAuditRows.reduce(
+      (sum, item) => sum + safeAmount(item.amountPaise),
+      0,
+    ),
+    legacyTarget =
+      safeAmount(legacyFund?.targetPerMemberPaise) *
+      (legacyFund?.targetMemberIds || []).length,
+    legacyPhysicalCash = Number.isSafeInteger(legacyFund?.currentPhysicalBalancePaise)
+      ? legacyFund.currentPhysicalBalancePaise
+      : 0,
+    legacyReceivable = safeAmount(legacyFund?.interPoolReceivablePaise),
+    legacyEconomicBalance = Number.isSafeInteger(legacyFund?.economicBalancePaise)
+      ? legacyFund.economicBalancePaise
+      : legacyPhysicalCash + legacyReceivable,
+    legacyAuditVariance = Number.isSafeInteger(legacyFund?.auditVariancePaise)
+      ? legacyFund.auditVariancePaise
+      : 0;
+
+  const activeContributionRows = activeContributions.map((item) => ({
+      id: item.id,
+      label: `${member(item.memberId)?.name || item.memberId} contribution`,
+      amountPaise: item.amountPaise,
+      meta:
+        (item.paidByMemberId || item.memberId) === item.memberId
+          ? `${item.date} · cash received from ${firstName(item.memberId)}`
+          : `${item.date} · credited to ${firstName(item.memberId)} · physically paid by ${firstName(item.paidByMemberId)}`,
+      note: item.note,
+      sign: "+",
+    })),
+    activeCreditRows = activeCredits.map((item) => ({
+      id: item.id,
+      label: `${member(item.memberId)?.name || item.memberId} contribution credit`,
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · counts toward contribution target · no cash entered account`,
+      note: item.note,
+    })),
+    activeOutflowRows = activeOutflows.map((item) => ({
+      id: item.id,
+      label: item.label || "Active-group cash outflow",
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · cash physically left active account`,
+      note: item.note,
+      sign: "−",
+    })),
+    activeLiabilityRows = [
+      ...activePoolPayables.map((item) => ({
+        id: item.id,
+        label: item.label || "Inter-account payable",
+        amountPaise: item.amountPaise,
+        meta: `${item.date} · reserved · ${item.status} · payable to previous 6-person pool`,
+        note: item.note,
+      })),
+      ...activeMemberPayables.map((item) => ({
+        id: item.id,
+        label: item.label || `Reimburse ${firstName(item.memberId)}`,
+        amountPaise: item.amountPaise,
+        meta: `${item.date} · reserved · ${item.status} · payable to ${firstName(item.memberId)}`,
+        note: item.note,
+      })),
+    ],
+    legacyContributionRows = legacyContributions.map((item) => ({
+      id: item.id,
+      label: `${member(item.memberId)?.name || item.memberId} contribution`,
+      amountPaise: item.amountPaise,
+      meta:
+        (item.paidByMemberId || item.memberId) === item.memberId
+          ? `${item.date} · ${item.phase || "old account"} · paid by ${firstName(item.memberId)}`
+          : `${item.date} · ${item.phase || "old account"} · credited to ${firstName(item.memberId)} · physically paid by ${firstName(item.paidByMemberId)}`,
+      note: item.note,
+      sign: "+",
+    })),
+    legacyCreditRows = legacyCredits.map((item) => ({
+      id: item.id,
+      label: `${member(item.memberId)?.name || item.memberId} contribution credit`,
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · direct expense credit · no cash entered old pool`,
+      note: item.note,
+    })),
+    legacyOutflowRows = legacyMerchantOutflows.map((item) => ({
+      id: item.id,
+      label: item.label || "Historical group expense",
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · confirmed merchant outflow${item.category ? ` · ${item.category}` : ""}`,
+      note: item.note,
+      sign: "−",
+    })),
+    legacyAuditControlRows = legacyAuditRows.map((item) => ({
+      id: item.id,
+      label: item.label || "Cash-control reconciliation",
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · audit control only · not merchant spend`,
+      note: item.note,
+      sign: "−",
+    })),
+    legacyPostCloseRows = (legacyFund?.postCloseAdvances || []).map((item) => ({
+      id: item.id,
+      label: item.label || "Post-close advance",
+      amountPaise: item.amountPaise,
+      meta: `${item.date} · receivable from active 8-person account · ${item.status}`,
+      note: item.note,
+      sign: "−",
+    }));
+
+  const tripGroupCashExpensePaise = snapshot.paid
+      .filter(
+        (expense) =>
+          expense.fundingSource === "groupFund" ||
+          expense.fundingSource === "groupFundExternalAdvance",
+      )
+      .reduce((sum, expense) => sum + safeAmount(expense.amountPaise), 0),
+    otherFundingExpensePaise =
+      snapshot.recordedPaidPaise - tripGroupCashExpensePaise,
+    activeDirectGroupCashExpensePaise = snapshot.paid
       .filter(
         (expense) =>
           expense.fundingSource === "groupFund" &&
-          expense.groupFundId === groupFund?.id,
+          expense.groupFundId === activeFund?.id,
       )
-      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
-    allGroupFundExpensePaise = snapshot.paid
-      .filter((expense) => expense.fundingSource === "groupFund")
-      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
-    activeMemberCreditExpensePaise = snapshot.paid
+      .reduce((sum, expense) => sum + safeAmount(expense.amountPaise), 0),
+    activeCreditExpensePaise = snapshot.paid
       .filter(
         (expense) =>
           expense.fundingSource === "groupFundMemberCredit" &&
-          expense.groupFundId === groupFund?.id,
+          expense.groupFundId === activeFund?.id,
       )
-      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
-    directlyFundedExpensePaise =
-      snapshot.recordedPaidPaise - allGroupFundExpensePaise,
-    groupFundReconciliationPaise =
-      activeGroupFundExpensePaise - groupFundSpentPaise,
-    memberCreditReconciliationPaise =
-      activeMemberCreditExpensePaise - groupFundCreditPaise,
-    legacyContributions = (legacyGroupFund?.contributions || []).filter(
-      (item) => item.status === "received",
-    ),
-    legacyCredits = (legacyGroupFund?.credits || []).filter(
-      (item) => item.status === "applied",
-    ),
-    legacyOutflows = (legacyGroupFund?.outflows || []).filter(
-      (item) => item.status === "paid",
-    ),
-    legacyConfirmedOutflows = legacyOutflows.filter(
-      (item) => item.category !== "reconciliation",
-    ),
-    legacyCollectedPaise = legacyContributions.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
-      0,
-    ),
-    legacyCreditPaise = legacyCredits.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
-      0,
-    ),
-    legacyConfirmedSpentPaise = legacyConfirmedOutflows.reduce(
-      (sum, item) => sum + safeFundAmount(item.amountPaise),
-      0,
-    ),
-    legacyTargetPaise =
-      safeFundAmount(legacyGroupFund?.targetPerMemberPaise) *
-      (legacyGroupFund?.targetMemberIds || []).length,
-    legacyCurrentPhysicalPaise = Number.isSafeInteger(
-      legacyGroupFund?.currentPhysicalBalancePaise,
-    )
-      ? legacyGroupFund.currentPhysicalBalancePaise
-      : 0,
-    legacyReceivablePaise = safeFundAmount(
-      legacyGroupFund?.interPoolReceivablePaise,
-    ),
-    legacyEconomicBalancePaise = Number.isSafeInteger(
-      legacyGroupFund?.economicBalancePaise,
-    )
-      ? legacyGroupFund.economicBalancePaise
-      : legacyCurrentPhysicalPaise + legacyReceivablePaise,
-    legacyAuditVariancePaise = Number.isSafeInteger(
-      legacyGroupFund?.auditVariancePaise,
-    )
-      ? legacyGroupFund.auditVariancePaise
-      : 0,
-    receivedPayments = (data.reimbursements || []).filter(
-      (payment) => payment.status === "received",
-    ),
-    allocationDifferencePaise =
+      .reduce((sum, expense) => sum + safeAmount(expense.amountPaise), 0),
+    activeCashDifference = activeDirectGroupCashExpensePaise - activeCashOut,
+    activeCreditDifference = activeCreditExpensePaise - activeCreditTotal,
+    allocationDifference =
       settlement.merchantPaidPaise +
       settlement.unassignedPaidPaise -
       settlement.allocatedSharePaise,
     ledgerBalanced =
-      allocationDifferencePaise === 0 &&
+      allocationDifference === 0 &&
       settlement.netBalancePaise === 0 &&
-      groupFundReconciliationPaise === 0 &&
-      memberCreditReconciliationPaise === 0,
-    budgetPercent = formatPercentFromBasisPoints(
-      snapshot.forecastBudgetBasisPoints,
-    ),
+      activeCashDifference === 0 &&
+      activeCreditDifference === 0,
+    budgetPercent = formatPercentFromBasisPoints(snapshot.forecastBudgetBasisPoints),
     budgetProgress = Math.min(
       100,
       Math.max(0, snapshot.forecastBudgetBasisPoints / 100),
@@ -264,29 +338,29 @@ export default function Finance({ expenses, setSheet }) {
           String(b.date || "").localeCompare(String(a.date || "")) ||
           b._displayIndex - a._displayIndex,
       ),
-    displayOutflows = [...paidFundOutflows].reverse(),
-    poolDebtors = groupFundMembers.filter(
-      (id) => (groupFundOutstandingByMember[id] || 0) > 0,
+    receivedPayments = (data.reimbursements || []).filter(
+      (item) => item.status === "received",
     ),
-    payableSummary = [
-      ...interPoolPayables.map(
-        (item) => `${item.label || "Old group"} ${formatINR(item.amountPaise)}`,
-      ),
-      ...memberPayables.map(
-        (item) => `${firstName(item.memberId)} ${formatINR(item.amountPaise)}`,
-      ),
-    ].join(" · ");
+    milanDirectTransfer = (settlement.transfers || []).find(
+      (item) =>
+        item.from === "milan" &&
+        item.to === "vyas" &&
+        item.policyId === "vyas-covers-milan-trip",
+    );
 
   const copySettlement = async (transfer) => {
-    const from = member(transfer.from)?.name,
-      to = member(transfer.to)?.name,
-      text = `${from} pays ${to} ${formatINR(transfer.amountPaise)} for the Mumbai trip settlement.`;
+    const text = `${member(transfer.from)?.name} pays ${member(transfer.to)?.name} ${formatINR(transfer.amountPaise)} for the Mumbai trip settlement.`;
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(`${transfer.from}-${transfer.to}`);
+      setCopied(`${transfer.from}-${transfer.to}-${transfer.amountPaise}`);
       vibrate(28);
       setTimeout(() => setCopied(null), 1600);
     } catch {}
+  };
+
+  const switchAccount = (next) => {
+    setAccountView(next);
+    vibrate(18);
   };
 
   return (
@@ -294,117 +368,130 @@ export default function Finance({ expenses, setSheet }) {
       <div className="page-title finance-title">
         <span>MONEY</span>
         <h1>Finance</h1>
-        <p>Cash first. Then expenses. Then who still owes what.</p>
+        <p>Two separate group accounts, one trip-wide expense ledger, and explicit personal settlement.</p>
       </div>
 
-      {groupFund && (
+      <DockAwarePanel className="panel">
+        <div className="finance-section-heading">
+          <div>
+            <span>GROUP ACCOUNTS</span>
+            <h2>Choose one ledger</h2>
+          </div>
+          <b>NEVER MERGED</b>
+        </div>
+        <div
+          role="tablist"
+          aria-label="Group finance accounts"
+          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}
+        >
+          <button
+            className="finance-secondary-button"
+            role="tab"
+            aria-selected={accountView === "active"}
+            onClick={() => switchAccount("active")}
+            style={{
+              minHeight: 48,
+              background: accountView === "active" ? "var(--finance-blue-soft)" : undefined,
+              borderColor: accountView === "active" ? "#9fb6cf" : undefined,
+            }}
+          >
+            8-person · ACTIVE · {formatINR(activeSpendable)} free
+          </button>
+          <button
+            className="finance-secondary-button"
+            role="tab"
+            aria-selected={accountView === "legacy"}
+            onClick={() => switchAccount("legacy")}
+            style={{
+              minHeight: 48,
+              background: accountView === "legacy" ? "var(--finance-blue-soft)" : undefined,
+              borderColor: accountView === "legacy" ? "#9fb6cf" : undefined,
+            }}
+          >
+            6-person · HISTORICAL · {formatINR(legacyPhysicalCash)} on hand
+          </button>
+        </div>
+        <p className="finance-footnote">
+          Switching changes only the dashboard being viewed. Balances and records remain independent. The only current cross-account transaction is the explicit ₹200 taxi advance.
+        </p>
+      </DockAwarePanel>
+
+      {accountView === "active" && activeFund && (
         <DockAwarePanel className="panel finance-pool-panel finance-cash-first">
           <div className="finance-section-heading">
             <div>
-              <span>01 · ACTIVE CASH</span>
-              <h2>8-person group cash</h2>
+              <span>ACTIVE · 8 PEOPLE</span>
+              <h2>Current group account</h2>
             </div>
-            <b>{formatINR(groupFundSpendablePaise)}</b>
+            <b>{formatINR(activeSpendable)} FREE</b>
           </div>
 
           <div className="finance-cash-hero">
             <span>SPENDABLE NOW</span>
-            <strong>{formatINR(groupFundSpendablePaise)}</strong>
+            <strong>{formatINR(activeSpendable)}</strong>
             <small>
-              {formatINR(groupFundPhysicalCashPaise)} is physically held. {formatINR(groupFundReservedPaise)} is reserved for known reimbursements and is not free to spend.
+              {formatINR(activePhysicalCash)} physical cash − {formatINR(activeReserved)} reserved liabilities = {formatINR(activeSpendable)} genuinely free.
             </small>
           </div>
 
-          <div className="finance-cash-equation" aria-label="Active shared cash calculation">
-            <div>
-              <span>CASH COLLECTED</span>
-              <b>{formatINR(groupFundCollectedPaise)}</b>
-            </div>
-            <i>−</i>
-            <div>
-              <span>CASH PAID OUT</span>
-              <b>{formatINR(groupFundSpentPaise)}</b>
-            </div>
-            <i>=</i>
-            <div className="result">
-              <span>PHYSICAL CASH</span>
-              <b>{formatINR(groupFundPhysicalCashPaise)}</b>
-            </div>
+          <div className="finance-overview-grid">
+            <article className="finance-overview-card cash">
+              <span>CASH ON HAND</span>
+              <strong>{formatINR(activePhysicalCash)}</strong>
+              <small>physical active-group cash now</small>
+            </article>
+            <article className="finance-overview-card">
+              <span>RESERVED</span>
+              <strong>{formatINR(activeReserved)}</strong>
+              <small>old pool + Pratham + Tirth</small>
+            </article>
+            <article className="finance-overview-card primary">
+              <span>SPENDABLE</span>
+              <strong>{formatINR(activeSpendable)}</strong>
+              <small>safe amount available for new spend</small>
+            </article>
           </div>
 
-          <div className="finance-pool-status">
-            <span>
-              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)} · {formatINR(groupFundCreditPaise)} expense credit already counted
-            </span>
-            <b>{formatINR(groupFundOutstandingPaise)} still to collect</b>
+          <div className="finance-integrity-grid">
+            <div><span>CASH CONTRIBUTIONS</span><b>{formatINR(activeCashCollected)}</b></div>
+            <div><span>CONTRIBUTION CREDITS</span><b>{formatINR(activeCreditTotal)}</b></div>
+            <div><span>TARGET COVERED</span><b>{formatINR(activeCashCollected + activeCreditTotal)} / {formatINR(activeTarget)}</b></div>
+            <div><span>CONTRIBUTION DUE</span><b>{formatINR(activeOutstanding)}</b></div>
+            <div><span>ACCOUNT CHARGES</span><b>{formatINR(activeFund.totalChargedPaise || 0)}</b></div>
+            <div><span>PER-PERSON CHARGE SHARE</span><b>{formatINR(activeFund.perMemberExpenseSharePaise || 0)}</b></div>
           </div>
-
-          {groupFundReservedPaise > 0 && (
-            <div className="finance-callout">
-              <b>{formatINR(groupFundReservedPaise)} of current cash is reserved.</b>
-              <span>{payableSummary}. These liabilities belong only to the active eight-person account, leaving {formatINR(groupFundSpendablePaise)} free to spend.</span>
-            </div>
-          )}
-
-          {displayOutflows.length > 0 && (
-            <div className="finance-cash-subsection">
-              <div className="finance-subhead">
-                <b>Cash paid from active pool</b>
-                <span>{formatINR(groupFundSpentPaise)} total</span>
-              </div>
-              <div className="finance-spend-list finance-cash-outflows">
-                {displayOutflows.map((outflow) => (
-                  <div className="finance-spend-row" key={outflow.id}>
-                    <div>
-                      <b>{outflow.label || "Group expense"}</b>
-                      <small>{outflow.date} · paid from active shared cash</small>
-                    </div>
-                    <strong>-{formatINR(outflow.amountPaise)}</strong>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="finance-cash-subsection">
             <div className="finance-subhead">
-              <b>Who has covered the ₹200 target</b>
-              <span>{groupFundFullyFundedCount}/{groupFundMembers.length} complete</span>
+              <b>Member contribution status</b>
+              <span>{activeMembers.length - Object.values(activeOutstandingByMember).filter(Boolean).length}/{activeMembers.length} complete</span>
             </div>
             <div className="finance-contribution-list">
-              {groupFundMembers.map((memberId) => {
-                const collected = groupFundCollectedByMember[memberId] || 0,
-                  credit = groupFundCreditByMember[memberId] || 0,
-                  outstanding = groupFundOutstandingByMember[memberId] || 0,
-                  advances = groupFundAdvancedByMember[memberId] || [];
-
+              {activeMembers.map((id) => {
+                const cash = activeContributionByMember[id] || 0,
+                  credit = activeCreditByMember[id] || 0,
+                  outstanding = activeOutstandingByMember[id] || 0,
+                  contribution = activeContributions.find((item) => item.memberId === id),
+                  paidBy = contribution?.paidByMemberId || id;
                 return (
-                  <div className="finance-contribution-row" key={memberId}>
-                    <span className="finance-member-avatar">
-                      {member(memberId)?.initials || "?"}
-                    </span>
+                  <div className="finance-contribution-row" key={id}>
+                    <span className="finance-member-avatar">{member(id)?.initials || "?"}</span>
                     <div>
-                      <b>{member(memberId)?.name || memberId}</b>
+                      <b>{member(id)?.name || id}</b>
                       <small>
-                        {outstanding > 0
-                          ? `${formatINR(outstanding)} still needs to be covered`
-                          : "group target complete"}
+                        {cash > 0 ? `${formatINR(cash)} cash` : "₹0 cash"}
+                        {credit > 0 ? ` + ${formatINR(credit)} credit` : ""}
                       </small>
-                      {credit > 0 && (
+                      {paidBy !== id && cash > 0 && (
                         <small className="advance-note">
-                          {formatINR(collected)} cash + {formatINR(credit)} expense credit
+                          physically paid by {firstName(paidBy)} for {firstName(id)} · personal debt, not group due
                         </small>
                       )}
-                      {advances.map((advance, index) => (
-                        <small className="advance-note" key={`${memberId}-advance-${index}`}>
-                          {firstName(advance.paidByMemberId)} actually paid {formatINR(advance.amountPaise)} for {firstName(memberId)}
-                        </small>
-                      ))}
                     </div>
                     <div className="finance-contribution-amount">
-                      <strong>{formatINR(collected + credit)}</strong>
-                      <span className={outstanding > 0 ? "status-due" : "status-paid"}>
-                        {outstanding > 0 ? "DUE" : "DONE"}
+                      <strong>{formatINR(cash + credit)}</strong>
+                      <span className={outstanding ? "status-due" : "status-paid"}>
+                        {outstanding ? `${formatINR(outstanding)} DUE` : "DONE"}
                       </span>
                     </div>
                   </div>
@@ -413,138 +500,190 @@ export default function Finance({ expenses, setSheet }) {
             </div>
           </div>
 
-          {appliedFundCredits.length > 0 && (
-            <div className="finance-callout">
-              <b>Expense credits reduce contribution dues without adding cash.</b>
-              <span>
-                {appliedFundCredits
-                  .map(
-                    (credit) =>
-                      `${firstName(credit.memberId)} paid ${formatINR(credit.amountPaise)} directly`,
-                  )
-                  .join(" · ")}. These credits satisfy the named member's target but never enter the cash balance.
-              </span>
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Cash contribution ledger</b><span>{activeContributionRows.length} records</span></div>
+            <LedgerRows rows={activeContributionRows} />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Contribution-credit ledger</b><span>{formatINR(activeCreditTotal)}</span></div>
+            <LedgerRows rows={activeCreditRows} empty="No contribution credits." />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Cash-out ledger</b><span>{formatINR(activeCashOut)} physically paid</span></div>
+            <LedgerRows rows={activeOutflowRows} empty="No cash has left this account." />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Expense / charge ledger</b><span>{activeFund.charges?.length || 0} charges</span></div>
+            <div className="finance-spend-list">
+              {(activeFund.charges || []).map((charge) => (
+                <div className="finance-spend-row" key={charge.id}>
+                  <div>
+                    <b>{charge.label}</b>
+                    <small>{charge.date} · {charge.participantIds?.length || 0} participants · ID {charge.id}</small>
+                    <small>
+                      funding · {(charge.fundingBreakdown || []).map(fundingLabel).join(" + ")}
+                    </small>
+                    {charge.note && <small>{charge.note}</small>}
+                  </div>
+                  <strong>{formatINR(charge.amountPaise)}</strong>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Reserved liabilities</b><span>{formatINR(activeReserved)} total</span></div>
+            <LedgerRows rows={activeLiabilityRows} empty="No reserved liabilities." />
+          </div>
+
+          {interAccountLinks.map((link) => (
+            <div className="finance-callout" key={link.id}>
+              <b>Linked to previous 6-person ledger · {formatINR(link.amountPaise)}</b>
+              <span>{link.note}</span>
+              <button className="finance-secondary-button" onClick={() => switchAccount("legacy")}>
+                Open matching old-pool receivable
+              </button>
+            </div>
+          ))}
         </DockAwarePanel>
       )}
 
-      <DockAwarePanel className="panel">
-        <div className="finance-section-heading">
-          <div>
-            <span>02 · GROUP ACCOUNTS</span>
-            <h2>Two separate ledgers</h2>
-          </div>
-          <b>{interAccountLinks.length} LINKED RECORD</b>
-        </div>
-        <p className="finance-section-copy">
-          The previous six-person pool and active eight-person pool never share a balance. A transfer between them appears as a receivable in one ledger and the matching payable in the other.
-        </p>
-
-        <div className="finance-settlement-block">
-          <div className="finance-subhead">
-            <b>A · Active 8-person account</b>
-            <span>{groupFund?.status || "active"}</span>
-          </div>
-          <div className="finance-integrity-grid">
-            <div><span>PHYSICAL CASH</span><b>{formatINR(groupFundPhysicalCashPaise)}</b></div>
-            <div><span>RESERVED</span><b>{formatINR(groupFundReservedPaise)}</b></div>
-            <div><span>FREE TO SPEND</span><b>{formatINR(groupFundSpendablePaise)}</b></div>
-            <div><span>TARGET COVERED</span><b>{formatINR(groupFundCollectedPaise + groupFundCreditPaise)} / {formatINR(groupFundTargetPaise)}</b></div>
-            <div><span>CHARGES</span><b>{formatINR(groupFund?.totalChargedPaise || 0)}</b></div>
-            <div><span>PER PERSON COST</span><b>{formatINR(groupFund?.perMemberExpenseSharePaise || 0)}</b></div>
-          </div>
-          <details className="finance-details">
-            <summary>
-              <span><b>Active-account records</b><small>contributions, charges and payables</small></span>
-              <strong>OPEN</strong>
-            </summary>
-            <div className="finance-details-body">
-              <section className="finance-audit-section">
-                <div className="finance-subhead"><b>Current charges</b><span>{groupFund?.charges?.length || 0} records</span></div>
-                <div className="finance-audit-list">
-                  {(groupFund?.charges || []).map((charge) => (
-                    <div key={charge.id}>
-                      <span><b>{charge.label}</b><small>{charge.date} · {charge.participantIds?.length || 0} people</small></span>
-                      <strong>{formatINR(charge.amountPaise)}</strong>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <section className="finance-audit-section">
-                <div className="finance-subhead"><b>Reserved reimbursements</b><span>{formatINR(groupFundReservedPaise)}</span></div>
-                <div className="finance-audit-list">
-                  {interPoolPayables.map((item) => (
-                    <div key={item.id}><span><b>{item.label}</b><small>inter-account payable · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
-                  ))}
-                  {memberPayables.map((item) => (
-                    <div key={item.id}><span><b>{item.label}</b><small>member payable · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
-                  ))}
-                </div>
-              </section>
+      {accountView === "legacy" && legacyFund && (
+        <DockAwarePanel className="panel finance-pool-panel finance-cash-first">
+          <div className="finance-section-heading">
+            <div>
+              <span>HISTORICAL · 6 PEOPLE</span>
+              <h2>Previous group account</h2>
             </div>
-          </details>
-        </div>
-
-        <div className="finance-settlement-block">
-          <div className="finance-subhead">
-            <b>B · Previous 6-person account</b>
-            <span>historical</span>
+            <b>{formatINR(legacyPhysicalCash)} ON HAND</b>
           </div>
+
+          <div className="finance-cash-hero">
+            <span>CURRENT PHYSICAL CASH</span>
+            <strong>{formatINR(legacyPhysicalCash)}</strong>
+            <small>
+              Historical account. {formatINR(legacyReceivable)} is still receivable from the active account, so economic balance remains {formatINR(legacyEconomicBalance)}. Do not use this pool for new expenses unless explicitly specified.
+            </small>
+          </div>
+
+          <div className="finance-overview-grid">
+            <article className="finance-overview-card cash">
+              <span>CASH ON HAND</span>
+              <strong>{formatINR(legacyPhysicalCash)}</strong>
+              <small>after the post-close ₹200 taxi advance</small>
+            </article>
+            <article className="finance-overview-card">
+              <span>RECEIVABLE</span>
+              <strong>{formatINR(legacyReceivable)}</strong>
+              <small>owed by active 8-person account</small>
+            </article>
+            <article className="finance-overview-card primary">
+              <span>ECONOMIC BALANCE</span>
+              <strong>{formatINR(legacyEconomicBalance)}</strong>
+              <small>cash + receivable</small>
+            </article>
+          </div>
+
           <div className="finance-integrity-grid">
-            <div><span>CASH CONTRIBUTED</span><b>{formatINR(legacyCollectedPaise)}</b></div>
-            <div><span>EXPENSE CREDITS</span><b>{formatINR(legacyCreditPaise)}</b></div>
-            <div><span>EFFECTIVE TARGET</span><b>{formatINR(legacyCollectedPaise + legacyCreditPaise)} / {formatINR(legacyTargetPaise)}</b></div>
-            <div><span>CONFIRMED SPEND</span><b>{formatINR(legacyConfirmedSpentPaise)}</b></div>
-            <div><span>CURRENT PHYSICAL CASH</span><b>{formatINR(legacyCurrentPhysicalPaise)}</b></div>
-            <div><span>RECEIVABLE</span><b>{formatINR(legacyReceivablePaise)}</b></div>
-            <div><span>ECONOMIC BALANCE</span><b>{formatINR(legacyEconomicBalancePaise)}</b></div>
-            <div><span>AUDIT VARIANCE</span><b>{legacyAuditVariancePaise < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariancePaise))}</b></div>
+            <div><span>CASH CONTRIBUTED</span><b>{formatINR(legacyContributionTotal)}</b></div>
+            <div><span>EXPENSE CREDITS</span><b>{formatINR(legacyCreditTotal)}</b></div>
+            <div><span>TARGET COVERED</span><b>{formatINR(legacyContributionTotal + legacyCreditTotal)} / {formatINR(legacyTarget)}</b></div>
+            <div><span>CONFIRMED MERCHANT SPEND</span><b>{formatINR(legacyConfirmedSpend)}</b></div>
+            <div><span>AUDIT CONTROL</span><b>{formatINR(legacyAuditControlTotal)}</b></div>
+            <div><span>UNRESOLVED VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
           </div>
-          <details className="finance-details">
-            <summary>
-              <span><b>Historical-account records</b><small>confirmed outflows and post-close advance</small></span>
-              <strong>OPEN</strong>
-            </summary>
-            <div className="finance-details-body">
-              <section className="finance-audit-section">
-                <div className="finance-subhead"><b>Confirmed merchant outflows</b><span>{formatINR(legacyConfirmedSpentPaise)}</span></div>
-                <div className="finance-audit-list">
-                  {legacyConfirmedOutflows.map((item) => (
-                    <div key={item.id}><span><b>{item.label}</b><small>{item.date} · historical pool</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
-                  ))}
-                </div>
-              </section>
-              {(legacyGroupFund?.postCloseAdvances || []).length > 0 && (
-                <section className="finance-audit-section">
-                  <div className="finance-subhead"><b>Post-close advances</b><span>{formatINR(legacyReceivablePaise)} receivable</span></div>
-                  <div className="finance-audit-list">
-                    {(legacyGroupFund.postCloseAdvances || []).map((item) => (
-                      <div key={item.id}><span><b>{item.label}</b><small>{item.date} · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
-                    ))}
-                  </div>
-                </section>
-              )}
-              <p className="finance-footnote">
-                The ₹462 variance is an audit-control difference, not a merchant expense. The old pool's last observed boundary was {formatINR(legacyGroupFund?.closedObservedBalancePaise || 0)} before the post-close taxi advance.
-              </p>
-            </div>
-          </details>
-        </div>
 
-        {interAccountLinks.map((link) => (
-          <div className="finance-callout" key={link.id}>
-            <b>Inter-account link · {formatINR(link.amountPaise)} · {link.status}</b>
-            <span>Previous 6-person pool → active 8-person account for Taxi 1. The old ledger records a receivable and the active ledger records the matching payable. This amount is not counted twice.</span>
+          <div className="finance-callout">
+            <b>Cash checkpoint · {formatINR(legacyFund.closedObservedBalancePaise || 0)}</b>
+            <span>
+              This was the last confirmed physical count before the ₹200 post-close taxi advance. The ₹462 variance is retained as an audit-control difference and is not presented as merchant spending.
+            </span>
           </div>
-        ))}
-      </DockAwarePanel>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Cash contribution ledger</b><span>{legacyContributionRows.length} records</span></div>
+            <LedgerRows rows={legacyContributionRows} />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Direct-expense credit ledger</b><span>{formatINR(legacyCreditTotal)}</span></div>
+            <LedgerRows rows={legacyCreditRows} empty="No contribution credits." />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Confirmed merchant outflows</b><span>{formatINR(legacyConfirmedSpend)}</span></div>
+            <LedgerRows rows={legacyOutflowRows} />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Audit-control records</b><span>not merchant spend</span></div>
+            <LedgerRows rows={legacyAuditControlRows} empty="No audit-control records." />
+          </div>
+
+          <div className="finance-settlement-block">
+            <div className="finance-subhead"><b>Post-close activity</b><span>{formatINR(legacyReceivable)} receivable</span></div>
+            <LedgerRows rows={legacyPostCloseRows} empty="No post-close activity." />
+          </div>
+
+          {interAccountLinks.map((link) => (
+            <div className="finance-callout" key={link.id}>
+              <b>Linked to active 8-person ledger · {formatINR(link.amountPaise)}</b>
+              <span>{link.note}</span>
+              <button className="finance-secondary-button" onClick={() => switchAccount("active")}>
+                Open matching active-pool payable
+              </button>
+            </div>
+          ))}
+        </DockAwarePanel>
+      )}
+
+      {coveragePolicy && (
+        <DockAwarePanel className="panel finance-action-panel">
+          <div className="finance-section-heading">
+            <div>
+              <span>MILAN → DEVGNA</span>
+              <h2>Trip-end repayment</h2>
+            </div>
+            <b>{formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}</b>
+          </div>
+          <p className="finance-section-copy">
+            Devgna pays Milan's trip costs. Milan stays the beneficiary in the source records, while the actual advances remain a personal Milan → Devgna liability. This debt never changes either group account's cash unless the source transaction itself belongs to that account.
+          </p>
+          <div className="finance-audit-list">
+            {(coveragePolicy.currentKnownLiabilityBreakdown || []).map((item) => (
+              <div key={item.id}>
+                <span>
+                  <b>{item.label}</b>
+                  <small>
+                    {item.sourceGroupFundId === "group-fund-six-sep14"
+                      ? "source · previous 6-person ledger"
+                      : item.sourceGroupFundId === "group-fund-eight-sep15"
+                        ? "source · active 8-person ledger"
+                        : "source · personal trip expense"}
+                  </small>
+                  <small>{(item.sourceRecordIds || []).join(" · ")}</small>
+                </span>
+                <strong>{formatINR(item.amountPaise)}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="finance-callout">
+            <b>Direct trip-end transfer · Milan pays Devgna {formatINR(milanDirectTransfer?.amountPaise || 0)}</b>
+            <span>
+              The settlement engine pins this debt directly to Devgna instead of netting Milan through another friend. Future Milan costs paid by Devgna must be added once to the source ledger and once to this liability breakdown.
+            </span>
+          </div>
+        </DockAwarePanel>
+      )}
 
       <DockAwarePanel className="panel finance-expenses-panel">
         <div className="finance-section-heading">
           <div>
-            <span>03 · EXPENSES</span>
-            <h2>What the trip has actually cost</h2>
+            <span>TRIP-WIDE EXPENSE LEDGER</span>
+            <h2>All confirmed paid expenses</h2>
           </div>
           <button className="finance-secondary-button" onClick={() => setSheet("expense")}>
             Add draft
@@ -553,19 +692,19 @@ export default function Finance({ expenses, setSheet }) {
 
         <div className="finance-overview-grid finance-expense-summary">
           <article className="finance-overview-card primary">
-            <span>TOTAL SPENT</span>
+            <span>TOTAL CONFIRMED SPEND</span>
             <strong>{formatINR(snapshot.recordedPaidPaise)}</strong>
-            <small>all confirmed merchant payments</small>
+            <small>reconciliation-only rows excluded</small>
           </article>
           <article className="finance-overview-card cash">
-            <span>FROM GROUP CASH</span>
-            <strong>{formatINR(allGroupFundExpensePaise)}</strong>
-            <small>confirmed merchant payments from either group cash ledger</small>
+            <span>FUNDED BY GROUP CASH</span>
+            <strong>{formatINR(tripGroupCashExpensePaise)}</strong>
+            <small>includes the old-pool ₹200 external advance</small>
           </article>
           <article className="finance-overview-card">
             <span>OTHER FUNDING</span>
-            <strong>{formatINR(directlyFundedExpensePaise)}</strong>
-            <small>personal payments, credits and advances</small>
+            <strong>{formatINR(otherFundingExpensePaise)}</strong>
+            <small>personal payments, credits and member advances</small>
           </article>
         </div>
 
@@ -574,21 +713,20 @@ export default function Finance({ expenses, setSheet }) {
             const payer = member(expense.payerId),
               payerLabel =
                 expense.fundingSource === "groupFund"
-                  ? expense.groupFundId === groupFund?.id
-                    ? "Active 8-person group cash"
-                    : "Previous group cash"
-                  : expense.fundingSource === "groupFundMemberCredit"
-                    ? `${payer?.name || "Member"} · credited to active pool target`
-                    : expense.fundingSource === "groupFundMemberAdvance"
-                      ? `${payer?.name || "Member"} · paid for active group`
-                      : expense.fundingSource === "groupFundExternalAdvance"
-                        ? "Previous 6-person pool · reimbursable by active group"
-                        : payer?.name || "Unknown payer",
+                  ? expense.groupFundId === activeFund?.id
+                    ? "active 8-person group cash"
+                    : "previous 6-person group cash"
+                  : expense.fundingSource === "groupFundExternalAdvance"
+                    ? "previous 6-person pool · advance for active account"
+                    : expense.fundingSource === "groupFundMemberCredit"
+                      ? `${payer?.name || "member"} · contribution-credit portion`
+                      : expense.fundingSource === "groupFundMemberAdvance"
+                        ? `${payer?.name || "member"} · advance for active account`
+                        : payer?.name || "unknown payer",
               scope = expenseBudgetScope(data, expense),
               components = Object.entries(expense.componentsPaise || {}).filter(
                 ([, value]) => Number.isSafeInteger(value) && value > 0,
               );
-
             return (
               <div className="finance-spend-row" key={expense.id}>
                 <div>
@@ -600,13 +738,12 @@ export default function Finance({ expenses, setSheet }) {
                   {components.length > 0 && (
                     <small className="expense-components">
                       {components
-                        .map(
-                          ([key, value]) =>
-                            `${componentLabels[key] || key} ${formatINR(value)}`,
-                        )
+                        .map(([key, value]) => `${componentLabels[key] || key} ${formatINR(value)}`)
                         .join(" · ")}
                     </small>
                   )}
+                  {expense.note && <small>{expense.note}</small>}
+                  <small>ID · {expense.id}</small>
                 </div>
                 <strong>{formatINR(expense.amountPaise)}</strong>
               </div>
@@ -627,158 +764,63 @@ export default function Finance({ expenses, setSheet }) {
         )}
       </DockAwarePanel>
 
-      <DockAwarePanel className="panel finance-action-panel">
+      <DockAwarePanel className="panel">
         <div className="finance-section-heading">
           <div>
-            <span>04 · SETTLEMENTS</span>
-            <h2>Money still owed</h2>
+            <span>PERSONAL SETTLEMENT</span>
+            <h2>Who pays whom</h2>
           </div>
-          <b>{formatINR(groupFundReservedPaise)} GROUP PAYABLES</b>
+          <b>{settlement.transfers.length} TRANSFERS</b>
         </div>
-
-        <div className="finance-settlement-explainer">
-          <b>Contribution dues, group-account reimbursements and friend balances are separate.</b>
-          <span>
-            “To group cash” is a member's contribution target. Group-account reimbursements are liabilities reserved from the active pool. “Between friends” is the personal settlement ledger, including money Vyas fronted for Milan.
-          </span>
-        </div>
-
-        {groupFundReservedPaise > 0 && (
-          <div className="finance-callout">
-            <b>Active group must reimburse {formatINR(groupFundReservedPaise)}.</b>
-            <span>{payableSummary}. These amounts are already excluded from the {formatINR(groupFundSpendablePaise)} spendable balance.</span>
+        <p className="finance-section-copy">
+          Group-account payables are not mixed into this list. Milan's full current liability is deliberately routed directly to Devgna.
+        </p>
+        {settlement.transfers.length ? (
+          <div className="settlement-simple-list">
+            {settlement.transfers.map((transfer, index) => {
+              const key = `${transfer.from}-${transfer.to}-${transfer.amountPaise}`;
+              return (
+                <div className="settlement-simple-row" key={`${key}-${index}`}>
+                  <div className="settlement-person-flow">
+                    <span className="settlement-avatar">{member(transfer.from)?.initials || "?"}</span>
+                    <div>
+                      <small>
+                        {transfer.policyId === "vyas-covers-milan-trip"
+                          ? "trip-end direct repayment"
+                          : `${firstName(transfer.from)} pays`}
+                      </small>
+                      <b>{firstName(transfer.from)} → {firstName(transfer.to)}</b>
+                    </div>
+                  </div>
+                  <strong>{formatINR(transfer.amountPaise)}</strong>
+                  <button onClick={() => copySettlement(transfer)}>
+                    {copied === key ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="finance-empty-state">
+            <b>No personal transfer is currently needed.</b>
           </div>
         )}
-
-        <div className="finance-settlement-block">
-          <div className="finance-subhead">
-            <b>A · Still owed to active group cash</b>
-            <span>{formatINR(groupFundOutstandingPaise)} total</span>
-          </div>
-          {poolDebtors.length ? (
-            <div className="finance-pool-due-list">
-              {poolDebtors.map((memberId) => (
-                <div key={memberId}>
-                  <span>
-                    <b>{member(memberId)?.name || memberId}</b>
-                    <small>
-                      remaining after {formatINR(groupFundCollectedByMember[memberId] || 0)} cash
-                      {(groupFundCreditByMember[memberId] || 0) > 0
-                        ? ` + ${formatINR(groupFundCreditByMember[memberId])} expense credit`
-                        : ""}
-                    </small>
-                  </span>
-                  <strong>{formatINR(groupFundOutstandingByMember[memberId])}</strong>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="finance-empty-state">
-              <b>Active pool is fully funded.</b>
-              <span>No contribution is currently outstanding to the eight-person account.</span>
-            </div>
-          )}
-        </div>
-
-        <div className="finance-settlement-block">
-          <div className="finance-subhead">
-            <b>B · Between friends</b>
-            <span>
-              {settlement.transfers.length
-                ? `${settlement.transfers.length} transfer${settlement.transfers.length === 1 ? "" : "s"}`
-                : "settled"}
-            </span>
-          </div>
-          {settlement.transfers.length ? (
-            <div className="settlement-simple-list">
-              {settlement.transfers.map((transfer, index) => {
-                const key = `${transfer.from}-${transfer.to}`;
-                return (
-                  <div className="settlement-simple-row" key={`${key}-${index}`}>
-                    <div className="settlement-person-flow">
-                      <span className="settlement-avatar">
-                        {member(transfer.from)?.initials || "?"}
-                      </span>
-                      <div>
-                        <small>{firstName(transfer.from)} pays</small>
-                        <b>{firstName(transfer.to)}</b>
-                      </div>
-                    </div>
-                    <strong>{formatINR(transfer.amountPaise)}</strong>
-                    <button onClick={() => copySettlement(transfer)}>
-                      {copied === key ? "Copied" : "Copy"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="finance-empty-state">
-              <b>No friend-to-friend payment needed.</b>
-              <span>Personal settlement is currently balanced.</span>
-            </div>
-          )}
-        </div>
-
-        <p className="finance-footnote">
-          Group-account payables are never merged into personal settlement. This prevents the ₹200 old-pool taxi advance, Pratham's ₹200 taxi payment and Tirth's ₹40 extra pass payment from being double-counted.
-        </p>
       </DockAwarePanel>
-
-      {coveragePolicy && (
-        <DockAwarePanel className="panel">
-          <div className="finance-section-heading">
-            <div>
-              <span>MILAN → DEVGNA</span>
-              <h2>Trip-end repayment</h2>
-            </div>
-            <b>{formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}</b>
-          </div>
-          <p className="finance-section-copy">
-            Vyas Devgna is the actual payer for Milan's trip costs. Milan remains the beneficiary in each original transaction, and repays Vyas after the trip. This personal liability is separate from both group-account cash balances.
-          </p>
-          <div className="finance-audit-list">
-            {(coveragePolicy.currentKnownLiabilityBreakdown || []).map((item) => (
-              <div key={item.id}>
-                <span>
-                  <b>{item.label}</b>
-                  <small>
-                    {item.sourceGroupFundId === "group-fund-six-sep14"
-                      ? "previous 6-person account"
-                      : item.sourceGroupFundId === "group-fund-eight-sep15"
-                        ? "active 8-person account"
-                        : "personal expense"}
-                  </small>
-                </span>
-                <strong>{formatINR(item.amountPaise)}</strong>
-              </div>
-            ))}
-          </div>
-          <p className="finance-footnote">
-            Current known total: {formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}. Any later Milan cost paid by Devgna should be added here once and only once.
-          </p>
-        </DockAwarePanel>
-      )}
 
       <DockAwarePanel className="panel">
         <div className="finance-section-heading">
           <div>
             <span>MEMBER BALANCES</span>
-            <h2>Friend-to-friend balance by person</h2>
+            <h2>Personal balance by person</h2>
           </div>
-          <b>EXCLUDES GROUP PAYABLES</b>
+          <b>GROUP PAYABLES EXCLUDED</b>
         </div>
-        <p className="finance-section-copy">
-          This is the personal settlement ledger only. Group-account contributions, expense credits and active group reimbursements are shown separately above.
-        </p>
-
         <div className="finance-balance-list">
           {data.members
             .filter((person) => snapshot.budgetMembers.includes(person.id))
             .map((person) => {
               const row = settlement.rows[person.id],
                 status = balanceLabel(row.netPaise);
-
               return (
                 <div className="finance-balance-row" key={person.id}>
                   <span className="finance-member-avatar">{person.initials}</span>
@@ -786,14 +828,12 @@ export default function Finance({ expenses, setSheet }) {
                     <b>{person.name}</b>
                     <small>
                       {person.id === "milan" && coveragePolicy
-                        ? `Devgna covers Milan; current known trip-end liability ${formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}`
+                        ? `all current Milan trip debt is payable to Devgna · ${formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}`
                         : row.groupFundAdvanceCoveredPaise > 0
-                          ? `${formatINR(row.groupFundAdvanceCoveredPaise)} was fronted for them`
+                          ? `${formatINR(row.groupFundAdvanceCoveredPaise)} of group contributions were fronted for them`
                           : row.groupFundAdvancePaidPaise > 0
-                            ? `fronted ${formatINR(row.groupFundAdvancePaidPaise)} for others`
-                            : row.coverageCreditPaise > 0
-                              ? `${formatINR(row.coverageCreditPaise)} already covered`
-                              : `personal allocated share ${formatINR(row.sharePaise)}`}
+                            ? `fronted ${formatINR(row.groupFundAdvancePaidPaise)} of group contributions for others`
+                            : `personal allocated share ${formatINR(row.sharePaise)}`}
                     </small>
                   </div>
                   <div className={`finance-balance-value ${status.className}`}>
@@ -814,40 +854,26 @@ export default function Finance({ expenses, setSheet }) {
           </div>
           <b>{budgetPercent} USED</b>
         </div>
-
         <div className="finance-budget-bar" aria-label={`${budgetPercent} of trip budget used`}>
           <span style={{ width: `${budgetProgress}%` }} />
         </div>
-
         <div className="finance-budget-stats">
-          <div>
-            <span>SPENT</span>
-            <b>{formatINR(snapshot.corePaidPaise)}</b>
-          </div>
-          <div>
-            <span>PLANNED</span>
-            <b>{formatINR(snapshot.corePlannedPaise)}</b>
-          </div>
+          <div><span>SPENT</span><b>{formatINR(snapshot.corePaidPaise)}</b></div>
+          <div><span>PLANNED</span><b>{formatINR(snapshot.corePlannedPaise)}</b></div>
           <div>
             <span>BUDGET LEFT</span>
-            <b>
-              {snapshot.overCorePaise
-                ? `-${formatINR(snapshot.overCorePaise)}`
-                : formatINR(snapshot.remainingCorePaise)}
-            </b>
+            <b>{snapshot.overCorePaise ? `-${formatINR(snapshot.overCorePaise)}` : formatINR(snapshot.remainingCorePaise)}</b>
           </div>
         </div>
         <p className="finance-footnote">
-          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Contributions and expense credits are funding records, not extra expenses.
+          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Funding records are not extra expenses.
         </p>
       </DockAwarePanel>
 
       {snapshot.personalPaidPaise > 0 && (
         <div className="finance-scope-note">
           <b>{formatINR(snapshot.personalPaidPaise)} outside the shared budget</b>
-          <span>
-            This is still recorded as trip spending, but it is not charged to the group unless the expense explicitly names group participants.
-          </span>
+          <span>Still recorded as trip spending, but not charged to the shared budget unless participants explicitly place it there.</span>
         </div>
       )}
 
@@ -855,26 +881,21 @@ export default function Finance({ expenses, setSheet }) {
         <summary>
           <span>
             <b>Audit & bookkeeping</b>
-            <small>exact allocation and ledger checks</small>
+            <small>exact allocation, reimbursements and scoped ledger checks</small>
           </span>
           <strong>{ledgerBalanced ? "BALANCED" : "CHECK"}</strong>
         </summary>
-
         <div className="finance-details-body">
           {receivedPayments.length > 0 && (
             <section className="finance-audit-section">
-              <div className="finance-section-heading compact">
-                <div>
-                  <span>REIMBURSEMENTS</span>
-                  <h3>{formatINR(settlement.confirmedReimbursementPaise)} received</h3>
-                </div>
-              </div>
+              <div className="finance-subhead"><b>Received reimbursements</b><span>{formatINR(settlement.confirmedReimbursementPaise)}</span></div>
               <div className="finance-audit-list">
                 {receivedPayments.map((payment) => (
                   <div key={payment.id}>
                     <span>
                       <b>{firstName(payment.fromMemberId)} → {firstName(payment.toMemberId)}</b>
-                      <small>covers {payment.coversMemberIds.map(firstName).join(" + ")}</small>
+                      <small>covers {(payment.coversMemberIds || []).map(firstName).join(" + ")}</small>
+                      <small>ID · {payment.id}</small>
                     </span>
                     <strong>{formatINR(payment.amountPaise)}</strong>
                   </div>
@@ -882,26 +903,18 @@ export default function Finance({ expenses, setSheet }) {
               </div>
             </section>
           )}
-
           <section className="finance-audit-section">
-            <div className="finance-section-heading compact">
-              <div>
-                <span>ACTIVE LEDGER CHECK</span>
-                <h3>{ledgerBalanced ? "Balanced to the paisa" : "Review required"}</h3>
-              </div>
-            </div>
+            <div className="finance-subhead"><b>Active-account integrity</b><span>{ledgerBalanced ? "balanced" : "review"}</span></div>
             <div className="finance-integrity-grid">
-              <div><span>PERSONALLY SETTLED COSTS</span><b>{formatINR(settlement.merchantPaidPaise)}</b></div>
-              <div><span>ACTIVE GROUP-CASH COSTS</span><b>{formatINR(activeGroupFundExpensePaise)}</b></div>
-              <div><span>ACTIVE POOL CREDITS</span><b>{formatINR(groupFundCreditPaise)}</b></div>
-              <div><span>PERSONAL ALLOCATION DIFFERENCE</span><b>{formatINR(Math.abs(allocationDifferencePaise))}</b></div>
-              <div><span>ACTIVE CASH DIFFERENCE</span><b>{formatINR(Math.abs(groupFundReconciliationPaise))}</b></div>
-              <div><span>ACTIVE CREDIT DIFFERENCE</span><b>{formatINR(Math.abs(memberCreditReconciliationPaise))}</b></div>
-              <div><span>NET BALANCE SUM</span><b>{formatINR(Math.abs(settlement.netBalancePaise))}</b></div>
-              <div><span>MEMBER CONTRIBUTION ADVANCES</span><b>{formatINR(settlement.groupFundAdvancePaise)}</b></div>
+              <div><span>PERSONAL ALLOCATION DIFFERENCE</span><b>{formatINR(Math.abs(allocationDifference))}</b></div>
+              <div><span>ACTIVE CASH DIFFERENCE</span><b>{formatINR(Math.abs(activeCashDifference))}</b></div>
+              <div><span>ACTIVE CREDIT DIFFERENCE</span><b>{formatINR(Math.abs(activeCreditDifference))}</b></div>
+              <div><span>NET PERSONAL BALANCE SUM</span><b>{formatINR(Math.abs(settlement.netBalancePaise))}</b></div>
+              <div><span>GROUP CONTRIBUTION ADVANCES</span><b>{formatINR(settlement.groupFundAdvancePaise)}</b></div>
+              <div><span>HISTORICAL VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
             </div>
             <p className="finance-footnote">
-              The active-account audit is scoped only to the eight-person ledger. The historical six-person pool is audited separately above, so its spending cannot pollute the active cash check.
+              Active and historical group cash are audited independently. The historical ₹462 variance remains explicitly unresolved instead of being converted into fake merchant spending.
             </p>
           </section>
         </div>
