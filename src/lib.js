@@ -45,17 +45,16 @@ const baseGroupFund = returnBranch.finance?.groupFund || {},
       ...(groupFundPatch.outflows || []),
     ],
   },
+  activeGroupFund = liveFinance.finance?.activeGroupFund || mergedLegacyGroupFund,
   { groupFundPatch: _groupFundPatch, ...liveFinanceFields } =
     liveFinance.finance || {},
   mergedFinance = {
     ...(coreData.finance || {}),
     ...(returnBranch.finance || {}),
     ...liveFinanceFields,
-    groupFund: mergedLegacyGroupFund,
-    groupFunds: [
-      mergedLegacyGroupFund,
-      liveFinance.finance?.activeGroupFund,
-    ].filter(Boolean),
+    legacyGroupFund: mergedLegacyGroupFund,
+    groupFund: activeGroupFund,
+    groupFunds: [mergedLegacyGroupFund, activeGroupFund].filter(Boolean),
   };
 
 const data = {
