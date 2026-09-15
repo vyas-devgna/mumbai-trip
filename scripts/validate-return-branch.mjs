@@ -100,9 +100,14 @@ assert(cashByMember.tirth === 300000, "Tirth pool contribution must be ₹3,000"
 assert(cashByMember.nishit === 250000 && creditByMember.nishit === 50000, "Nishit pool target must be ₹2,500 cash + ₹500 credits");
 assert(cashByMember.milan === 300000, "Milan pool target must remain fully credited at ₹3,000");
 assert(cashByMember.het === 300000, "Het pool contribution must be ₹3,000");
-assert(cashByMember.jugal === 290000 && creditByMember.jugal === 10000, "Jugal pool target must be ₹2,900 cash + ₹100 credit");
-for (const id of expectedFinanceMembers) assert(poolOutstanding[id] === 0, `${id} pool outstanding must be ₹0`);
-assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 0, "total pool outstanding must be ₹0");
+assert(cashByMember.jugal === 240000 && creditByMember.jugal === 10000, "historical branch must show Jugal at ₹2,400 received cash + ₹100 credit before later ₹500 replacement");
+for (const id of expectedFinanceMembers) {
+  const expected = id === "jugal" ? 50000 : 0;
+  assert(poolOutstanding[id] === expected, `${id} historical pool outstanding mismatch`);
+}
+assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 50000, "historical branch must retain ₹500 Jugal outstanding before live replacement");
+const jugalMorning = (fund?.contributions || []).find((item) => item.id === "group-fund-jugal-morning-sep14");
+assert(jugalMorning?.amountPaise === 50000 && jugalMorning?.status === "not-received", "Jugal Sep 14 morning ₹500 must remain marked never received");
 
 const jugalAuto = merged.expenses.find((e) => e.id === "expense-auto-jugal-sep14");
 assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
@@ -114,13 +119,13 @@ assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "group
 const sep15TeaCoffee = merged.expenses.find((e) => e.id === "expense-tea-coffee-sep15");
 assert(sep15TeaCoffee?.amountPaise === 7000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must total ₹70 from group cash");
 const sep15Reconciliation = merged.expenses.find((e) => e.id === "expense-cash-reconciliation-sep15");
-assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹462 unidentified variance");
+assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep historical cash reconciliation must retain ₹462 unidentified variance");
 
 const cashCollected = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashSpent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
-assert(cashCollected === 1740000, "group cash contributions must total ₹17,400 after final settlements");
-assert(cashSpent === 1220000, "group cash outflows must total ₹12,200 after Sep 15 reconciliation");
-assert(cashCollected - cashSpent === 520000, "group cash balance must match observed ₹5,200");
+assert(cashCollected === 1690000, "historical branch cash received must be ₹16,900 after removing phantom Jugal ₹500");
+assert(cashSpent === 1220000, "historical group cash outflows must remain ₹12,200 including reconciliation");
+assert(cashCollected - cashSpent === 470000, "corrected historical cash balance must be ₹4,700");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
@@ -140,4 +145,4 @@ const expectedNet = { vyas:407075, tirth:-16400, nishit:-16400, milan:-357875, p
 for (const [id, amount] of Object.entries(expectedNet)) assert(finance.settlement.rows[id]?.netPaise === amount, `${id} settlement mismatch`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`Return branch + finance valid: 6-member cohort, ₹${(finance.recordedPaidPaise / 100).toFixed(2)} spent, ₹${(Object.values(poolOutstanding).reduce((s, a) => s + a, 0) / 100).toFixed(2)} pool outstanding, ₹${((cashCollected - cashSpent) / 100).toFixed(2)} cash`);
+console.log(`Return branch + finance valid: corrected historical Jugal cash ₹2,400 + ₹100 credit with ₹500 outstanding before live replacement; ₹${(finance.recordedPaidPaise / 100).toFixed(2)} spent; ₹${((cashCollected - cashSpent) / 100).toFixed(2)} corrected checkpoint cash`);
