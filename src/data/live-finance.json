@@ -2,22 +2,27 @@
   "schemaVersion": 1,
   "finance": {
     "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
-    "scopeNote": "The original six-person group expense account is a closed historical cash pool at the last confirmed physical count of ₹5,200. Pratham and Neet then join Vyas, Tirth, Nishit, Milan, Het and Jugal in a new, separate eight-person group expense account. The ₹80 water bottle, ₹400 taxi to Mumbai Cha Raja and ₹240 Mumbai Cha Raja pass all belong to the new eight-person account. Old six-person cash is not transferred into the new account unless explicitly recorded later.",
+    "scopeNote": "The original six-person group expense account is historical. The active eight-person account is Vyas, Tirth, Nishit, Milan, Het, Jugal, Pratham and Neet. Its working contribution target is ₹200 each. Seven members have paid ₹200; only Tirth remains due ₹200. The ₹80 water and ₹400 taxi are paid from new-group cash. The ₹240 Mumbai Cha Raja pass belongs to the new group but was paid from the old six-person pool by Tirth on the new group's behalf, so the new account owes ₹240 back to the old pool.",
     "activeGroupFundId": "group-fund-eight-sep15",
     "groupFundPatch": {
       "id": "group-fund-six-sep14",
-      "status": "closed",
+      "status": "historical",
       "closedAt": "2026-09-15T08:45:00+05:30",
       "closedObservedBalancePaise": 520000,
       "auditVariancePaise": -46200,
-      "note": "Closed six-person pool at the user's last confirmed physical cash count of ₹5,200. The pre-existing ₹462 audit variance remains unresolved and belongs only to this historical pool. No Mumbai Cha Raja phase expense is charged to this pool.",
+      "postCloseAdvancePaise": 24000,
+      "currentPhysicalBalancePaise": 496000,
+      "interPoolReceivablePaise": 24000,
+      "economicBalancePaise": 520000,
+      "note": "The old pool closed at the confirmed ₹5,200 physical boundary. After that boundary it paid the ₹240 Mumbai Cha Raja pass for the new eight-person group, handled by Tirth. Until reimbursement is physically returned, old-pool cash is ₹4,960 plus a ₹240 receivable from the new pool; economic value remains ₹5,200. The historical ₹462 variance remains separate and unresolved.",
       "outflows": [],
+      "postCloseAdvances": [
+        {"id":"old-pool-advance-pass-mumbai-cha-raja-sep15","expenseId":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"date":"2026-09-15","toGroupFundId":"group-fund-eight-sep15","handledByMemberId":"tirth","status":"receivable","label":"Mumbai Cha Raja pass · advanced for new group","note":"₹240 was paid from old six-person group money for an expense belonging entirely to the new eight-person account. New group owes ₹240 back to old group."}
+      ],
       "cashCheckpoint": {
         "date": "2026-09-15",
         "observedBalancePaise": 520000,
-        "previousObservedBalancePaise": 520000,
-        "movementSincePreviousPaise": 0,
-        "note": "Six-person account freezes at the confirmed ₹5,200 physical cash boundary."
+        "note": "Last confirmed old-pool physical cash count before the ₹240 inter-pool advance was ₹5,200."
       }
     },
     "activeGroupFund": {
@@ -28,36 +33,58 @@
       "status": "active",
       "openedAt": "2026-09-15T08:45:00+05:30",
       "openingBalancePaise": 0,
-      "cashBalancePaise": 0,
-      "targetMode": "accrued-share",
-      "targetPerMemberPaise": 9000,
+      "targetMode": "fixed-contribution",
+      "targetPerMemberPaise": 20000,
       "targetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
-      "contributions": [],
-      "credits": [],
-      "outflows": [],
-      "charges": [
-        {"id":"group-eight-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"charged","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"note":"₹80 charged to the new eight-person group expense account."},
-        {"id":"group-eight-taxi-mumbai-cha-raja-sep15","expenseId":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"date":"2026-09-15","category":"transport","label":"Taxi · Mumbai Cha Raja","status":"charged","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"note":"₹400 taxi charged to the new eight-person group expense account."},
-        {"id":"group-eight-pass-mumbai-cha-raja-sep15","expenseId":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"date":"2026-09-15","category":"admission","label":"Mumbai Cha Raja · pass","status":"charged","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"note":"₹240 Mumbai Cha Raja pass charged to the new eight-person group expense account."}
+      "contributions": [
+        {"id":"group-eight-contribution-vyas-sep15","memberId":"vyas","paidByMemberId":"vyas","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-nishit-sep15","memberId":"nishit","paidByMemberId":"nishit","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-milan-sep15","memberId":"milan","paidByMemberId":"milan","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-het-sep15","memberId":"het","paidByMemberId":"het","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-jugal-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-pratham-sep15","memberId":"pratham","paidByMemberId":"pratham","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-neet-sep15","memberId":"neet","paidByMemberId":"neet","amountPaise":20000,"date":"2026-09-15","status":"received"}
       ],
+      "credits": [],
+      "outflows": [
+        {"id":"group-eight-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","note":"₹80 paid from new eight-person group cash."},
+        {"id":"group-eight-taxi-mumbai-cha-raja-sep15","expenseId":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"date":"2026-09-15","category":"transport","label":"Taxi · Mumbai Cha Raja","status":"paid","note":"₹400 paid from new eight-person group cash."}
+      ],
+      "interPoolPayables": [
+        {"id":"group-eight-payable-old-pool-pass-sep15","amountPaise":24000,"date":"2026-09-15","toGroupFundId":"group-fund-six-sep14","expenseId":"expense-mumbai-cha-raja-pass-sep15","status":"due","label":"Reimburse old pool · Mumbai Cha Raja pass","note":"Old six-person pool paid the ₹240 pass on behalf of this new account. Keep ₹240 reserved until it is physically returned to the old pool."}
+      ],
+      "charges": [
+        {"id":"group-eight-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"]},
+        {"id":"group-eight-taxi-mumbai-cha-raja-sep15","expenseId":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"date":"2026-09-15","category":"transport","label":"Taxi · Mumbai Cha Raja","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"]},
+        {"id":"group-eight-pass-mumbai-cha-raja-sep15","expenseId":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"date":"2026-09-15","category":"admission","label":"Mumbai Cha Raja · pass","status":"paid","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"paymentSourceGroupFundId":"group-fund-six-sep14","handledByMemberId":"tirth","note":"₹240 paid from old six-person group money for the new eight-person group."}
+      ],
+      "cashCollectedPaise": 140000,
+      "cashPaidOutPaise": 48000,
+      "physicalCashBalancePaise": 92000,
+      "interPoolPayablePaise": 24000,
+      "spendableBalancePaise": 68000,
+      "targetTotalPaise": 160000,
+      "outstandingContributionPaise": 20000,
+      "outstandingMemberIds": ["tirth"],
       "totalChargedPaise": 72000,
-      "unfundedChargedPaise": 72000,
-      "perMemberAccruedSharePaise": 9000,
-      "note": "Fresh eight-person account. Current charges total ₹720, exactly ₹90 per person across eight members. No cash contribution or merchant payer has been supplied yet, so cash remains ₹0 and the ₹720 is tracked as accrued group charges rather than fabricated cash outflow or personal payment."
+      "fundedChargedPaise": 72000,
+      "unfundedChargedPaise": 0,
+      "perMemberExpenseSharePaise": 9000,
+      "note": "Seven members have contributed ₹200 = ₹1,400 collected. Tirth alone still owes ₹200. ₹480 has been paid directly from new-group cash, leaving ₹920 physically in the new pool. Reserve ₹240 of that to reimburse the old pool for the pass, so only ₹680 is currently free to spend. Once Tirth contributes, free cash becomes ₹880 if no new expenses occur."
     }
   },
   "members": [
     {"id":"neet","name":"Neet","initials":"N"}
   ],
   "expenses": [
-    {"id":"expense-water-80-sep15","amountPaise":8000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"food","date":"2026-09-15","label":"Water bottle","status":"charged","budgetScope":"core","fundingSource":"groupFundAccrued","groupFundId":"group-fund-eight-sep15","groupFundChargeId":"group-eight-water-80-sep15","note":"₹80 belongs to the new eight-person group account. Funding source/payer has not been supplied, so it is accrued rather than falsely marked as a cash outflow."},
-    {"id":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"transport","date":"2026-09-15","label":"Taxi · Mumbai Cha Raja","status":"charged","budgetScope":"core","fundingSource":"groupFundAccrued","groupFundId":"group-fund-eight-sep15","groupFundChargeId":"group-eight-taxi-mumbai-cha-raja-sep15","note":"₹400 taxi belongs to the new eight-person group account. Funding source/payer has not been supplied, so it is accrued rather than falsely marked as a cash outflow."},
-    {"id":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"admission","date":"2026-09-15","label":"Mumbai Cha Raja · pass","status":"charged","budgetScope":"core","fundingSource":"groupFundAccrued","groupFundId":"group-fund-eight-sep15","groupFundChargeId":"group-eight-pass-mumbai-cha-raja-sep15","note":"₹240 pass belongs to the new eight-person group account. Funding source/payer has not been supplied, so it is accrued rather than falsely marked as a cash outflow."},
-    {"id":"expense-cash-reconciliation-sep15","status":"reconciliation","budgetScope":"audit","note":"Cash-control variance only. This ₹462 record reconciles physical cash in the closed six-person pool but is not a confirmed merchant expense and must not be counted as confirmed trip spend."
+    {"id":"expense-water-80-sep15","amountPaise":8000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"food","date":"2026-09-15","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","groupFundOutflowId":"group-eight-water-80-sep15","note":"₹80 paid from the new eight-person group cash."},
+    {"id":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"transport","date":"2026-09-15","label":"Taxi · Mumbai Cha Raja","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","groupFundOutflowId":"group-eight-taxi-mumbai-cha-raja-sep15","note":"₹400 paid from the new eight-person group cash."},
+    {"id":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"admission","date":"2026-09-15","label":"Mumbai Cha Raja · pass","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-eight-sep15","paymentSourceGroupFundId":"group-fund-six-sep14","handledByMemberId":"tirth","note":"₹240 pass is a new eight-person group expense, but the merchant payment came from old six-person group money handled by Tirth. New group owes ₹240 back to old group; this does not count as Tirth's ₹200 new-group contribution."},
+    {"id":"expense-cash-reconciliation-sep15","status":"reconciliation","budgetScope":"audit","note":"Cash-control variance only. This ₹462 record belongs to the historical six-person pool and is not a confirmed merchant expense."
     }
   ],
   "signals": [
-    {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"Active 8-person group account: ₹720 charged so far (₹90 each); ₹0 cash contributions recorded yet","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"},
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old 6-person pool remains closed at ₹5,200 observed cash; unresolved historical variance remains ₹462","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
+    {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person account: ₹1,400 collected; Tirth ₹200 due; ₹920 physical cash; reserve ₹240 for old-pool pass reimbursement; ₹680 free to spend","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"},
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool advanced ₹240 for the new group's pass; current cash ₹4,960 + ₹240 receivable = ₹5,200 economic balance; historical ₹462 variance still unresolved","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
   ]
 }
