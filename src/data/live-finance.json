@@ -2,8 +2,23 @@
   "schemaVersion": 1,
   "finance": {
     "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
-    "scopeNote": "The active eight-person account is Vyas, Tirth, Nishit, Milan, Het, Jugal, Pratham and Neet with a ₹200 contribution target each. Seven members contributed ₹200 cash. Milan's ₹200 cash contribution was physically funded by Vyas Devgna and is part of Milan's trip-end repayment obligation to Vyas. Tirth paid ₹240 for the Mumbai Cha Raja pass: ₹200 of that settles his group-account contribution and only the remaining ₹40 is an advance owed back to him. The ₹400 taxi is two ₹200 taxis: one paid from the old six-person pool and one paid personally by Pratham. The ₹80 water is paid from new-group cash.",
+    "scopeNote": "TripOS maintains two separate group-account ledgers. The historical six-person pool remains closed and auditable; the active eight-person account has its own cash, charges and payables. Inter-account money is represented only by explicit linked receivable/payable records. Vyas Devgna covers all Milan trip costs, but those are personal Milan → Vyas liabilities and do not merge either group account.",
     "activeGroupFundId": "group-fund-eight-sep15",
+    "interAccountLinks": [
+      {
+        "id": "inter-account-old-to-active-taxi-sep15",
+        "kind": "advance",
+        "fromGroupFundId": "group-fund-six-sep14",
+        "toGroupFundId": "group-fund-eight-sep15",
+        "amountPaise": 20000,
+        "date": "2026-09-15",
+        "expenseId": "expense-taxi-mumbai-cha-raja-old-pool-sep15",
+        "receivableRecordId": "old-pool-advance-taxi-mumbai-cha-raja-sep15",
+        "payableRecordId": "group-eight-payable-old-pool-taxi-sep15",
+        "status": "due",
+        "note": "The old six-person pool physically paid ₹200 for one taxi belonging to the active eight-person account. Old pool carries a ₹200 receivable and active pool carries a matching ₹200 payable until reimbursement."
+      }
+    ],
     "memberCoveragePolicies": [
       {
         "id": "vyas-covers-milan-trip",
@@ -13,7 +28,43 @@
         "settlementTiming": "after-trip",
         "status": "active",
         "currentKnownLiabilityPaise": 377875,
-        "note": "Vyas Devgna is covering all of Milan's Mumbai-trip costs. Current known Milan → Vyas liability is ₹3,778.75: ₹3,000 old six-person group contribution + ₹200 active eight-person group contribution + ₹414.75 outbound-train share + ₹164 pre-trip dinner share. Any later Milan cost paid/fronted by Vyas must be added to this trip-end liability."
+        "currentKnownLiabilityBreakdown": [
+          {
+            "id": "milan-old-group-contribution",
+            "label": "Old 6-person group contribution",
+            "amountPaise": 300000,
+            "sourceType": "group-contribution-advance",
+            "sourceGroupFundId": "group-fund-six-sep14",
+            "sourceRecordIds": ["group-fund-milan-morning-sep14", "group-fund-milan-topup-sep14"],
+            "status": "due"
+          },
+          {
+            "id": "milan-active-group-contribution",
+            "label": "Active 8-person group contribution",
+            "amountPaise": 20000,
+            "sourceType": "group-contribution-advance",
+            "sourceGroupFundId": "group-fund-eight-sep15",
+            "sourceRecordIds": ["group-eight-contribution-milan-sep15"],
+            "status": "due"
+          },
+          {
+            "id": "milan-train-shares",
+            "label": "Outbound + return train shares",
+            "amountPaise": 41475,
+            "sourceType": "personal-expense-share",
+            "sourceRecordIds": ["expense-outbound-rail", "expense-return-rail"],
+            "status": "due"
+          },
+          {
+            "id": "milan-pretrip-dinner-share",
+            "label": "Pre-trip dinner share",
+            "amountPaise": 16400,
+            "sourceType": "personal-expense-share",
+            "sourceRecordIds": ["expense-pretrip-dinner-sep13"],
+            "status": "due"
+          }
+        ],
+        "note": "Vyas Devgna is covering all of Milan's Mumbai-trip costs. The current known Milan → Vyas liability is ₹3,778.75. Future Milan costs paid or fronted by Vyas must be appended to this breakdown and added to the trip-end liability, without changing either group's cash unless that specific transaction belongs to a group account."
       }
     ],
     "groupFundPatch": {
@@ -109,8 +160,8 @@
     }
   ],
   "signals": [
-    {"id":"milan-covered-by-vyas","type":"finance","label":"Devgna covers all Milan trip costs; current known Milan → Devgna trip-end repayment ₹3,778.75, including both group contributions, train share and pre-trip dinner","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
+    {"id":"milan-covered-by-vyas","type":"finance","label":"Devgna covers all Milan trip costs; current known Milan → Devgna trip-end repayment ₹3,778.75 with source-by-source records across both group ledgers and personal expenses","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
     {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person account fully funded: ₹1,400 cash + ₹200 Tirth pass credit; ₹1,320 physical cash; reserve ₹440 (old pool ₹200 + Pratham ₹200 + Tirth ₹40); ₹880 free","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool advanced ₹200 for one new-group taxi; current cash ₹5,000 + ₹200 receivable = ₹5,200 economic balance; historical ₹462 variance still unresolved","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool is separate: current cash ₹5,000 + ₹200 receivable from active pool = ₹5,200 economic balance; historical ₹462 variance remains unresolved","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
   ]
 }
