@@ -123,15 +123,15 @@ export default function Finance({ expenses, setSheet }) {
     activePhysicalCash = Number.isSafeInteger(activeFund?.physicalCashBalancePaise)
       ? activeFund.physicalCashBalancePaise
       : activeCashCollected - activeCashOut,
-    activeReserved = Number.isSafeInteger(activeFund?.reservedPayablesPaise)
-      ? activeFund.reservedPayablesPaise
+    activeEndSettlement = Number.isSafeInteger(activeFund?.endSettlementPayablesPaise)
+      ? activeFund.endSettlementPayablesPaise
       : [...activePoolPayables, ...activeMemberPayables].reduce(
           (sum, item) => sum + safeAmount(item.amountPaise),
           0,
         ),
     activeSpendable = Number.isSafeInteger(activeFund?.spendableBalancePaise)
       ? activeFund.spendableBalancePaise
-      : Math.max(0, activePhysicalCash - activeReserved),
+      : Math.max(0, activePhysicalCash),
     activeContributionByMember = Object.fromEntries(
       activeMembers.map((id) => [id, 0]),
     ),
@@ -238,14 +238,14 @@ export default function Finance({ expenses, setSheet }) {
         id: item.id,
         label: item.label || "Inter-account payable",
         amountPaise: item.amountPaise,
-        meta: `${item.date} · reserved · ${item.status} · payable to previous 6-person pool`,
+        meta: `${item.date} · trip-end settlement · ${item.status} · payable to previous 6-person pool`,
         note: item.note,
       })),
       ...activeMemberPayables.map((item) => ({
         id: item.id,
         label: item.label || `Reimburse ${firstName(item.memberId)}`,
         amountPaise: item.amountPaise,
-        meta: `${item.date} · reserved · ${item.status} · payable to ${firstName(item.memberId)}`,
+        meta: `${item.date} · trip-end settlement · ${item.status} · payable to ${firstName(item.memberId)}`,
         note: item.note,
       })),
     ],
@@ -395,7 +395,7 @@ export default function Finance({ expenses, setSheet }) {
               borderColor: accountView === "active" ? "#9fb6cf" : undefined,
             }}
           >
-            8-person · ACTIVE · {formatINR(activeSpendable)} free
+            8-person · ACTIVE · {formatINR(activeSpendable)} spendable
           </button>
           <button
             className="finance-secondary-button"
@@ -423,14 +423,14 @@ export default function Finance({ expenses, setSheet }) {
               <span>ACTIVE · 8 PEOPLE</span>
               <h2>Current group account</h2>
             </div>
-            <b>{formatINR(activeSpendable)} FREE</b>
+            <b>{formatINR(activeSpendable)} SPENDABLE</b>
           </div>
 
           <div className="finance-cash-hero">
             <span>SPENDABLE NOW</span>
             <strong>{formatINR(activeSpendable)}</strong>
             <small>
-              {formatINR(activePhysicalCash)} physical cash − {formatINR(activeReserved)} reserved liabilities = {formatINR(activeSpendable)} genuinely free.
+              All {formatINR(activePhysicalCash)} physical cash on hand is spendable during the trip. {formatINR(activeEndSettlement)} of reimbursements is tracked separately for trip-end settlement and is not held back as a reserve.
             </small>
           </div>
 
@@ -441,14 +441,14 @@ export default function Finance({ expenses, setSheet }) {
               <small>physical active-group cash now</small>
             </article>
             <article className="finance-overview-card">
-              <span>RESERVED</span>
-              <strong>{formatINR(activeReserved)}</strong>
-              <small>old pool + Pratham + Tirth</small>
+              <span>END SETTLEMENT</span>
+              <strong>{formatINR(activeEndSettlement)}</strong>
+              <small>tracked separately · not withheld</small>
             </article>
             <article className="finance-overview-card primary">
               <span>SPENDABLE</span>
               <strong>{formatINR(activeSpendable)}</strong>
-              <small>safe amount available for new spend</small>
+              <small>equals cash on hand during the trip</small>
             </article>
           </div>
 
@@ -535,8 +535,8 @@ export default function Finance({ expenses, setSheet }) {
           </div>
 
           <div className="finance-settlement-block">
-            <div className="finance-subhead"><b>Reserved liabilities</b><span>{formatINR(activeReserved)} total</span></div>
-            <LedgerRows rows={activeLiabilityRows} empty="No reserved liabilities." />
+            <div className="finance-subhead"><b>End-of-trip settlements</b><span>{formatINR(activeEndSettlement)} tracked</span></div>
+            <LedgerRows rows={activeLiabilityRows} empty="No trip-end settlements." />
           </div>
 
           {interAccountLinks.map((link) => (
@@ -914,7 +914,7 @@ export default function Finance({ expenses, setSheet }) {
               <div><span>HISTORICAL VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
             </div>
             <p className="finance-footnote">
-              Active and historical group cash are audited independently. The historical ₹462 variance remains explicitly unresolved instead of being converted into fake merchant spending.
+              Active cash on hand is fully spendable during the trip. End-of-trip reimbursements remain recorded as liabilities without reducing the live cash balance. Active and historical group cash are audited independently, and the historical ₹462 variance remains explicitly unresolved instead of being converted into fake merchant spending.
             </p>
           </section>
         </div>
