@@ -49,6 +49,7 @@ export default function Finance({ expenses, setSheet }) {
     [copied, setCopied] = useState(null),
     settlement = snapshot.settlement,
     groupFund = data.finance?.groupFund,
+    legacyGroupFund = data.finance?.legacyGroupFund,
     receivedFundContributions = (groupFund?.contributions || []).filter(
       (item) => item.status === "received",
     ),
@@ -57,6 +58,12 @@ export default function Finance({ expenses, setSheet }) {
     ),
     paidFundOutflows = (groupFund?.outflows || []).filter(
       (item) => item.status === "paid",
+    ),
+    interPoolPayables = (groupFund?.interPoolPayables || []).filter(
+      (item) => item.status === "due",
+    ),
+    memberPayables = (groupFund?.memberPayables || []).filter(
+      (item) => item.status === "due",
     ),
     groupFundMembers = groupFund?.targetMemberIds || snapshot.budgetMembers,
     groupFundTargetPerMemberPaise = safeFundAmount(
@@ -122,6 +129,20 @@ export default function Finance({ expenses, setSheet }) {
       0,
     ),
     groupFundBalancePaise = groupFundCollectedPaise - groupFundSpentPaise,
+    groupFundPhysicalCashPaise = Number.isSafeInteger(
+      groupFund?.physicalCashBalancePaise,
+    )
+      ? groupFund.physicalCashBalancePaise
+      : groupFundBalancePaise,
+    groupFundReservedPaise = Number.isSafeInteger(groupFund?.reservedPayablesPaise)
+      ? groupFund.reservedPayablesPaise
+      : [...interPoolPayables, ...memberPayables].reduce(
+          (sum, item) => sum + safeFundAmount(item.amountPaise),
+          0,
+        ),
+    groupFundSpendablePaise = Number.isSafeInteger(groupFund?.spendableBalancePaise)
+      ? groupFund.spendableBalancePaise
+      : Math.max(0, groupFundPhysicalCashPaise - groupFundReservedPaise),
     groupFundTargetPaise =
       groupFundTargetPerMemberPaise * groupFundMembers.length,
     groupFundOutstandingByMember = Object.fromEntries(
@@ -184,7 +205,15 @@ export default function Finance({ expenses, setSheet }) {
     displayOutflows = [...paidFundOutflows].reverse(),
     poolDebtors = groupFundMembers.filter(
       (id) => (groupFundOutstandingByMember[id] || 0) > 0,
-    );
+    ),
+    payableSummary = [
+      ...interPoolPayables.map(
+        (item) => `${item.label || "Old group"} ${formatINR(item.amountPaise)}`,
+      ),
+      ...memberPayables.map(
+        (item) => `${firstName(item.memberId)} ${formatINR(item.amountPaise)}`,
+      ),
+    ].join(" · ");
 
   const copySettlement = async (transfer) => {
     const from = member(transfer.from)?.name,
@@ -211,16 +240,16 @@ export default function Finance({ expenses, setSheet }) {
           <div className="finance-section-heading">
             <div>
               <span>01 · CASH</span>
-              <h2>Shared cash available</h2>
+              <h2>Shared cash</h2>
             </div>
-            <b>{formatINR(groupFundBalancePaise)}</b>
+            <b>{formatINR(groupFundSpendablePaise)}</b>
           </div>
 
           <div className="finance-cash-hero">
-            <span>CURRENT GROUP CASH</span>
-            <strong>{formatINR(groupFundBalancePaise)}</strong>
+            <span>SPENDABLE NOW</span>
+            <strong>{formatINR(groupFundSpendablePaise)}</strong>
             <small>
-              This is money still available to spend. Direct expenses credited to a member's pool target do not change this cash balance.
+              {formatINR(groupFundPhysicalCashPaise)} is physically held. {formatINR(groupFundReservedPaise)} is reserved for known reimbursements and is not free to spend.
             </small>
           </div>
 
@@ -236,8 +265,8 @@ export default function Finance({ expenses, setSheet }) {
             </div>
             <i>=</i>
             <div className="result">
-              <span>CASH LEFT</span>
-              <b>{formatINR(groupFundBalancePaise)}</b>
+              <span>PHYSICAL CASH</span>
+              <b>{formatINR(groupFundPhysicalCashPaise)}</b>
             </div>
           </div>
 
@@ -247,6 +276,13 @@ export default function Finance({ expenses, setSheet }) {
             </span>
             <b>{formatINR(groupFundOutstandingPaise)} still to collect</b>
           </div>
+
+          {groupFundReservedPaise > 0 && (
+            <div className="finance-callout">
+              <b>{formatINR(groupFundReservedPaise)} of current cash is already reserved.</b>
+              <span>{payableSummary}. These are liabilities of the active group account, so only {formatINR(groupFundSpendablePaise)} is presently free to spend.</span>
+            </div>
+          )}
 
           {displayOutflows.length > 0 && (
             <div className="finance-cash-subsection">
@@ -304,7 +340,7 @@ export default function Finance({ expenses, setSheet }) {
                       ))}
                     </div>
                     <div className="finance-contribution-amount">
-                      <strong>{formatINR(collected)}</strong>
+                      <strong>{formatINR(collected + credit)}</strong>
                       <span className={outstanding > 0 ? "status-due" : "status-paid"}>
                         {outstanding > 0 ? "DUE" : "DONE"}
                       </span>
@@ -342,6 +378,15 @@ export default function Finance({ expenses, setSheet }) {
               </span>
             </div>
           )}
+
+          {legacyGroupFund && Number.isSafeInteger(legacyGroupFund.currentPhysicalBalancePaise) && (
+            <div className="finance-callout">
+              <b>Previous 6-person pool is separate.</b>
+              <span>
+                {formatINR(legacyGroupFund.currentPhysicalBalancePaise)} physical cash + {formatINR(legacyGroupFund.interPoolReceivablePaise || 0)} receivable = {formatINR(legacyGroupFund.economicBalancePaise || 0)} economic balance. Historical cash variance remains {formatINR(Math.abs(legacyGroupFund.auditVariancePaise || 0))} unresolved.
+              </span>
+            </div>
+          )}
         </DockAwarePanel>
       )}
 
@@ -365,12 +410,12 @@ export default function Finance({ expenses, setSheet }) {
           <article className="finance-overview-card cash">
             <span>FROM GROUP CASH</span>
             <strong>{formatINR(groupFundExpensePaise)}</strong>
-            <small>merchant payments made from pooled cash</small>
+            <small>merchant payments made from the active pooled cash</small>
           </article>
           <article className="finance-overview-card">
             <span>PAID DIRECTLY</span>
             <strong>{formatINR(directlyFundedExpensePaise)}</strong>
-            <small>paid personally by members, including pool credits</small>
+            <small>paid personally or advanced by another account/member</small>
           </article>
         </div>
 
@@ -379,10 +424,14 @@ export default function Finance({ expenses, setSheet }) {
             const payer = member(expense.payerId),
               payerLabel =
                 expense.fundingSource === "groupFund"
-                  ? "Group cash"
+                  ? "Active group cash"
                   : expense.fundingSource === "groupFundMemberCredit"
                     ? `${payer?.name || "Member"} · credited to pool target`
-                    : payer?.name || "Unknown payer",
+                    : expense.fundingSource === "groupFundMemberAdvance"
+                      ? `${payer?.name || "Member"} · paid for active group`
+                      : expense.fundingSource === "groupFundExternalAdvance"
+                        ? "Previous 6-person pool · reimbursable by active group"
+                        : payer?.name || "Unknown payer",
               scope = expenseBudgetScope(data, expense),
               components = Object.entries(expense.componentsPaise || {}).filter(
                 ([, value]) => Number.isSafeInteger(value) && value > 0,
@@ -432,17 +481,22 @@ export default function Finance({ expenses, setSheet }) {
             <span>03 · SETTLEMENTS</span>
             <h2>Money still owed</h2>
           </div>
-          <b>
-            {formatINR(groupFundOutstandingPaise)} TO POOL
-          </b>
+          <b>{formatINR(groupFundReservedPaise)} GROUP PAYABLES</b>
         </div>
 
         <div className="finance-settlement-explainer">
-          <b>Two different kinds of money can still be due.</b>
+          <b>Contribution dues, group-account reimbursements and friend balances are separate.</b>
           <span>
-            “To group cash” is the member's remaining pool target after both cash deposits and approved direct-expense credits. “Between friends” covers personal expenses, reimbursements and money one friend fronted for another.
+            “To group cash” is the member's remaining contribution target. Group-account reimbursements are known liabilities already reserved from physical cash. “Between friends” covers personal settlement entries such as earlier advances.
           </span>
         </div>
+
+        {groupFundReservedPaise > 0 && (
+          <div className="finance-callout">
+            <b>Active group must reimburse {formatINR(groupFundReservedPaise)}.</b>
+            <span>{payableSummary}. These amounts are already excluded from the {formatINR(groupFundSpendablePaise)} spendable balance.</span>
+          </div>
+        )}
 
         <div className="finance-settlement-block">
           <div className="finance-subhead">
@@ -515,7 +569,7 @@ export default function Finance({ expenses, setSheet }) {
         </div>
 
         <p className="finance-footnote">
-          A person may appear in both A and B. That is not double-counting: one amount belongs to the shared pool, while the other belongs to a specific friend.
+          Group-account payables are not merged into personal settlement. This prevents the ₹200 old-pool taxi advance, Pratham's ₹200 taxi payment and Tirth's ₹40 extra pass payment from being double-counted.
         </p>
       </DockAwarePanel>
 
@@ -528,7 +582,7 @@ export default function Finance({ expenses, setSheet }) {
           <b>EXCLUDES POOL DUES</b>
         </div>
         <p className="finance-section-copy">
-          This table is only the personal settlement side. Pool contributions and direct-expense credits are shown separately above.
+          This table is only the personal settlement side. Pool contributions, direct-expense credits and active group-account reimbursements are shown separately above.
         </p>
 
         <div className="finance-balance-list">
@@ -682,7 +736,7 @@ export default function Finance({ expenses, setSheet }) {
               </div>
             </div>
             <p className="finance-footnote">
-              All calculations use integer paise. Shared cash, direct expense credits and person-to-person balances are reconciled separately so nothing is counted twice.
+              All calculations use integer paise. Shared cash, direct expense credits, active group-account reimbursements and person-to-person balances are kept separate so nothing is counted twice.
             </p>
           </section>
         </div>
