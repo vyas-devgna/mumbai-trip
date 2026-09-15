@@ -86,7 +86,7 @@ const collectedPaise = contributions.reduce((sum, item) => sum + item.amountPais
 const spentPaise = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashBalancePaise = collectedPaise - spentPaise;
 assert(cashBalancePaise >= 0, "group cash cannot be negative");
-assert(cashBalancePaise === 522000, "reconciled physical group cash must be ₹5,220");
+assert(cashBalancePaise === 520000, "reconciled physical group cash must be ₹5,200");
 
 const outstandingByMember = Object.fromEntries(
   financeMembers.map((id) => [id, Math.max(0, fund.targetPerMemberPaise - (cashByMember[id] || 0) - (creditByMember[id] || 0))]),
@@ -119,7 +119,7 @@ assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "group
 const sep15TeaCoffee = expenseById.get("expense-tea-coffee-sep15");
 assert(sep15TeaCoffee?.amountPaise === 7000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must total ₹70 from group cash");
 const sep15Reconciliation = expenseById.get("expense-cash-reconciliation-sep15");
-assert(sep15Reconciliation?.amountPaise === 44200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹442 unidentified variance");
+assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹462 unidentified variance");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
