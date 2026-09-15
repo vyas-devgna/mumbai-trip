@@ -20,19 +20,42 @@ assert(coveragePolicy?.scope === "all-trip-costs", "Milan coverage policy must c
 assert(coveragePolicy?.settlementTiming === "after-trip", "Milan must repay Devgna after the trip");
 assert(coveragePolicy?.status === "active", "Milan coverage policy must remain active during the trip");
 assert(coveragePolicy?.currentKnownLiabilityPaise === 377875, "current known Milan → Devgna liability must be ₹3,778.75");
+const liabilityBreakdown = coveragePolicy?.currentKnownLiabilityBreakdown || [];
+assert(liabilityBreakdown.length === 4, "Milan liability must have four current source records");
+assert(liabilityBreakdown.reduce((sum, item) => sum + (item.amountPaise || 0), 0) === 377875, "Milan liability breakdown must sum exactly to ₹3,778.75");
+const liabilityById = new Map(liabilityBreakdown.map((item) => [item.id, item]));
+assert(liabilityById.get("milan-old-group-contribution")?.amountPaise === 300000, "Milan old-group Devgna advance must be ₹3,000");
+assert(liabilityById.get("milan-old-group-contribution")?.sourceGroupFundId === "group-fund-six-sep14", "Milan ₹3,000 advance must point to old six-person pool");
+assert(liabilityById.get("milan-active-group-contribution")?.amountPaise === 20000, "Milan active-group Devgna advance must be ₹200");
+assert(liabilityById.get("milan-active-group-contribution")?.sourceGroupFundId === "group-fund-eight-sep15", "Milan ₹200 advance must point to active eight-person pool");
+assert(liabilityById.get("milan-train-shares")?.amountPaise === 41475, "Milan train liability must be ₹414.75");
+assert(liabilityById.get("milan-pretrip-dinner-share")?.amountPaise === 16400, "Milan pre-trip dinner liability must be ₹164");
+for (const item of liabilityBreakdown) assert(item.status === "due", `${item.id}: Milan liability component must remain due until repayment`);
+
+const interAccountLink = (live.finance?.interAccountLinks || []).find((item) => item.id === "inter-account-old-to-active-taxi-sep15");
+assert(interAccountLink?.kind === "advance", "inter-account taxi link must be an advance");
+assert(interAccountLink?.fromGroupFundId === "group-fund-six-sep14", "inter-account taxi link must originate from old pool");
+assert(interAccountLink?.toGroupFundId === "group-fund-eight-sep15", "inter-account taxi link must point to active pool");
+assert(interAccountLink?.amountPaise === 20000, "inter-account taxi link must be ₹200");
+assert(interAccountLink?.status === "due", "inter-account taxi link must remain due until reimbursement");
+assert(interAccountLink?.expenseId === "expense-taxi-mumbai-cha-raja-old-pool-sep15", "inter-account taxi link expense mismatch");
 
 const oldBase = historical.finance?.groupFund || {};
 const patch = live.finance?.groupFundPatch || {};
 const oldHistoricalOutflows = (oldBase.outflows || []).filter((item) => item.status === "paid");
+const oldConfirmedMerchantOutflows = oldHistoricalOutflows.filter((item) => item.category !== "reconciliation");
 const oldContributions = (oldBase.contributions || []).filter((item) => item.status === "received");
 const oldCollected = oldContributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const oldHistoricalSpent = oldHistoricalOutflows.reduce((sum, item) => sum + item.amountPaise, 0);
+const oldConfirmedMerchantSpent = oldConfirmedMerchantOutflows.reduce((sum, item) => sum + item.amountPaise, 0);
 const oldBoundaryBalance = oldCollected - oldHistoricalSpent;
 
 assert(patch.id === "group-fund-six-sep14", "historical six-person pool id mismatch");
 assert(oldCollected === 1740000, `historical pool cash collected ${oldCollected}, expected ₹17,400`);
-assert(oldHistoricalSpent === 1220000, `historical pool historical outflows ${oldHistoricalSpent}, expected ₹12,200 including reconciliation`);
+assert(oldConfirmedMerchantSpent === 1173800, `historical confirmed merchant outflows ${oldConfirmedMerchantSpent}, expected ₹11,738`);
+assert(oldHistoricalSpent === 1220000, `historical pool accounting outflows ${oldHistoricalSpent}, expected ₹12,200 including reconciliation`);
 assert(oldBoundaryBalance === 520000, `historical boundary balance ${oldBoundaryBalance}, expected ₹5,200`);
+assert(oldCollected - oldConfirmedMerchantSpent + patch.auditVariancePaise === 520000, "historical confirmed spend plus -₹462 variance must reconcile to ₹5,200 boundary");
 assert(patch.closedObservedBalancePaise === 520000, "old-pool boundary must remain ₹5,200");
 assert(patch.auditVariancePaise === -46200, "historical audit variance must remain -₹462");
 assert(patch.postCloseAdvancePaise === 20000, "old pool must advance exactly ₹200 for one new-group taxi");
@@ -43,6 +66,7 @@ const oldAdvance = (patch.postCloseAdvances || []).find((item) => item.id === "o
 assert(oldAdvance?.amountPaise === 20000, "old-pool taxi advance must be ₹200");
 assert(oldAdvance?.toGroupFundId === "group-fund-eight-sep15", "old-pool taxi advance must belong to new eight-person account");
 assert(oldAdvance?.status === "receivable", "old-pool taxi advance must remain receivable until reimbursed");
+assert(interAccountLink?.receivableRecordId === oldAdvance?.id, "inter-account link must reference old-pool receivable record");
 
 const active = live.finance?.activeGroupFund;
 assert(active?.id === "group-fund-eight-sep15", "active eight-person account id mismatch");
@@ -88,6 +112,8 @@ const poolPayable = (active?.interPoolPayables || []).find((item) => item.id ===
 assert(poolPayable?.amountPaise === 20000, "new group must owe old pool ₹200 for taxi");
 assert(poolPayable?.toGroupFundId === "group-fund-six-sep14", "₹200 inter-pool payable must point to old pool");
 assert(poolPayable?.status === "due", "old-pool taxi reimbursement must remain due until physically settled");
+assert(interAccountLink?.payableRecordId === poolPayable?.id, "inter-account link must reference active-pool payable record");
+assert(interAccountLink?.amountPaise === oldAdvance?.amountPaise && interAccountLink?.amountPaise === poolPayable?.amountPaise, "inter-account link, receivable and payable must have identical amounts");
 
 const memberPayables = active?.memberPayables || [];
 const prathamPayable = memberPayables.find((item) => item.id === "group-eight-payable-pratham-taxi-sep15");
@@ -143,4 +169,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("Live finance valid: Milan active contribution funded by Devgna; current Milan → Devgna trip-end liability ₹3,778.75; 8-person pool ₹880 free");
+console.log("Live finance valid: separate 6-person and 8-person ledgers; linked ₹200 inter-account advance; Milan → Devgna liability ₹3,778.75; active pool ₹880 free");
