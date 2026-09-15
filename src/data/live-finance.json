@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "finance": {
     "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
-    "scopeNote": "TripOS maintains two separate group-account ledgers. The historical six-person pool remains closed and auditable; the active eight-person account has its own cash, charges and end-of-trip settlement records. Active cash on hand is fully spendable during the trip. Reimbursements and inter-account settlements are tracked for trip end and do not act as a contra-reserve against current cash. A second ₹500-per-member funding round is active in the eight-person account; Nishit and Het remain ₹500 outstanding. Jugal handed over ₹1,000 total in this round: ₹500 belongs to the active account and ₹500 was placed only into the historical account to operationally cover the earlier cash shortfall.",
+    "scopeNote": "TripOS maintains two separate group-account ledgers. The historical six-person pool remains closed and auditable; the active eight-person account has its own cash, charges and end-of-trip settlement records. Active cash on hand is fully spendable during the trip. Reimbursements and inter-account settlements are tracked for trip end and do not act as a contra-reserve against current cash. A second ₹500-per-member funding round is active in the eight-person account; Nishit and Het remain ₹500 outstanding. Jugal handed over ₹1,000 total in this round: ₹500 belongs to the active account and ₹500 belongs to the historical account as the replacement for a Sep 14 morning ₹500 that was never actually received.",
     "activeGroupFundId": "group-fund-eight-sep15",
     "interAccountLinks": [
       {
@@ -41,25 +41,29 @@
       "id": "group-fund-six-sep14",
       "status": "historical",
       "closedAt": "2026-09-15T08:45:00+05:30",
-      "closedObservedBalancePaise": 520000,
-      "auditVariancePaise": -46200,
-      "cashShortfallStatus": "operationally-covered",
-      "cashShortfallCoveragePaise": 46200,
-      "cashShortfallCoverageExcessPaise": 3800,
+      "closedObservedBalancePaise": 470000,
+      "historicalAuditVariancePaise": -46200,
+      "auditVariancePaise": -50000,
+      "cashShortfallStatus": "current-variance-open",
       "postCloseAdvancePaise": 20000,
       "postCloseContributionPaise": 50000,
-      "currentPhysicalBalancePaise": 550000,
+      "expectedPhysicalBalancePaise": 500000,
+      "currentObservedBalancePaise": 450000,
+      "currentCashVariancePaise": -50000,
+      "currentPhysicalBalancePaise": 450000,
       "interPoolReceivablePaise": 20000,
-      "economicBalancePaise": 570000,
-      "note": "The old six-person pool closed at the confirmed ₹5,200 physical boundary and later paid ₹200 for one active-group taxi, reducing physical cash to ₹5,000. Jugal then placed ₹500 of his ₹1,000 handover into this old account specifically to cover the earlier cash-shortfall problem, bringing current old-pool physical cash to ₹5,500. The original ₹462 discrepancy remains retained as audit history/provenance; the ₹500 recovery covers it operationally and leaves ₹38 extra cash beyond that historical shortfall. A separate ₹200 receivable from the active pool remains due at trip end, so economic balance is ₹5,700.",
+      "economicBalancePaise": 470000,
+      "expectedEconomicBalancePaise": 520000,
+      "note": "Correction: Jugal's previously recorded Sep 14 morning ₹500 was never physically received. Removing that phantom collection changes the corrected historical checkpoint from ₹5,200 to ₹4,700 while preserving the historical ₹462 unidentified variance: ₹16,900 real cash collections − ₹11,738 known merchant spend = ₹5,162, then −₹462 audit variance = ₹4,700. The old pool then paid ₹200 for the active-group taxi, leaving ₹4,500. Jugal's later ₹500 old-pool payment is the replacement for his missing morning contribution, so expected current cash becomes ₹5,000. The latest physical count is ₹4,500, creating a new current unexplained variance of −₹500. The separate ₹200 active-pool receivable makes observed economic balance ₹4,700; expected economic balance would be ₹5,200.",
       "contributions": [
-        {"id":"group-fund-jugal-shortfall-recovery-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"cash-shortfall-recovery","note":"₹500 of Jugal's ₹1,000 handover was separated from the new-group funding round and placed only into the historical six-person pool to cover the earlier cash-shortfall problem. The other ₹500 belongs to the active eight-person account."}
+        {"id":"group-fund-jugal-replacement-500-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"replacement-contribution","note":"₹500 of Jugal's ₹1,000 handover was placed into the old six-person account as the replacement for his Sep 14 morning ₹500 that was never actually received. It completes Jugal's original old-account contribution target; it is not extra cash beyond that target. The other ₹500 belongs to the active eight-person account."}
       ],
       "outflows": [],
       "postCloseAdvances": [
         {"id":"old-pool-advance-taxi-mumbai-cha-raja-sep15","expenseId":"expense-taxi-mumbai-cha-raja-old-pool-sep15","amountPaise":20000,"date":"2026-09-15","toGroupFundId":"group-fund-eight-sep15","status":"receivable","label":"Mumbai Cha Raja taxi · advanced for new group","note":"₹200 for one taxi was paid from old six-person group money for an expense belonging to the new eight-person account. New group owes ₹200 back to old group at trip-end settlement."}
       ],
-      "cashCheckpoint": {"date":"2026-09-15","observedBalancePaise":520000,"note":"Last confirmed old-pool physical cash count before the ₹200 inter-pool taxi advance and before Jugal's later ₹500 shortfall-recovery top-up was ₹5,200."}
+      "cashCheckpoint": {"date":"2026-09-15","observedBalancePaise":470000,"note":"Corrected historical checkpoint after removing Jugal's never-received Sep 14 morning ₹500. Before the later ₹200 inter-pool taxi advance and before Jugal's replacement ₹500, old-pool physical cash is ₹4,700."},
+      "currentCashCheckpoint": {"date":"2026-09-15","observedBalancePaise":450000,"expectedBalancePaise":500000,"variancePaise":-50000,"note":"Latest physical count is ₹4,500 versus ₹5,000 expected after the ₹200 taxi advance and Jugal's ₹500 replacement contribution. Current unexplained difference is ₹500."}
     },
     "activeGroupFund": {
       "id": "group-fund-eight-sep15",
@@ -83,7 +87,7 @@
         {"id":"group-eight-topup-vyas-500-sep15","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500"},
         {"id":"group-eight-topup-tirth-500-sep15","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500"},
         {"id":"group-eight-topup-milan-500-sep15","memberId":"milan","paidByMemberId":"milan","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500","note":"Milan paid this ₹500 round-2 contribution directly; it is not a Vyas-funded advance."},
-        {"id":"group-eight-topup-jugal-500-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500","note":"Jugal handed over ₹1,000 total. Exactly ₹500 belongs to this active account; the other ₹500 is recorded separately in the old six-person pool."},
+        {"id":"group-eight-topup-jugal-500-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500","note":"Jugal handed over ₹1,000 total. Exactly ₹500 belongs to this active account; the other ₹500 is recorded separately in the old six-person pool as the replacement for his never-received Sep 14 morning contribution."},
         {"id":"group-eight-topup-pratham-500-sep15","memberId":"pratham","paidByMemberId":"pratham","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500"},
         {"id":"group-eight-topup-neet-500-sep15","memberId":"neet","paidByMemberId":"neet","amountPaise":50000,"date":"2026-09-15","status":"received","phase":"round-2-500"}
       ],
@@ -132,7 +136,7 @@
       "fundedChargedPaise": 357000,
       "unfundedChargedPaise": 0,
       "perMemberExpenseSharePaise": 44625,
-      "note": "The active account has cumulative contribution targets of ₹700/person: the original ₹200 round plus a new ₹500 round. Round 2 cash has been received from Vyas, Tirth, Milan, Jugal, Pratham and Neet; Nishit and Het each remain ₹500 outstanding. Jugal's ₹1,000 handover is split strictly: ₹500 here and ₹500 in the historical pool. Total active cash collected is ₹4,400, plus ₹200 Tirth contribution credit = ₹4,600 effective contribution against a ₹5,600 cumulative target. Direct active cash outflows now total ₹2,930, including the ₹2,430 dinner (₹1,510 + ₹620 + ₹300), leaving ₹1,470 physical cash; all ₹1,470 is spendable. The ₹440 end-of-trip settlements remain recorded separately and do not reduce spendable cash. Current active-group charges total ₹3,570, or ₹446.25 per person."
+      "note": "The active account has cumulative contribution targets of ₹700/person: the original ₹200 round plus a new ₹500 round. Round 2 cash has been received from Vyas, Tirth, Milan, Jugal, Pratham and Neet; Nishit and Het each remain ₹500 outstanding. Jugal's ₹1,000 handover is split strictly: ₹500 here and ₹500 in the historical pool as his replacement old-account contribution. Total active cash collected is ₹4,400, plus ₹200 Tirth contribution credit = ₹4,600 effective contribution against a ₹5,600 cumulative target. Direct active cash outflows total ₹2,930, including the ₹2,430 dinner (₹1,510 + ₹620 + ₹300), leaving ₹1,470 physical cash; all ₹1,470 is spendable. The ₹440 end-of-trip settlements remain recorded separately and do not reduce spendable cash. Current active-group charges total ₹3,570, or ₹446.25 per person."
     }
   },
   "members": [{"id":"neet","name":"Neet","initials":"N"}],
@@ -149,11 +153,12 @@
     {"id":"expense-mumbai-cha-raja-pass-sep15","amountPaise":24000,"participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"admission","date":"2026-09-15","label":"Mumbai Cha Raja · pass","status":"superseded","budgetScope":"core","note":"Superseded by ₹200 contribution-credit + ₹40 extra-advance rows for Tirth."},
     {"id":"expense-mumbai-cha-raja-pass-contribution-sep15","amountPaise":20000,"payerId":"tirth","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"admission","date":"2026-09-15","label":"Mumbai Cha Raja · pass · Tirth contribution portion","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberCredit","groupFundId":"group-fund-eight-sep15","groupFundCreditId":"group-eight-credit-tirth-pass-sep15","note":"₹200 of Tirth's ₹240 pass payment counts as his original ₹200 contribution to the new group expense account."},
     {"id":"expense-mumbai-cha-raja-pass-extra-sep15","amountPaise":4000,"payerId":"tirth","participantIds":["vyas","tirth","nishit","milan","het","jugal","pratham","neet"],"category":"admission","date":"2026-09-15","label":"Mumbai Cha Raja · pass · Tirth extra","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-eight-sep15","note":"Remaining ₹40 of Tirth's ₹240 pass payment is a recorded new-group expense and trip-end reimbursement to Tirth. It does not reduce current spendable cash."},
-    {"id":"expense-cash-reconciliation-sep15","status":"reconciliation","budgetScope":"audit","note":"Historical cash-control variance only. The original ₹462 discrepancy remains preserved as audit provenance even though Jugal's later ₹500 old-pool top-up operationally covers that shortfall. This row is not merchant spending."}
+    {"id":"expense-cash-reconciliation-sep15","status":"reconciliation","budgetScope":"audit","note":"Historical cash-control variance only. After correcting Jugal's never-received morning ₹500, the historical checkpoint is ₹4,700 and the original ₹462 unidentified variance remains preserved as audit provenance. After the ₹200 new-group taxi and Jugal's later ₹500 replacement contribution, expected old-pool cash is ₹5,000; latest physical count is ₹4,500, so the current unexplained difference is ₹500."
+    }
   ],
   "signals": [
     {"id":"milan-covered-by-vyas","type":"finance","label":"Known Milan → Devgna trip-end repayment remains ₹3,778.75; Milan paid the new ₹500 round-2 group contribution directly, so that top-up and group-funded dinner are not added to Devgna's advance balance","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
     {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person cumulative target ₹700/person: ₹4,400 cash + ₹200 Tirth credit received; Nishit and Het each ₹500 outstanding; after ₹2,430 dinner, ₹1,470 physical cash and all ₹1,470 spendable; ₹440 trip-end settlements tracked separately","severity":"info","status":"needs-refresh","lastVerifiedAt":"2026-09-15"},
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool separate: Jugal added ₹500 shortfall-recovery cash; current physical ₹5,500 + ₹200 active-pool receivable = ₹5,700 economic balance; original ₹462 discrepancy retained only as audit history and is operationally covered","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool corrected: Jugal's Sep 14 morning ₹500 was never received; his later ₹500 replaces it. Expected current cash ₹5,000, physical count ₹4,500, current unexplained variance −₹500; historical ₹462 audit variance retained separately; ₹200 active-pool receivable remains due","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
   ]
 }
