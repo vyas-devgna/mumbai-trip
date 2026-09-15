@@ -61,12 +61,13 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 
   for (const expense of expenses) {
     if (expense.status !== "paid") continue;
-    // Shared-account purchases and member-paid expenses credited against the
-    // shared-account target are real trip spend, but neither belongs in the
-    // friend-to-friend settlement engine. They are reconciled by the pool ledger.
+    // Shared-account purchases, contribution credits and temporary advances
+    // are settled by the group-account ledger rather than friend-to-friend.
     if (
       expense.fundingSource === "groupFund" ||
-      expense.fundingSource === "groupFundMemberCredit"
+      expense.fundingSource === "groupFundMemberCredit" ||
+      expense.fundingSource === "groupFundMemberAdvance" ||
+      expense.fundingSource === "groupFundExternalAdvance"
     )
       continue;
 
