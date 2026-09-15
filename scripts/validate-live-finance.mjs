@@ -24,16 +24,35 @@ assert(!liabilityBreakdown.some((item) => (item.sourceRecordIds || []).includes(
 const oldBase = historical.finance?.groupFund || {};
 const patch = live.finance?.groupFundPatch || {};
 const oldBaseContributions = (oldBase.contributions || []).filter((x) => x.status === "received");
+const oldCredits = (oldBase.credits || []).filter((x) => x.status === "applied");
 const oldOutflows = (oldBase.outflows || []).filter((x) => x.status === "paid");
 const oldMerchantOutflows = oldOutflows.filter((x) => x.category !== "reconciliation");
-assert(sum(oldBaseContributions) === 1740000, "historical base cash collected must remain ₹17,400");
+const jugalMorning = (oldBase.contributions || []).find((x) => x.id === "group-fund-jugal-morning-sep14");
+assert(jugalMorning?.amountPaise === 50000 && jugalMorning?.status === "not-received", "Jugal Sep 14 morning ₹500 must remain marked never received");
+assert(sum(oldBaseContributions) === 1690000, "historical base cash actually received must be ₹16,900 after removing phantom Jugal ₹500");
+assert(sum(oldCredits) === 60000, "historical direct-expense credits must remain ₹600");
 assert(sum(oldMerchantOutflows) === 1173800, "historical merchant spend must remain ₹11,738");
-assert(sum(oldOutflows) === 1220000, "historical accounting outflows must remain ₹12,200");
-assert(patch.closedObservedBalancePaise === 520000 && patch.auditVariancePaise === -46200, "old closing checkpoint/variance mismatch");
-const recovery = (patch.contributions || []).find((x) => x.id === "group-fund-jugal-shortfall-recovery-sep15");
-assert(recovery?.memberId === "jugal" && recovery?.amountPaise === 50000 && recovery?.status === "received", "old pool must contain Jugal ₹500 shortfall-recovery cash");
-assert(patch.cashShortfallStatus === "operationally-covered" && patch.cashShortfallCoveragePaise === 46200 && patch.cashShortfallCoverageExcessPaise === 3800, "₹500 recovery must cover ₹462 shortfall with ₹38 excess");
-assert(patch.currentPhysicalBalancePaise === 550000 && patch.interPoolReceivablePaise === 20000 && patch.economicBalancePaise === 570000, "old pool must be ₹5,500 cash + ₹200 receivable = ₹5,700 economic balance");
+assert(sum(oldOutflows) === 1220000, "historical accounting outflows including ₹462 control must remain ₹12,200");
+assert(sum(oldBaseContributions) - sum(oldOutflows) === 470000, "corrected historical checkpoint must derive to ₹4,700");
+assert(patch.closedObservedBalancePaise === 470000, "corrected old checkpoint must be ₹4,700");
+assert(patch.historicalAuditVariancePaise === -46200, "historical unidentified variance must remain -₹462");
+assert(patch.auditVariancePaise === -50000, "current old-pool unexplained variance must be -₹500");
+const replacement = (patch.contributions || []).find((x) => x.id === "group-fund-jugal-replacement-500-sep15");
+assert(replacement?.memberId === "jugal" && replacement?.amountPaise === 50000 && replacement?.status === "received" && replacement?.phase === "replacement-contribution", "old pool must contain Jugal ₹500 replacement contribution");
+assert(sum((patch.contributions || []).filter((x) => x.status === "received")) === 50000, "old-pool post-close replacement contribution must total ₹500");
+assert(sum(oldBaseContributions) + sum(oldCredits) + replacement.amountPaise === 1800000, "corrected old-pool target coverage must still equal ₹18,000");
+const jugalOldBaseCash = oldBaseContributions.filter((x) => x.memberId === "jugal").reduce((t, x) => t + x.amountPaise, 0);
+const jugalOldCredit = oldCredits.filter((x) => x.memberId === "jugal").reduce((t, x) => t + x.amountPaise, 0);
+assert(jugalOldBaseCash === 240000 && jugalOldBaseCash + replacement.amountPaise === 290000 && jugalOldCredit === 10000, "Jugal old account must be ₹2,900 actual cash + ₹100 credit = ₹3,000");
+assert(patch.cashShortfallStatus === "current-variance-open", "current old-pool ₹500 variance must remain open");
+assert(patch.expectedPhysicalBalancePaise === 500000, "old-pool expected current cash must be ₹5,000");
+assert(patch.currentObservedBalancePaise === 450000 && patch.currentPhysicalBalancePaise === 450000, "latest old-pool physical count must be ₹4,500");
+assert(patch.currentCashVariancePaise === -50000, "old-pool current cash variance must be -₹500");
+assert(patch.interPoolReceivablePaise === 20000, "old pool must retain ₹200 receivable from active pool");
+assert(patch.economicBalancePaise === 470000, "observed old-pool economic balance must be ₹4,700");
+assert(patch.expectedEconomicBalancePaise === 520000, "expected old-pool economic balance must be ₹5,200");
+assert(patch.cashCheckpoint?.observedBalancePaise === 470000, "corrected historical cash checkpoint must be ₹4,700");
+assert(patch.currentCashCheckpoint?.observedBalancePaise === 450000 && patch.currentCashCheckpoint?.expectedBalancePaise === 500000 && patch.currentCashCheckpoint?.variancePaise === -50000, "current old-pool checkpoint must be ₹4,500 observed vs ₹5,000 expected = -₹500");
 
 const active = live.finance?.activeGroupFund || {};
 assert(active.id === "group-fund-eight-sep15" && active.status === "active", "active group id/status mismatch");
@@ -47,7 +66,7 @@ assert(round2.length === 6 && sum(round2) === 300000, "round 2 must contain six 
 assert(round2.map((x) => x.memberId).sort().join(",") === ["jugal", "milan", "neet", "pratham", "tirth", "vyas"].join(","), "round 2 payers mismatch");
 assert(!round2.some((x) => x.memberId === "nishit" || x.memberId === "het"), "Nishit and Het must remain unpaid for round 2");
 const jugalRound2 = round2.find((x) => x.memberId === "jugal");
-assert(jugalRound2?.amountPaise === 50000 && jugalRound2.amountPaise + recovery.amountPaise === 100000, "Jugal ₹1,000 must split ₹500 active + ₹500 old pool");
+assert(jugalRound2?.amountPaise === 50000 && jugalRound2.amountPaise + replacement.amountPaise === 100000, "Jugal ₹1,000 handover must split ₹500 active + ₹500 old replacement");
 const milanRound1 = round1.find((x) => x.memberId === "milan");
 const milanRound2 = round2.find((x) => x.memberId === "milan");
 assert(milanRound1?.paidByMemberId === "vyas" && milanRound1?.amountPaise === 20000, "Milan original ₹200 must remain Devgna-funded");
@@ -107,4 +126,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("Live finance valid: Jugal split ₹500 active + ₹500 old pool; Nishit + Het ₹500 each outstanding; ₹2,430 dinner recorded as ₹1,510 + ₹620 + ₹300; active cash/spendable ₹1,470; old physical ₹5,500 / economic ₹5,700; Milan → Devgna ₹3,778.75 unchanged");
+console.log("Live finance valid: Jugal morning ₹500 marked never received; later ₹500 replaces it; corrected old checkpoint ₹4,700; expected current old cash ₹5,000 vs ₹4,500 observed = -₹500 current variance; historical -₹462 retained; active cash/spendable ₹1,470; Milan → Devgna ₹3,778.75 unchanged");
