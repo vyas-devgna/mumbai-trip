@@ -3,7 +3,7 @@ const read = (relative) => JSON.parse(fs.readFileSync(new URL(relative, import.m
 const historical = read("../src/data/return-branch.json");
 const live = read("../src/data/live-finance.json");
 const errors=[]; const assert=(c,m)=>{if(!c)errors.push(m)}; const sum=(xs=[])=>xs.reduce((t,x)=>t+(x.amountPaise||0),0);
-const eight=["het","jugal","milan","neet","nishit","pratham","tirth","vyas"]; const same=(xs=[])=>[...xs].sort().join(",")===eight.join(",");
+const eight=["het","jugal","milan","neet","nishit","pratham","tirth","vyas"]; const six=["het","jugal","milan","nishit","tirth","vyas"]; const same=(xs=[],ys=eight)=>[...xs].sort().join(",")===[...ys].sort().join(",");
 assert(same(live.finance?.budgetMemberIds||[]),"eight-person cohort mismatch");
 const coverage=(live.finance?.memberCoveragePolicies||[]).find(x=>x.id==="vyas-covers-milan-trip");
 assert(coverage?.currentKnownLiabilityPaise===377875,"Milan → Devgna must remain ₹3,778.75");
@@ -14,12 +14,16 @@ assert(oldContrib.filter(x=>x.memberId==="jugal").reduce((t,x)=>t+x.amountPaise,
 assert(!oldCredits.some(x=>x.memberId==="jugal"),"Jugal old credit must remain removed");
 assert(oldOut.some(x=>x.id==="group-fund-reimburse-jugal-auto-sep14"&&x.amountPaise===10000),"Jugal ₹100 reimbursement missing");
 assert(patch.historicalAuditVariancePaise===-46200,"historical ₹462 provenance must remain");
-assert(patch.expectedPhysicalBalancePaise===500000&&patch.currentPhysicalBalancePaise===500000&&patch.currentObservedBalancePaise===500000&&patch.currentCashVariancePaise===0&&patch.auditVariancePaise===0,"old current cash must be resolved at ₹5,000");
-assert(patch.cashShortfallStatus==="resolved-note-replaced"&&patch.currentCashCheckpoint?.status==="resolved"&&patch.currentCashCheckpoint?.variancePaise===0,"old missing ₹500 note must be marked resolved");
-assert(patch.interPoolReceivablePaise===20000&&patch.economicBalancePaise===520000,"old ₹200 receivable/economic balance mismatch");
+const carOut=(patch.outflows||[]).find(x=>x.id==="old-group-car-booking-advance-500-sep15");
+assert(carOut?.amountPaise===50000&&carOut?.status==="paid","old-group ₹500 car-booking advance missing");
+const carExpense=(live.expenses||[]).find(x=>x.id==="expense-old-group-car-booking-advance-500-sep15");
+assert(carExpense?.amountPaise===50000&&carExpense?.groupFundId==="group-fund-six-sep14"&&same(carExpense?.participantIds||[],six),"car advance must belong only to original six members");
+assert(patch.expectedPhysicalBalancePaise===450000&&patch.currentPhysicalBalancePaise===450000&&patch.currentObservedBalancePaise===450000&&patch.currentCashVariancePaise===0&&patch.auditVariancePaise===0,"old current cash must be ₹4,500 after car advance");
+assert(patch.cashShortfallStatus==="resolved-note-replaced"&&patch.currentCashCheckpoint?.status==="resolved"&&patch.currentCashCheckpoint?.variancePaise===0,"old missing ₹500 note must remain resolved");
+assert(patch.interPoolReceivablePaise===20000&&patch.economicBalancePaise===470000&&patch.expectedEconomicBalancePaise===470000,"old ₹200 receivable/economic balance mismatch");
 const active=live.finance?.activeGroupFund||{}; assert(same(active.targetMemberIds||[]),"active members mismatch");
 const contrib=(active.contributions||[]).filter(x=>x.status==="received"), r2=contrib.filter(x=>x.phase==="round-2-500");
-assert(r2.length===8&&sum(r2)===400000&&same(r2.map(x=>x.memberId)),"round 2 must now contain all eight ₹500 payments");
+assert(r2.length===8&&sum(r2)===400000&&same(r2.map(x=>x.memberId)),"round 2 must contain all eight ₹500 payments");
 assert(r2.find(x=>x.memberId==="nishit")?.paidByMemberId==="nishit"&&r2.find(x=>x.memberId==="het")?.paidByMemberId==="het","Nishit and Het ₹500 payments missing");
 assert(active.cashCollectedPaise===540000&&active.contributionCreditPaise===20000&&active.effectiveContributionPaise===560000,"active collection must be ₹5,400 cash + ₹200 credit = ₹5,600");
 assert(active.targetTotalPaise===560000&&active.outstandingContributionPaise===0&&(active.outstandingMemberIds||[]).length===0,"active target must be fully collected");
@@ -33,4 +37,4 @@ assert(sum(active.charges||[])===417000&&active.totalChargedPaise===417000&&acti
 const taxi=(live.expenses||[]).find(x=>x.id==="expense-taxi-600-sep15"); assert(taxi?.amountPaise===60000&&taxi?.fundingSource==="groupFund"&&same(taxi?.participantIds||[]),"₹600 taxi must remain group-funded/all eight");
 assert((live.expenses||[]).find(x=>x.id==="expense-cash-reconciliation-sep15")?.status==="reconciliation","historical reconciliation must remain audit-only");
 if(errors.length){console.error(errors.join("\n"));process.exit(1)}
-console.log("Live finance valid: old missing ₹500 note replaced/resolved at ₹5,000 cash; Nishit + Het ₹500 each received; active target fully collected ₹5,600 effective; book ₹1,870 vs physical/spendable ₹2,000 = +₹130 audit surplus; charges ₹4,170; Milan → Devgna ₹3,778.75 unchanged");
+console.log("Live finance valid: old missing ₹500 note remains resolved; ₹500 tomorrow-car advance recorded for original six; old physical ₹4,500 + ₹200 receivable = ₹4,700 economic; active fully collected with ₹2,000 physical and +₹130 audit surplus; Milan → Devgna ₹3,778.75 unchanged");
