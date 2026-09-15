@@ -86,7 +86,9 @@ const collectedPaise = contributions.reduce((sum, item) => sum + item.amountPais
 const spentPaise = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashBalancePaise = collectedPaise - spentPaise;
 assert(cashBalancePaise >= 0, "group cash cannot be negative");
-assert(cashBalancePaise === 470000, "corrected historical physical group cash checkpoint must be ₹4,700");
+assert(collectedPaise === 1700000, "historical cash received must be ₹17,000 before Jugal's later ₹500 replacement");
+assert(spentPaise === 1230000, "historical cash outflows must be ₹12,300 including Jugal ₹100 reimbursement and ₹462 audit control");
+assert(cashBalancePaise === 470000, "corrected historical physical group cash checkpoint must remain ₹4,700");
 
 const outstandingByMember = Object.fromEntries(
   financeMembers.map((id) => [id, Math.max(0, fund.targetPerMemberPaise - (cashByMember[id] || 0) - (creditByMember[id] || 0))]),
@@ -98,14 +100,14 @@ assert(cashByMember.tirth === 300000, "Tirth cash contribution must total ₹3,0
 assert(cashByMember.nishit === 250000, "Nishit cash contribution must total ₹2,500 plus ₹500 direct-expense credits");
 assert(cashByMember.milan === 300000, "Milan must remain credited ₹3,000 to the pool");
 assert(cashByMember.het === 300000, "Het cash contribution must total ₹3,000");
-assert(cashByMember.jugal === 240000, "historical base must show only ₹2,400 actual Jugal cash before his later ₹500 replacement");
+assert(cashByMember.jugal === 250000, "historical base must show Jugal ₹1,500 + ₹1,000 = ₹2,500 cash before his later ₹500 replacement");
 assert(physicalPaidByMember.vyas === 600000, "Vyas must physically fund his own ₹3,000 plus Milan's ₹3,000");
 assert(physicalPaidByMember.milan === 0, "Milan must remain physically unpaid to the pool until he repays Vyas");
 assert(physicalPaidByMember.nishit === 250000, "Nishit must physically contribute ₹2,500 cash to the pool");
 assert(physicalPaidByMember.het === 300000, "Het must physically contribute ₹3,000 cash to the pool");
-assert(physicalPaidByMember.jugal === 240000, "historical base Jugal physical cash must be ₹2,400 before replacement");
+assert(physicalPaidByMember.jugal === 250000, "historical base Jugal physical cash must be ₹2,500 before replacement");
 assert(creditByMember.nishit === 50000, "Nishit direct-expense credits must total ₹500");
-assert(creditByMember.jugal === 10000, "Jugal direct-expense credit must be ₹100");
+assert(creditByMember.jugal === 0, "Jugal must have no contribution credit after his ₹100 auto reimbursement");
 for (const id of financeMembers) {
   const expected = id === "jugal" ? 50000 : 0;
   assert(outstandingByMember[id] === expected, `${id} historical pool outstanding mismatch`);
@@ -114,9 +116,15 @@ assert(outstandingPaise === 50000, "historical base must retain ₹500 Jugal out
 
 const jugalMorning = (fund?.contributions || []).find((item) => item.id === "group-fund-jugal-morning-sep14");
 assert(jugalMorning?.amountPaise === 50000 && jugalMorning?.status === "not-received", "Jugal morning ₹500 must be explicitly marked not received");
+const jugalSettlement = (fund?.contributions || []).find((item) => item.id === "group-fund-jugal-settlement-sep15");
+assert(jugalSettlement?.amountPaise === 100000 && jugalSettlement?.status === "received", "Jugal settlement must be corrected to ₹1,000");
+assert(!(fund?.credits || []).some((item) => item.id === "group-fund-credit-jugal-auto-sep14"), "Jugal ₹100 auto credit must be removed after reimbursement");
 const jugalAuto = expenseById.get("expense-auto-jugal-sep14");
-assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
-assert(jugalAuto?.fundingSource === "groupFundMemberCredit", "Jugal auto must reduce his pool outstanding");
+assert(jugalAuto?.amountPaise === 10000 && !jugalAuto?.payerId, "reimbursed Jugal auto must be represented as old-group cash funding without a final personal payer");
+assert(jugalAuto?.fundingSource === "groupFund" && jugalAuto?.groupFundOutflowId === "group-fund-reimburse-jugal-auto-sep14", "Jugal auto must link to the old-pool reimbursement outflow");
+assert(jugalAuto?.reimbursedMemberId === "jugal", "Jugal auto reimbursement provenance must retain Jugal as reimbursed member");
+const jugalReimbursement = outflows.find((item) => item.id === "group-fund-reimburse-jugal-auto-sep14");
+assert(jugalReimbursement?.amountPaise === 10000 && jugalReimbursement?.expenseId === "expense-auto-jugal-sep14", "old pool must contain ₹100 reimbursement outflow to Jugal");
 const groupAuto = expenseById.get("expense-auto-90-sep14");
 assert(groupAuto?.amountPaise === 9000 && groupAuto?.fundingSource === "groupFund", "₹90 auto must be paid from group cash");
 const sep15Water = expenseById.get("expense-water-hotel-sep15");
@@ -136,4 +144,4 @@ assert(finance.settlement.netBalancePaise === 0, "settlement conservation failed
 assert(finance.settlement.diagnostics.length === 0, `finance diagnostics: ${finance.settlement.diagnostics.join("; ")}`);
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-console.log(`Historical group account valid: ₹${(cashBalancePaise / 100).toFixed(2)} corrected checkpoint cash; ₹${(outstandingPaise / 100).toFixed(2)} Jugal outstanding before live replacement; ₹${(finance.recordedPaidPaise / 100).toFixed(2)} trip spend; ledger balanced`);
+console.log(`Historical group account valid: Jugal ₹2,500 cash before live replacement, no Jugal credit, ₹100 reimbursement outflow, ₹${(cashBalancePaise / 100).toFixed(2)} corrected checkpoint cash; ₹${(outstandingPaise / 100).toFixed(2)} Jugal outstanding before replacement`);
