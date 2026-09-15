@@ -1,6 +1,9 @@
 import coreData from "./data/trip.json";
 import returnBranch from "./data/return-branch.json";
+import liveFinance from "./data/live-finance.json";
 import SunCalc from "suncalc";
+
+const overlays = [returnBranch, liveFinance];
 
 const mergeById = (key) => {
   const merged = [...(coreData[key] || [])],
@@ -10,22 +13,59 @@ const mergeById = (key) => {
         .filter(([id]) => Boolean(id)),
     );
 
-  for (const item of returnBranch[key] || []) {
-    const existingIndex = item?.id ? indexById.get(item.id) : undefined;
-    if (existingIndex != null) {
-      merged[existingIndex] = { ...merged[existingIndex], ...item };
-    } else {
-      if (item?.id) indexById.set(item.id, merged.length);
-      merged.push(item);
+  for (const overlay of overlays) {
+    for (const item of overlay[key] || []) {
+      const existingIndex = item?.id ? indexById.get(item.id) : undefined;
+      if (existingIndex != null) {
+        merged[existingIndex] = { ...merged[existingIndex], ...item };
+      } else {
+        if (item?.id) indexById.set(item.id, merged.length);
+        merged.push(item);
+      }
     }
   }
   return merged;
 };
 
+const baseGroupFund = returnBranch.finance?.groupFund || {},
+  groupFundPatch = liveFinance.finance?.groupFundPatch || {},
+  mergedLegacyGroupFund = {
+    ...baseGroupFund,
+    ...groupFundPatch,
+    contributions: [
+      ...(baseGroupFund.contributions || []),
+      ...(groupFundPatch.contributions || []),
+    ],
+    credits: [
+      ...(baseGroupFund.credits || []),
+      ...(groupFundPatch.credits || []),
+    ],
+    outflows: [
+      ...(baseGroupFund.outflows || []),
+      ...(groupFundPatch.outflows || []),
+    ],
+  },
+  { groupFundPatch: _groupFundPatch, ...liveFinanceFields } =
+    liveFinance.finance || {},
+  mergedFinance = {
+    ...(coreData.finance || {}),
+    ...(returnBranch.finance || {}),
+    ...liveFinanceFields,
+    groupFund: mergedLegacyGroupFund,
+    groupFunds: [
+      mergedLegacyGroupFund,
+      liveFinance.finance?.activeGroupFund,
+    ].filter(Boolean),
+  };
+
 const data = {
   ...coreData,
-  trip: { ...(coreData.trip || {}), ...(returnBranch.trip || {}) },
-  finance: { ...(coreData.finance || {}), ...(returnBranch.finance || {}) },
+  trip: {
+    ...(coreData.trip || {}),
+    ...(returnBranch.trip || {}),
+    ...(liveFinance.trip || {}),
+  },
+  finance: mergedFinance,
   members: mergeById("members"),
   places: mergeById("places"),
   activities: mergeById("activities"),
