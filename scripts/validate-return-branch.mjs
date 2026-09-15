@@ -95,21 +95,30 @@ const creditByMember = Object.fromEntries(expectedFinanceMembers.map((id) => [id
 for (const item of contributions) cashByMember[item.memberId] += item.amountPaise;
 for (const item of credits) creditByMember[item.memberId] += item.amountPaise;
 const poolOutstanding = Object.fromEntries(expectedFinanceMembers.map((id) => [id, Math.max(0, fund.targetPerMemberPaise - cashByMember[id] - creditByMember[id])]));
-assert(cashByMember.jugal === 200000, "Jugal cash contribution must total ₹2,000 after backfilled ₹500 morning payment");
-assert(poolOutstanding.nishit === 50000, "Nishit pool outstanding must be ₹500");
-assert(poolOutstanding.het === 100000, "Het pool outstanding must be ₹1,000");
-assert(poolOutstanding.jugal === 90000, "Jugal pool outstanding must be ₹900 after ₹2,000 cash + ₹100 auto credit");
-assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 240000, "total pool outstanding must be ₹2,400");
+assert(cashByMember.vyas === 300000, "Vyas pool contribution must be ₹3,000");
+assert(cashByMember.tirth === 300000, "Tirth pool contribution must be ₹3,000");
+assert(cashByMember.nishit === 250000 && creditByMember.nishit === 50000, "Nishit pool target must be ₹2,500 cash + ₹500 credits");
+assert(cashByMember.milan === 300000, "Milan pool target must remain fully credited at ₹3,000");
+assert(cashByMember.het === 300000, "Het pool contribution must be ₹3,000");
+assert(cashByMember.jugal === 290000 && creditByMember.jugal === 10000, "Jugal pool target must be ₹2,900 cash + ₹100 credit");
+for (const id of expectedFinanceMembers) assert(poolOutstanding[id] === 0, `${id} pool outstanding must be ₹0`);
+assert(Object.values(poolOutstanding).reduce((sum, amount) => sum + amount, 0) === 0, "total pool outstanding must be ₹0");
 
 const jugalAuto = merged.expenses.find((e) => e.id === "expense-auto-jugal-sep14");
 assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
 assert(jugalAuto?.fundingSource === "groupFundMemberCredit", "Jugal auto must be a pool credit");
 const groupAuto = merged.expenses.find((e) => e.id === "expense-auto-90-sep14");
 assert(groupAuto?.amountPaise === 9000 && groupAuto?.fundingSource === "groupFund", "₹90 auto must be paid from group cash");
+const sep15Water = merged.expenses.find((e) => e.id === "expense-water-hotel-sep15");
+assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "groupFund", "15 Sep hotel water must be ₹100 from group cash");
+const sep15TeaCoffee = merged.expenses.find((e) => e.id === "expense-tea-coffee-sep15");
+assert(sep15TeaCoffee?.amountPaise === 5000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must be ₹50 from group cash");
 
 const cashCollected = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashSpent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
-assert(cashCollected - cashSpent >= 0, "group cash cannot be negative");
+assert(cashCollected === 1740000, "group cash contributions must total ₹17,400 after final settlements");
+assert(cashSpent === 1171800, "group cash outflows must total ₹11,718 after Sep 15 water and tea / coffee");
+assert(cashCollected - cashSpent === 568200, "group cash balance must be ₹5,682");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
