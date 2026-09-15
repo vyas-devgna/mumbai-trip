@@ -2,8 +2,20 @@
   "schemaVersion": 1,
   "finance": {
     "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
-    "scopeNote": "The active eight-person account is Vyas, Tirth, Nishit, Milan, Het, Jugal, Pratham and Neet with a ₹200 contribution target each. Seven members contributed ₹200 cash. Tirth paid ₹240 for the Mumbai Cha Raja pass: ₹200 of that settles his group-account contribution and only the remaining ₹40 is an advance owed back to him. The ₹400 taxi is two ₹200 taxis: one paid from the old six-person pool and one paid personally by Pratham. The ₹80 water is paid from new-group cash.",
+    "scopeNote": "The active eight-person account is Vyas, Tirth, Nishit, Milan, Het, Jugal, Pratham and Neet with a ₹200 contribution target each. Seven members contributed ₹200 cash. Milan's ₹200 cash contribution was physically funded by Vyas Devgna and is part of Milan's trip-end repayment obligation to Vyas. Tirth paid ₹240 for the Mumbai Cha Raja pass: ₹200 of that settles his group-account contribution and only the remaining ₹40 is an advance owed back to him. The ₹400 taxi is two ₹200 taxis: one paid from the old six-person pool and one paid personally by Pratham. The ₹80 water is paid from new-group cash.",
     "activeGroupFundId": "group-fund-eight-sep15",
+    "memberCoveragePolicies": [
+      {
+        "id": "vyas-covers-milan-trip",
+        "beneficiaryMemberId": "milan",
+        "paidByMemberId": "vyas",
+        "scope": "all-trip-costs",
+        "settlementTiming": "after-trip",
+        "status": "active",
+        "currentKnownLiabilityPaise": 377875,
+        "note": "Vyas Devgna is covering all of Milan's Mumbai-trip costs. Current known Milan → Vyas liability is ₹3,778.75: ₹3,000 old six-person group contribution + ₹200 active eight-person group contribution + ₹414.75 outbound-train share + ₹164 pre-trip dinner share. Any later Milan cost paid/fronted by Vyas must be added to this trip-end liability."
+      }
+    ],
     "groupFundPatch": {
       "id": "group-fund-six-sep14",
       "status": "historical",
@@ -39,7 +51,7 @@
       "contributions": [
         {"id":"group-eight-contribution-vyas-sep15","memberId":"vyas","paidByMemberId":"vyas","amountPaise":20000,"date":"2026-09-15","status":"received"},
         {"id":"group-eight-contribution-nishit-sep15","memberId":"nishit","paidByMemberId":"nishit","amountPaise":20000,"date":"2026-09-15","status":"received"},
-        {"id":"group-eight-contribution-milan-sep15","memberId":"milan","paidByMemberId":"milan","amountPaise":20000,"date":"2026-09-15","status":"received"},
+        {"id":"group-eight-contribution-milan-sep15","memberId":"milan","paidByMemberId":"vyas","amountPaise":20000,"date":"2026-09-15","status":"received","note":"Credited to Milan's ₹200 new-group target but physically funded by Vyas Devgna. Milan repays Vyas after the trip together with all other Milan trip costs."},
         {"id":"group-eight-contribution-het-sep15","memberId":"het","paidByMemberId":"het","amountPaise":20000,"date":"2026-09-15","status":"received"},
         {"id":"group-eight-contribution-jugal-sep15","memberId":"jugal","paidByMemberId":"jugal","amountPaise":20000,"date":"2026-09-15","status":"received"},
         {"id":"group-eight-contribution-pratham-sep15","memberId":"pratham","paidByMemberId":"pratham","amountPaise":20000,"date":"2026-09-15","status":"received"},
@@ -79,7 +91,7 @@
       "fundedChargedPaise": 72000,
       "unfundedChargedPaise": 0,
       "perMemberExpenseSharePaise": 9000,
-      "note": "Contribution target is fully covered: ₹1,400 cash from seven members + ₹200 of Tirth's pass payment = ₹1,600. New-group physical cash is ₹1,320 after the ₹80 water. Reserve ₹200 for the old pool, ₹200 for Pratham and ₹40 for Tirth, leaving ₹880 genuinely free to spend. No one still owes the ₹200 contribution."
+      "note": "Contribution target is fully covered: ₹1,400 cash from seven members + ₹200 of Tirth's pass payment = ₹1,600. Milan's ₹200 cash contribution is part of the ₹1,400 but was physically funded by Vyas. New-group physical cash is ₹1,320 after the ₹80 water. Reserve ₹200 for the old pool, ₹200 for Pratham and ₹40 for Tirth, leaving ₹880 genuinely free to spend. No one still owes the ₹200 contribution to the group account; Milan's ₹200 remains a personal trip-end debt to Vyas."
     }
   },
   "members": [
@@ -97,6 +109,7 @@
     }
   ],
   "signals": [
+    {"id":"milan-covered-by-vyas","type":"finance","label":"Devgna covers all Milan trip costs; current known Milan → Devgna trip-end repayment ₹3,778.75, including both group contributions, train share and pre-trip dinner","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
     {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"8-person account fully funded: ₹1,400 cash + ₹200 Tirth pass credit; ₹1,320 physical cash; reserve ₹440 (old pool ₹200 + Pratham ₹200 + Tirth ₹40); ₹880 free","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
     {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old pool advanced ₹200 for one new-group taxi; current cash ₹5,000 + ₹200 receivable = ₹5,200 economic balance; historical ₹462 variance still unresolved","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
   ]
