@@ -107,22 +107,31 @@ function groupPaidExpenses(data, expenses, diagnostics) {
 
 function applyGroupFundAdvances(data, rows, financeMembers, diagnostics) {
   let advancePaise = 0;
-  const advanceFund = data.finance?.legacyGroupFund || data.finance?.groupFund;
-  for (const contribution of advanceFund?.contributions || []) {
-    if (contribution.status !== "received") continue;
-    const amountPaise = safePaise(contribution.amountPaise),
-      memberId = contribution.memberId,
-      paidByMemberId = contribution.paidByMemberId || memberId;
-    if (!amountPaise) continue;
-    if (!financeMembers.has(memberId) || !financeMembers.has(paidByMemberId)) {
-      diagnostics.push(`${contribution.id}: invalid group-fund member`);
-      continue;
-    }
-    if (memberId === paidByMemberId) continue;
+  const configuredFunds = data.finance?.groupFunds?.length
+      ? data.finance.groupFunds
+      : [data.finance?.legacyGroupFund, data.finance?.groupFund].filter(Boolean),
+    seenContributionIds = new Set();
 
-    rows[paidByMemberId].groupFundAdvancePaidPaise += amountPaise;
-    rows[memberId].groupFundAdvanceCoveredPaise += amountPaise;
-    advancePaise += amountPaise;
+  for (const fund of configuredFunds) {
+    for (const contribution of fund?.contributions || []) {
+      if (contribution.status !== "received") continue;
+      if (contribution.id && seenContributionIds.has(contribution.id)) continue;
+      if (contribution.id) seenContributionIds.add(contribution.id);
+
+      const amountPaise = safePaise(contribution.amountPaise),
+        memberId = contribution.memberId,
+        paidByMemberId = contribution.paidByMemberId || memberId;
+      if (!amountPaise) continue;
+      if (!financeMembers.has(memberId) || !financeMembers.has(paidByMemberId)) {
+        diagnostics.push(`${contribution.id}: invalid group-fund member`);
+        continue;
+      }
+      if (memberId === paidByMemberId) continue;
+
+      rows[paidByMemberId].groupFundAdvancePaidPaise += amountPaise;
+      rows[memberId].groupFundAdvanceCoveredPaise += amountPaise;
+      advancePaise += amountPaise;
+    }
   }
   return advancePaise;
 }
