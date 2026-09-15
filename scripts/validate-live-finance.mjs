@@ -13,6 +13,14 @@ const memberIds = new Set(allMembers.map((member) => member.id));
 for (const id of expectedEight) assert(memberIds.has(id), `missing eight-person member ${id}`);
 assert((live.finance?.budgetMemberIds || []).slice().sort().join(",") === expectedEight.join(","), "live finance cohort must contain exactly eight members");
 
+const coveragePolicy = (live.finance?.memberCoveragePolicies || []).find((item) => item.id === "vyas-covers-milan-trip");
+assert(coveragePolicy?.beneficiaryMemberId === "milan", "Milan coverage policy must identify Milan as beneficiary");
+assert(coveragePolicy?.paidByMemberId === "vyas", "Milan coverage policy must identify Vyas Devgna as payer");
+assert(coveragePolicy?.scope === "all-trip-costs", "Milan coverage policy must cover all trip costs");
+assert(coveragePolicy?.settlementTiming === "after-trip", "Milan must repay Devgna after the trip");
+assert(coveragePolicy?.status === "active", "Milan coverage policy must remain active during the trip");
+assert(coveragePolicy?.currentKnownLiabilityPaise === 377875, "current known Milan → Devgna liability must be ₹3,778.75");
+
 const oldBase = historical.finance?.groupFund || {};
 const patch = live.finance?.groupFundPatch || {};
 const oldHistoricalOutflows = (oldBase.outflows || []).filter((item) => item.status === "paid");
@@ -50,6 +58,15 @@ const contributionTotal = contributions.reduce((sum, item) => sum + item.amountP
 assert(contributionTotal === 140000, `new-group cash collected ${contributionTotal}, expected ₹1,400`);
 for (const contribution of contributions) assert(contribution.amountPaise === 20000, `${contribution.id}: cash contribution must be ₹200`);
 assert(!contributions.some((item) => item.memberId === "tirth"), "Tirth must not be recorded as a separate ₹200 cash contributor");
+const milanContribution = contributions.find((item) => item.id === "group-eight-contribution-milan-sep15");
+assert(milanContribution?.memberId === "milan" && milanContribution?.paidByMemberId === "vyas", "Milan's active ₹200 contribution must be physically funded by Vyas Devgna");
+assert(milanContribution?.amountPaise === 20000, "Milan's active-group contribution must remain ₹200");
+
+const historicalMilanAdvance = oldContributions
+  .filter((item) => item.memberId === "milan" && (item.paidByMemberId || item.memberId) === "vyas")
+  .reduce((sum, item) => sum + item.amountPaise, 0);
+assert(historicalMilanAdvance === 300000, "historical Vyas-funded Milan group contribution must remain ₹3,000");
+assert(historicalMilanAdvance + milanContribution.amountPaise === 320000, "group-account advances from Vyas for Milan must now total ₹3,200");
 
 const tirthCredit = (active?.credits || []).find((item) => item.id === "group-eight-credit-tirth-pass-sep15");
 assert(tirthCredit?.memberId === "tirth", "Tirth contribution credit missing");
@@ -126,4 +143,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("Live finance valid: 8-person target fully funded; ₹1,320 physical cash; ₹440 reserved; ₹880 free; Tirth contribution settled via pass");
+console.log("Live finance valid: Milan active contribution funded by Devgna; current Milan → Devgna trip-end liability ₹3,778.75; 8-person pool ₹880 free");
