@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "finance": {
+    "budgetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
+    "scopeNote": "The original six-person group expense account remains a closed historical cash pool. After the ₹80 water bottle and ₹400 taxi to Mumbai Cha Raja on 15 Sep, Pratham and Neet join for a new, separate eight-person group expense account. Old cash is not transferred into the new account unless explicitly recorded later.",
+    "activeGroupFundId": "group-fund-eight-sep15",
+    "groupFundPatch": {
+      "id": "group-fund-six-sep14",
+      "status": "closed",
+      "closedAt": "2026-09-15T08:45:00+05:30",
+      "closedObservedBalancePaise": 472000,
+      "auditVariancePaise": -46200,
+      "note": "Closed six-person pool. The previously observed ₹5,200 cash was reduced by ₹80 water and ₹400 taxi, leaving ₹4,720. The pre-existing ₹462 audit variance remains unresolved and belongs only to this historical pool.",
+      "outflows": [
+        {"id":"group-fund-water-80-sep15","expenseId":"expense-water-80-sep15","amountPaise":8000,"date":"2026-09-15","category":"food","label":"Water bottle","status":"paid","note":"₹80 water bottle paid from the original six-person group cash before the eight-person account opened."},
+        {"id":"group-fund-taxi-mumbai-cha-raja-sep15","expenseId":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"date":"2026-09-15","category":"transport","label":"Taxi · Mumbai Cha Raja","status":"paid","note":"₹400 taxi to Mumbai Cha Raja paid from the original six-person group cash before the eight-person account opened."}
+      ],
+      "cashCheckpoint": {
+        "date": "2026-09-15",
+        "observedBalancePaise": 472000,
+        "previousObservedBalancePaise": 520000,
+        "movementSincePreviousPaise": -48000,
+        "note": "₹5,200 prior observed cash minus ₹80 water minus ₹400 taxi = ₹4,720."
+      }
+    },
+    "activeGroupFund": {
+      "id": "group-fund-eight-sep15",
+      "label": "Group expense account · 8 people",
+      "currency": "INR",
+      "purpose": "Shared expenses from the eight-person phase onward",
+      "status": "active",
+      "openedAt": "2026-09-15T08:45:00+05:30",
+      "openingBalancePaise": 0,
+      "targetPerMemberPaise": 0,
+      "targetMemberIds": ["vyas", "tirth", "nishit", "milan", "het", "jugal", "pratham", "neet"],
+      "contributions": [],
+      "credits": [],
+      "outflows": [],
+      "note": "Fresh eight-person account. No contribution amount has been supplied yet, so the account starts at ₹0. The old six-person cash remains separate."
+    }
+  },
+  "members": [
+    {"id":"neet","name":"Neet","initials":"N"}
+  ],
+  "expenses": [
+    {"id":"expense-water-80-sep15","amountPaise":8000,"participantIds":["vyas","tirth","nishit","milan","het","jugal"],"category":"food","date":"2026-09-15","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"group-fund-water-80-sep15","note":"₹80 water bottle paid from the original six-person group cash immediately before the separate eight-person account began."},
+    {"id":"expense-taxi-mumbai-cha-raja-sep15","amountPaise":40000,"participantIds":["vyas","tirth","nishit","milan","het","jugal"],"category":"transport","date":"2026-09-15","label":"Taxi · Mumbai Cha Raja","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"group-fund-taxi-mumbai-cha-raja-sep15","note":"₹400 taxi to Mumbai Cha Raja paid from the original six-person group cash immediately before Pratham and Neet joined the new eight-person expense account."},
+    {"id":"expense-cash-reconciliation-sep15","status":"reconciliation","budgetScope":"audit","note":"Cash-control variance only. This ₹462 record reconciles physical cash in the closed six-person pool but is not a confirmed merchant expense and must not be counted as confirmed trip spend."
+    }
+  ],
+  "signals": [
+    {"id":"eight-person-group-fund-opened-sep15","type":"finance","label":"New separate 8-person group expense account opened for Vyas, Tirth, Nishit, Milan, Het, Jugal, Pratham and Neet; starts at ₹0 until contributions are recorded","severity":"info","status":"resolved","lastVerifiedAt":"2026-09-15"},
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old 6-person pool closed at ₹4,720 observed cash after ₹80 water and ₹400 taxi; unresolved historical variance remains ₹462","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-15"}
+  ]
+}
