@@ -31,7 +31,7 @@ assert(liabilityById.get("milan-active-group-contribution")?.sourceGroupFundId =
 assert(liabilityById.get("milan-train-shares")?.amountPaise === 41475, "Milan train liability must be ₹414.75");
 assert(liabilityById.get("milan-pretrip-dinner-share")?.amountPaise === 16400, "Milan pre-trip dinner liability must be ₹164");
 for (const item of liabilityBreakdown) assert(item.status === "due", `${item.id}: Milan liability component must remain due until repayment`);
-for (const activeCashExpenseId of ["expense-vadapav-160-sep15", "expense-water-40-sep15"]) {
+for (const activeCashExpenseId of ["expense-vadapav-160-sep15", "expense-water-40-sep15", "expense-aprel-cha-raja-pass-160-sep15"]) {
   assert(!liabilityBreakdown.some((item) => (item.sourceRecordIds || []).includes(activeCashExpenseId)), `${activeCashExpenseId}: active-group cash spend must not be double-counted as a separate Milan liability`);
 }
 
@@ -106,15 +106,16 @@ assert((active?.outstandingMemberIds || []).length === 0, "no member should rema
 
 const outflows = (active?.outflows || []).filter((item) => item.status === "paid");
 const outflowById = new Map(outflows.map((item) => [item.id, item]));
-assert(outflows.length === 3, "active account must have exactly three direct cash outflows: ₹80 water, ₹160 vada pav and ₹40 water");
+assert(outflows.length === 4, "active account must have exactly four direct cash outflows: ₹80 water, ₹160 vada pav, ₹40 water and ₹160 Aprel Cha Raja pass");
 assert(outflowById.get("group-eight-water-80-sep15")?.amountPaise === 8000, "₹80 water active cash outflow missing");
 assert(outflowById.get("group-eight-vadapav-160-sep15")?.amountPaise === 16000, "₹160 vada pav active cash outflow missing");
 assert(outflowById.get("group-eight-water-40-sep15")?.amountPaise === 4000, "₹40 water active cash outflow missing");
+assert(outflowById.get("group-eight-aprel-cha-raja-pass-160-sep15")?.amountPaise === 16000, "₹160 Aprel Cha Raja pass active cash outflow missing");
 const activeCashPaidOut = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
-assert(activeCashPaidOut === 28000, `active cash outflows ${activeCashPaidOut}, expected ₹280`);
+assert(activeCashPaidOut === 44000, `active cash outflows ${activeCashPaidOut}, expected ₹440`);
 assert(active?.cashCollectedPaise === 140000, "stored new-group cash collected must be ₹1,400");
-assert(active?.cashPaidOutPaise === 28000, "stored new-group direct cash outflow must be ₹280");
-assert(active?.physicalCashBalancePaise === 112000, "new-group physical cash must be ₹1,120 after active cash expenses");
+assert(active?.cashPaidOutPaise === 44000, "stored new-group direct cash outflow must be ₹440");
+assert(active?.physicalCashBalancePaise === 96000, "new-group physical cash must be ₹960 after active cash expenses");
 
 const poolPayable = (active?.interPoolPayables || []).find((item) => item.id === "group-eight-payable-old-pool-taxi-sep15");
 assert(poolPayable?.amountPaise === 20000, "new group must owe old pool ₹200 for taxi");
@@ -131,10 +132,10 @@ assert(tirthPayable?.memberId === "tirth" && tirthPayable?.amountPaise === 4000,
 assert(active?.interPoolPayablePaise === 20000, "stored old-pool payable must be ₹200");
 assert(active?.memberPayablePaise === 24000, "stored member payables must total ₹240");
 assert(active?.reservedPayablesPaise === 44000, "total reserves must be ₹440");
-assert(active?.spendableBalancePaise === 68000, "new-group free-to-spend balance must be ₹680 after ₹440 reserves");
+assert(active?.spendableBalancePaise === 52000, "new-group free-to-spend balance must be ₹520 after ₹440 reserves");
 
 const charges = active?.charges || [];
-assert(charges.length === 5, "eight-person account must contain exactly five current charges");
+assert(charges.length === 6, "eight-person account must contain exactly six current charges");
 const chargeById = new Map(charges.map((item) => [item.id, item]));
 assert(chargeById.get("group-eight-water-80-sep15")?.amountPaise === 8000, "₹80 water charge missing");
 const vadaCharge = chargeById.get("group-eight-vadapav-160-sep15");
@@ -143,6 +144,9 @@ assert((vadaCharge?.fundingBreakdown || []).some((item) => item.kind === "new-gr
 const water40Charge = chargeById.get("group-eight-water-40-sep15");
 assert(water40Charge?.amountPaise === 4000, "₹40 water charge missing");
 assert((water40Charge?.fundingBreakdown || []).some((item) => item.kind === "new-group-cash" && item.amountPaise === 4000), "₹40 water must be funded directly from active group cash");
+const aprelPassCharge = chargeById.get("group-eight-aprel-cha-raja-pass-160-sep15");
+assert(aprelPassCharge?.amountPaise === 16000, "₹160 Aprel Cha Raja pass charge missing");
+assert((aprelPassCharge?.fundingBreakdown || []).some((item) => item.kind === "new-group-cash" && item.amountPaise === 16000), "₹160 Aprel Cha Raja pass must be funded directly from active group cash");
 const taxiCharge = chargeById.get("group-eight-taxi-mumbai-cha-raja-sep15");
 assert(taxiCharge?.amountPaise === 40000, "₹400 taxi charge missing");
 assert((taxiCharge?.fundingBreakdown || []).some((item) => item.kind === "old-group-advance" && item.amountPaise === 20000), "taxi must include ₹200 old-group funding");
@@ -153,11 +157,11 @@ assert(passCharge?.paidByMemberId === "tirth", "Tirth must be recorded as pass p
 assert((passCharge?.fundingBreakdown || []).some((item) => item.kind === "member-contribution-credit" && item.memberId === "tirth" && item.amountPaise === 20000), "pass must apply ₹200 as Tirth contribution");
 assert((passCharge?.fundingBreakdown || []).some((item) => item.kind === "member-advance" && item.memberId === "tirth" && item.amountPaise === 4000), "pass must leave only ₹40 reimbursable to Tirth");
 const totalCharged = charges.reduce((sum, item) => sum + item.amountPaise, 0);
-assert(totalCharged === 92000, `new-group charged total ${totalCharged}, expected ₹920`);
-assert(active?.totalChargedPaise === 92000, "stored charged total must be ₹920");
-assert(active?.fundedChargedPaise === 92000, "all ₹920 current charges must have known funding");
+assert(totalCharged === 108000, `new-group charged total ${totalCharged}, expected ₹1,080`);
+assert(active?.totalChargedPaise === 108000, "stored charged total must be ₹1,080");
+assert(active?.fundedChargedPaise === 108000, "all ₹1,080 current charges must have known funding");
 assert(active?.unfundedChargedPaise === 0, "no current eight-person charge should remain unfunded");
-assert(active?.perMemberExpenseSharePaise === 11500, "₹920 expense total must equal ₹115 per person");
+assert(active?.perMemberExpenseSharePaise === 13500, "₹1,080 expense total must equal ₹135 per person");
 for (const charge of charges) assert([...(charge.participantIds || [])].sort().join(",") === expectedEight.join(","), `${charge.id}: participant set must contain all eight members`);
 
 const expenses = live.expenses || [];
@@ -176,6 +180,14 @@ assert(water40Expense?.fundingSource === "groupFund", "₹40 water must be funde
 assert(water40Expense?.groupFundId === "group-fund-eight-sep15", "₹40 water must belong only to active eight-person account");
 assert(water40Expense?.groupFundOutflowId === "group-eight-water-40-sep15", "₹40 water expense/outflow link mismatch");
 assert([...(water40Expense?.participantIds || [])].sort().join(",") === expectedEight.join(","), "₹40 water participant set must contain all eight members");
+
+const aprelPassExpense = expenses.find((item) => item.id === "expense-aprel-cha-raja-pass-160-sep15");
+assert(aprelPassExpense?.amountPaise === 16000, "₹160 Aprel Cha Raja pass expense row missing");
+assert(aprelPassExpense?.status === "paid", "₹160 Aprel Cha Raja pass must be confirmed paid");
+assert(aprelPassExpense?.fundingSource === "groupFund", "₹160 Aprel Cha Raja pass must be funded by active group cash");
+assert(aprelPassExpense?.groupFundId === "group-fund-eight-sep15", "₹160 Aprel Cha Raja pass must belong only to active eight-person account");
+assert(aprelPassExpense?.groupFundOutflowId === "group-eight-aprel-cha-raja-pass-160-sep15", "₹160 Aprel Cha Raja pass expense/outflow link mismatch");
+assert([...(aprelPassExpense?.participantIds || [])].sort().join(",") === expectedEight.join(","), "₹160 Aprel Cha Raja pass participant set must contain all eight members");
 
 const oldTaxi = expenses.find((item) => item.id === "expense-taxi-mumbai-cha-raja-sep15");
 const taxiOldPool = expenses.find((item) => item.id === "expense-taxi-mumbai-cha-raja-old-pool-sep15");
@@ -199,4 +211,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("Live finance valid: separate 6-person and 8-person ledgers; linked ₹200 inter-account advance; Milan → Devgna liability ₹3,778.75 without double-counting active cash spend; active pool ₹1,120 on hand / ₹680 free");
+console.log("Live finance valid: separate 6-person and 8-person ledgers; linked ₹200 inter-account advance; Milan → Devgna liability ₹3,778.75 without double-counting active cash spend; active pool ₹960 on hand / ₹520 free");
