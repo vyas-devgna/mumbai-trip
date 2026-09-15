@@ -93,23 +93,30 @@ const outstandingByMember = Object.fromEntries(
 const outstandingPaise = Object.values(outstandingByMember).reduce((sum, amount) => sum + amount, 0);
 
 assert(cashByMember.vyas === 300000, "Vyas cash contribution must remain ₹3,000");
+assert(cashByMember.tirth === 300000, "Tirth cash contribution must total ₹3,000");
+assert(cashByMember.nishit === 250000, "Nishit cash contribution must total ₹2,500 plus ₹500 direct-expense credits");
 assert(cashByMember.milan === 300000, "Milan must remain credited ₹3,000 to the pool");
-assert(cashByMember.jugal === 200000, "Jugal cash contribution must total ₹2,000 after backfilled ₹500 morning payment");
+assert(cashByMember.het === 300000, "Het cash contribution must total ₹3,000");
+assert(cashByMember.jugal === 290000, "Jugal cash contribution must total ₹2,900 plus ₹100 direct-expense credit");
 assert(physicalPaidByMember.vyas === 600000, "Vyas must physically fund his own ₹3,000 plus Milan's ₹3,000");
 assert(physicalPaidByMember.milan === 0, "Milan must remain physically unpaid to the pool until he repays Vyas");
-assert(physicalPaidByMember.jugal === 200000, "Jugal must physically contribute ₹2,000 cash to the pool");
+assert(physicalPaidByMember.nishit === 250000, "Nishit must physically contribute ₹2,500 cash to the pool");
+assert(physicalPaidByMember.het === 300000, "Het must physically contribute ₹3,000 cash to the pool");
+assert(physicalPaidByMember.jugal === 290000, "Jugal must physically contribute ₹2,900 cash to the pool");
 assert(creditByMember.nishit === 50000, "Nishit direct-expense credits must total ₹500");
 assert(creditByMember.jugal === 10000, "Jugal direct-expense credit must be ₹100");
-assert(outstandingByMember.nishit === 50000, "Nishit pool outstanding must be ₹500");
-assert(outstandingByMember.het === 100000, "Het pool outstanding must be ₹1,000");
-assert(outstandingByMember.jugal === 90000, "Jugal pool outstanding must be ₹900 after ₹2,000 cash + ₹100 auto credit");
-assert(outstandingPaise === 240000, "total pool outstanding must be ₹2,400");
+for (const id of financeMembers) assert(outstandingByMember[id] === 0, `${id} pool outstanding must be ₹0`);
+assert(outstandingPaise === 0, "total pool outstanding must be ₹0");
 
 const jugalAuto = expenseById.get("expense-auto-jugal-sep14");
 assert(jugalAuto?.amountPaise === 10000 && jugalAuto?.payerId === "jugal", "Jugal auto must be ₹100 paid by Jugal");
 assert(jugalAuto?.fundingSource === "groupFundMemberCredit", "Jugal auto must reduce his pool outstanding");
 const groupAuto = expenseById.get("expense-auto-90-sep14");
 assert(groupAuto?.amountPaise === 9000 && groupAuto?.fundingSource === "groupFund", "₹90 auto must be paid from group cash");
+const sep15Water = expenseById.get("expense-water-hotel-sep15");
+assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "groupFund", "15 Sep hotel water must be ₹100 from group cash");
+const sep15TeaCoffee = expenseById.get("expense-tea-coffee-sep15");
+assert(sep15TeaCoffee?.amountPaise === 5000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must be ₹50 from group cash");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
