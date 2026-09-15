@@ -136,6 +136,42 @@ function applyGroupFundAdvances(data, rows, financeMembers, diagnostics) {
   return advancePaise;
 }
 
+function pinCoveragePolicyTransfers(data, creditors, debtors, transfers) {
+  const policies = (data.finance?.memberCoveragePolicies || []).filter(
+    (item) =>
+      item.status === "active" &&
+      item.scope === "all-trip-costs" &&
+      item.settlementTiming === "after-trip" &&
+      item.beneficiaryMemberId &&
+      item.paidByMemberId &&
+      item.beneficiaryMemberId !== item.paidByMemberId,
+  );
+
+  for (const policy of policies) {
+    const debtor = debtors.find((item) => item.id === policy.beneficiaryMemberId),
+      creditor = creditors.find((item) => item.id === policy.paidByMemberId);
+    if (!debtor || !creditor) continue;
+
+    const storedLiabilityPaise = safePaise(policy.currentKnownLiabilityPaise),
+      amountPaise = Math.min(
+        debtor.amountPaise,
+        creditor.amountPaise,
+        storedLiabilityPaise || debtor.amountPaise,
+      );
+    if (!amountPaise) continue;
+
+    transfers.push({
+      from: debtor.id,
+      to: creditor.id,
+      amountPaise,
+      kind: "coverage-policy",
+      policyId: policy.id,
+    });
+    debtor.amountPaise -= amountPaise;
+    creditor.amountPaise -= amountPaise;
+  }
+}
+
 export function buildSettlement(data, expenses) {
   const financeMembers = financeMemberSet(data),
     rows = Object.fromEntries(
@@ -224,29 +260,35 @@ export function buildSettlement(data, expenses) {
     if (row.netPaise > 0) creditors.push({ id, amountPaise: row.netPaise });
     if (row.netPaise < 0) debtors.push({ id, amountPaise: -row.netPaise });
   }
-  const byAmountThenId = (a, b) =>
-    b.amountPaise - a.amountPaise || a.id.localeCompare(b.id);
-  creditors.sort(byAmountThenId);
-  debtors.sort(byAmountThenId);
 
   const transfers = [];
+  pinCoveragePolicyTransfers(data, creditors, debtors, transfers);
+
+  const byAmountThenId = (a, b) =>
+      b.amountPaise - a.amountPaise || a.id.localeCompare(b.id),
+    remainingCreditors = creditors.filter((item) => item.amountPaise > 0).sort(byAmountThenId),
+    remainingDebtors = debtors.filter((item) => item.amountPaise > 0).sort(byAmountThenId);
+
   let creditorIndex = 0,
     debtorIndex = 0;
-  while (creditorIndex < creditors.length && debtorIndex < debtors.length) {
+  while (
+    creditorIndex < remainingCreditors.length &&
+    debtorIndex < remainingDebtors.length
+  ) {
     const amountPaise = Math.min(
-      creditors[creditorIndex].amountPaise,
-      debtors[debtorIndex].amountPaise,
+      remainingCreditors[creditorIndex].amountPaise,
+      remainingDebtors[debtorIndex].amountPaise,
     );
     if (amountPaise > 0)
       transfers.push({
-        from: debtors[debtorIndex].id,
-        to: creditors[creditorIndex].id,
+        from: remainingDebtors[debtorIndex].id,
+        to: remainingCreditors[creditorIndex].id,
         amountPaise,
       });
-    creditors[creditorIndex].amountPaise -= amountPaise;
-    debtors[debtorIndex].amountPaise -= amountPaise;
-    if (creditors[creditorIndex].amountPaise === 0) creditorIndex++;
-    if (debtors[debtorIndex].amountPaise === 0) debtorIndex++;
+    remainingCreditors[creditorIndex].amountPaise -= amountPaise;
+    remainingDebtors[debtorIndex].amountPaise -= amountPaise;
+    if (remainingCreditors[creditorIndex].amountPaise === 0) creditorIndex++;
+    if (remainingDebtors[debtorIndex].amountPaise === 0) debtorIndex++;
   }
 
   const financeRows = [...financeMembers].map((id) => rows[id]),
