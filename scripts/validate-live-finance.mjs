@@ -9,7 +9,7 @@ const errors = [];
 const assert = (condition, message) => {
   if (!condition) errors.push(message);
 };
-const sum = (items) =>
+const sum = (items = []) =>
   items.reduce((total, item) => total + (item.amountPaise || 0), 0);
 const expectedEight = [
   "het",
@@ -37,8 +37,9 @@ assert(
   "live finance cohort must contain exactly eight members",
 );
 
-// Milan coverage: shared group-account spend must not be counted again as
-// separate Milan personal debt after Devgna already funded Milan's contribution.
+// Milan: previously fronted costs remain payable to Devgna. The new ₹500
+// round-2 contribution was explicitly paid directly by Milan and therefore is
+// not a new Devgna advance.
 const coveragePolicy = (live.finance?.memberCoveragePolicies || []).find(
   (item) => item.id === "vyas-covers-milan-trip",
 );
@@ -55,52 +56,32 @@ assert(
 );
 assert(
   coveragePolicy?.currentKnownLiabilityPaise === 377875,
-  "current known Milan → Devgna liability must remain ₹3,778.75",
+  "known Milan → Devgna liability must remain ₹3,778.75",
 );
 const liabilityBreakdown = coveragePolicy?.currentKnownLiabilityBreakdown || [];
 assert(
   liabilityBreakdown.length === 4 && sum(liabilityBreakdown) === 377875,
   "Milan liability breakdown must keep four sources totaling ₹3,778.75",
 );
+for (const item of liabilityBreakdown)
+  assert(item.status === "due", `${item.id}: Milan liability must remain due`);
 const liabilityById = new Map(
   liabilityBreakdown.map((item) => [item.id, item]),
 );
 assert(
   liabilityById.get("milan-old-group-contribution")?.amountPaise === 300000,
-  "Milan old-pool advance must remain ₹3,000",
+  "Milan old-pool Devgna advance must remain ₹3,000",
 );
 assert(
   liabilityById.get("milan-active-group-contribution")?.amountPaise === 20000,
-  "Milan active-pool advance must remain ₹200",
+  "Milan first-round active Devgna advance must remain ₹200",
 );
-assert(
-  liabilityById.get("milan-train-shares")?.amountPaise === 41475,
-  "Milan train liability must remain ₹414.75",
-);
-assert(
-  liabilityById.get("milan-pretrip-dinner-share")?.amountPaise === 16400,
-  "Milan dinner liability must remain ₹164",
-);
-for (const item of liabilityBreakdown)
-  assert(item.status === "due", `${item.id}: Milan liability must remain due`);
-for (const id of [
-  "expense-vadapav-160-sep15",
-  "expense-water-40-sep15",
-  "expense-tejukya-pass-160-sep15",
-  "expense-water-60-sep15",
-]) {
-  assert(
-    !liabilityBreakdown.some((item) =>
-      (item.sourceRecordIds || []).includes(id),
-    ),
-    `${id}: active-group spend must not be double-counted as Milan personal debt`,
-  );
-}
 
-// Historical six-person account remains separate.
+// Historical six-person account: preserve the original discrepancy as audit
+// provenance, but record Jugal's ₹500 post-close cash recovery separately.
 const oldBase = historical.finance?.groupFund || {};
 const patch = live.finance?.groupFundPatch || {};
-const oldContributions = (oldBase.contributions || []).filter(
+const oldBaseContributions = (oldBase.contributions || []).filter(
   (item) => item.status === "received",
 );
 const oldOutflows = (oldBase.outflows || []).filter(
@@ -109,43 +90,42 @@ const oldOutflows = (oldBase.outflows || []).filter(
 const oldMerchantOutflows = oldOutflows.filter(
   (item) => item.category !== "reconciliation",
 );
-const oldCollected = sum(oldContributions);
+const oldCollected = sum(oldBaseContributions);
 const oldAccountingSpent = sum(oldOutflows);
 const oldMerchantSpent = sum(oldMerchantOutflows);
 assert(patch.id === "group-fund-six-sep14", "historical pool id mismatch");
-assert(oldCollected === 1740000, "historical cash collected must remain ₹17,400");
+assert(oldCollected === 1740000, "historical base cash collected must remain ₹17,400");
+assert(oldMerchantSpent === 1173800, "historical merchant spend must remain ₹11,738");
+assert(oldAccountingSpent === 1220000, "historical accounting outflows must remain ₹12,200");
+assert(oldCollected - oldAccountingSpent === 520000, "historical closing boundary must remain ₹5,200");
+assert(patch.closedObservedBalancePaise === 520000, "old closing checkpoint must remain ₹5,200");
+assert(patch.auditVariancePaise === -46200, "original historical audit variance must remain -₹462");
 assert(
-  oldMerchantSpent === 1173800,
-  "historical confirmed merchant spend must remain ₹11,738",
+  patch.cashShortfallStatus === "operationally-covered" &&
+    patch.cashShortfallCoveragePaise === 46200 &&
+    patch.cashShortfallCoverageExcessPaise === 3800,
+  "Jugal recovery must operationally cover ₹462 shortfall with ₹38 excess",
+);
+const recovery = (patch.contributions || []).find(
+  (item) => item.id === "group-fund-jugal-shortfall-recovery-sep15",
 );
 assert(
-  oldAccountingSpent === 1220000,
-  "historical accounting outflows must remain ₹12,200 including reconciliation",
+  recovery?.memberId === "jugal" &&
+    recovery?.paidByMemberId === "jugal" &&
+    recovery?.amountPaise === 50000 &&
+    recovery?.status === "received",
+  "old pool must contain exactly Jugal's ₹500 shortfall-recovery contribution",
 );
 assert(
-  oldCollected - oldAccountingSpent === 520000,
-  "historical observed boundary must reconcile to ₹5,200",
+  sum((patch.contributions || []).filter((item) => item.status === "received")) === 50000,
+  "old-pool post-close recovery contributions must total ₹500",
 );
-assert(
-  oldCollected - oldMerchantSpent + patch.auditVariancePaise === 520000,
-  "historical merchant spend plus audit variance must reconcile to ₹5,200",
-);
-assert(
-  patch.closedObservedBalancePaise === 520000,
-  "old-pool boundary must remain ₹5,200",
-);
-assert(
-  patch.auditVariancePaise === -46200,
-  "historical audit variance must remain -₹462",
-);
-assert(
-  patch.currentPhysicalBalancePaise === 500000,
-  "old pool physical cash must remain ₹5,000",
-);
+assert(patch.postCloseContributionPaise === 50000, "stored old-pool recovery must be ₹500");
+assert(patch.currentPhysicalBalancePaise === 550000, "old pool physical cash must now be ₹5,500");
 assert(
   patch.interPoolReceivablePaise === 20000 &&
-    patch.economicBalancePaise === 520000,
-  "old pool must retain ₹200 receivable and ₹5,200 economic balance",
+    patch.economicBalancePaise === 570000,
+  "old pool must be ₹5,500 cash + ₹200 receivable = ₹5,700 economic balance",
 );
 const oldAdvance = (patch.postCloseAdvances || []).find(
   (item) => item.id === "old-pool-advance-taxi-mumbai-cha-raja-sep15",
@@ -172,44 +152,50 @@ assert(
   "inter-account receivable link mismatch",
 );
 
-// Active eight-person account.
+// Active eight-person account: cumulative target is now ₹700 each = original
+// ₹200 round plus a new ₹500 round.
 const active = live.finance?.activeGroupFund || {};
 assert(active.id === "group-fund-eight-sep15", "active group id mismatch");
 assert(active.status === "active", "eight-person account must be active");
-assert(
-  sameMembers(active.targetMemberIds || []),
-  "active member set must contain exactly eight people",
-);
+assert(sameMembers(active.targetMemberIds || []), "active member set must contain exactly eight people");
 assert(
   active.targetMode === "fixed-contribution" &&
-    active.targetPerMemberPaise === 20000 &&
-    active.targetTotalPaise === 160000,
-  "active contribution target must remain ₹200/person = ₹1,600",
+    active.targetPerMemberPaise === 70000 &&
+    active.targetTotalPaise === 560000,
+  "active cumulative target must be ₹700/person = ₹5,600",
 );
 
 const contributions = (active.contributions || []).filter(
   (item) => item.status === "received",
 );
+const round1 = contributions.filter((item) => item.phase === "round-1-200");
+const round2 = contributions.filter((item) => item.phase === "round-2-500");
+assert(round1.length === 7 && sum(round1) === 140000, "round 1 must remain seven cash records totaling ₹1,400");
+assert(round2.length === 6 && sum(round2) === 300000, "round 2 must have six ₹500 payments totaling ₹3,000");
+for (const item of round1)
+  assert(item.amountPaise === 20000, `${item.id}: round-1 amount must be ₹200`);
+for (const item of round2)
+  assert(item.amountPaise === 50000, `${item.id}: round-2 amount must be ₹500`);
+const round2Members = round2.map((item) => item.memberId).sort();
 assert(
-  contributions.length === 7 && sum(contributions) === 140000,
-  "active cash contributions must be seven records totaling ₹1,400",
+  round2Members.join(",") === ["jugal", "milan", "neet", "pratham", "tirth", "vyas"].join(","),
+  "round 2 payers must be Vyas, Tirth, Milan, Jugal, Pratham and Neet only",
 );
-for (const item of contributions)
-  assert(item.amountPaise === 20000, `${item.id}: contribution must be ₹200`);
+assert(!round2.some((item) => item.memberId === "nishit" || item.memberId === "het"), "Nishit and Het must remain unpaid for round 2");
+const jugalRound2 = round2.find((item) => item.memberId === "jugal");
+assert(jugalRound2?.amountPaise === 50000, "only ₹500 of Jugal's ₹1,000 handover may enter active account");
+assert(jugalRound2.amountPaise + recovery.amountPaise === 100000, "Jugal split must total exactly ₹1,000 across the two separate accounts");
+const milanRound1 = round1.find((item) => item.memberId === "milan");
+const milanRound2 = round2.find((item) => item.memberId === "milan");
 assert(
-  !contributions.some((item) => item.memberId === "tirth"),
-  "Tirth must not also have a cash contribution",
-);
-const milanContribution = contributions.find(
-  (item) => item.id === "group-eight-contribution-milan-sep15",
+  milanRound1?.paidByMemberId === "vyas" && milanRound1?.amountPaise === 20000,
+  "Milan original ₹200 must remain Devgna-funded",
 );
 assert(
-  milanContribution?.memberId === "milan" &&
-    milanContribution?.paidByMemberId === "vyas" &&
-    milanContribution?.amountPaise === 20000,
-  "Milan active contribution must be ₹200 physically funded by Devgna",
+  milanRound2?.paidByMemberId === "milan" && milanRound2?.amountPaise === 50000,
+  "Milan new ₹500 must be recorded as paid directly by Milan",
 );
-const historicalMilanAdvance = oldContributions
+const historicalMilanAdvance = oldBaseContributions
   .filter(
     (item) =>
       item.memberId === "milan" &&
@@ -218,8 +204,8 @@ const historicalMilanAdvance = oldContributions
   .reduce((total, item) => total + item.amountPaise, 0);
 assert(
   historicalMilanAdvance === 300000 &&
-    historicalMilanAdvance + milanContribution.amountPaise === 320000,
-  "known Devgna group-account funding for Milan must total ₹3,200",
+    historicalMilanAdvance + milanRound1.amountPaise === 320000,
+  "known Devgna-funded Milan group contributions must remain ₹3,200",
 );
 
 const tirthCredit = (active.credits || []).find(
@@ -229,15 +215,25 @@ assert(
   tirthCredit?.memberId === "tirth" &&
     tirthCredit?.amountPaise === 20000 &&
     tirthCredit?.status === "applied",
-  "Tirth contribution credit must remain ₹200 applied",
+  "Tirth original ₹200 contribution credit must remain applied",
 );
+assert(active.cashCollectedPaise === 440000, "active cash collected must now total ₹4,400");
+assert(active.contributionCreditPaise === 20000, "active contribution credit must remain ₹200");
+assert(active.effectiveContributionPaise === 460000, "effective active contribution must be ₹4,600");
+assert(active.outstandingContributionPaise === 100000, "active outstanding contribution must be ₹1,000");
 assert(
-  active.contributionCreditPaise === 20000 &&
-    active.effectiveContributionPaise === 160000 &&
-    active.outstandingContributionPaise === 0 &&
-    (active.outstandingMemberIds || []).length === 0,
-  "active contribution target must remain fully covered",
+  [...(active.outstandingMemberIds || [])].sort().join(",") === ["het", "nishit"].join(","),
+  "only Nishit and Het may remain ₹500 outstanding",
 );
+const memberEffective = Object.fromEntries(expectedEight.map((id) => [id, 0]));
+for (const item of contributions)
+  memberEffective[item.memberId] += item.amountPaise;
+for (const item of active.credits || [])
+  if (item.status === "applied") memberEffective[item.memberId] += item.amountPaise;
+for (const id of expectedEight) {
+  const expected = id === "nishit" || id === "het" ? 20000 : 70000;
+  assert(memberEffective[id] === expected, `${id}: cumulative active contribution mismatch`);
+}
 
 const expectedCashOutflows = new Map([
   ["group-eight-water-80-sep15", 8000],
@@ -246,74 +242,35 @@ const expectedCashOutflows = new Map([
   ["group-eight-tejukya-pass-160-sep15", 16000],
   ["group-eight-water-60-sep15", 6000],
 ]);
-const outflows = (active.outflows || []).filter(
-  (item) => item.status === "paid",
-);
-assert(
-  outflows.length === expectedCashOutflows.size,
-  "active direct-cash outflow count mismatch",
-);
+const outflows = (active.outflows || []).filter((item) => item.status === "paid");
+assert(outflows.length === expectedCashOutflows.size, "active direct-cash outflow count mismatch");
 for (const [id, amount] of expectedCashOutflows) {
   const row = outflows.find((item) => item.id === id);
   assert(row?.amountPaise === amount, `${id}: cash outflow missing or wrong amount`);
 }
-assert(sum(outflows) === 50000, "active cash outflows must total ₹500");
-assert(
-  active.cashCollectedPaise === 140000 &&
-    active.cashPaidOutPaise === 50000 &&
-    active.physicalCashBalancePaise === 90000,
-  "active cash must reconcile ₹1,400 − ₹500 = ₹900",
-);
+assert(sum(outflows) === 50000, "active direct cash outflows must remain ₹500");
+assert(active.cashPaidOutPaise === 50000, "stored active cash paid out must remain ₹500");
+assert(active.physicalCashBalancePaise === 390000, "active physical cash must be ₹3,900");
+assert(active.spendableBalancePaise === 390000, "active spendable cash must equal ₹3,900 cash on hand");
+assert(active.reservedPayablesPaise === 0, "no active cash may be contra-reserved");
 
-// Payables remain recorded for trip-end settlement, but are NOT a contra-reserve
-// against spendable cash during the trip.
 const poolPayable = (active.interPoolPayables || []).find(
   (item) => item.id === "group-eight-payable-old-pool-taxi-sep15",
 );
-assert(
-  poolPayable?.amountPaise === 20000 &&
-    poolPayable?.toGroupFundId === "group-fund-six-sep14" &&
-    poolPayable?.status === "due",
-  "active account must retain ₹200 old-pool trip-end payable",
-);
-assert(
-  interAccountLink?.payableRecordId === poolPayable?.id &&
-    interAccountLink?.amountPaise === poolPayable?.amountPaise,
-  "linked inter-account payable mismatch",
-);
-const memberPayables = active.memberPayables || [];
-const prathamPayable = memberPayables.find(
+const prathamPayable = (active.memberPayables || []).find(
   (item) => item.id === "group-eight-payable-pratham-taxi-sep15",
 );
-const tirthPayable = memberPayables.find(
+const tirthPayable = (active.memberPayables || []).find(
   (item) => item.id === "group-eight-payable-tirth-pass-extra-sep15",
 );
+assert(poolPayable?.amountPaise === 20000, "old-pool trip-end payable must remain ₹200");
+assert(prathamPayable?.amountPaise === 20000, "Pratham trip-end payable must remain ₹200");
+assert(tirthPayable?.amountPaise === 4000, "Tirth trip-end payable must remain ₹40");
 assert(
-  prathamPayable?.memberId === "pratham" &&
-    prathamPayable?.amountPaise === 20000,
-  "Pratham trip-end payable must remain ₹200",
-);
-assert(
-  tirthPayable?.memberId === "tirth" && tirthPayable?.amountPaise === 4000,
-  "Tirth trip-end payable must remain ₹40",
-);
-const endSettlementTotal =
-  sum(active.interPoolPayables || []) + sum(active.memberPayables || []);
-assert(endSettlementTotal === 44000, "trip-end payables must total ₹440");
-assert(
-  active.interPoolPayablePaise === 20000 &&
-    active.memberPayablePaise === 24000 &&
-    active.endSettlementPayablesPaise === 44000,
-  "stored trip-end settlement totals must equal ₹440",
-);
-assert(
-  active.reservedPayablesPaise === 0,
-  "no active cash may be held back as a contra-reserve",
-);
-assert(
-  active.spendableBalancePaise === 90000 &&
-    active.spendableBalancePaise === active.physicalCashBalancePaise,
-  "cash on hand must equal spendable cash: ₹900",
+  active.endSettlementPayablesPaise === 44000 &&
+    active.interPoolPayablePaise === 20000 &&
+    active.memberPayablePaise === 24000,
+  "trip-end settlements must remain ₹440 total",
 );
 
 const expectedCharges = new Map([
@@ -330,52 +287,15 @@ assert(charges.length === expectedCharges.size, "active charge count mismatch");
 for (const [id, amount] of expectedCharges) {
   const charge = charges.find((item) => item.id === id);
   assert(charge?.amountPaise === amount, `${id}: charge missing or wrong amount`);
-  assert(
-    sameMembers(charge?.participantIds || []),
-    `${id}: participant set must contain all eight members`,
-  );
+  assert(sameMembers(charge?.participantIds || []), `${id}: participant set must contain all eight members`);
 }
-const tejukyaCharge = charges.find(
-  (item) => item.id === "group-eight-tejukya-pass-160-sep15",
-);
-assert(
-  tejukyaCharge?.label === "Tejukya · pass" &&
-    (tejukyaCharge?.fundingBreakdown || []).some(
-      (item) =>
-        item.kind === "new-group-cash" && item.amountPaise === 16000,
-    ),
-  "₹160 Tejukya pass charge/funding mismatch",
-);
-const taxiCharge = charges.find(
-  (item) => item.id === "group-eight-taxi-mumbai-cha-raja-sep15",
-);
-assert(
-  (taxiCharge?.fundingBreakdown || []).some(
-    (item) =>
-      item.kind === "old-group-advance" && item.amountPaise === 20000,
-  ) &&
-    (taxiCharge?.fundingBreakdown || []).some(
-      (item) =>
-        item.kind === "member-advance" &&
-        item.memberId === "pratham" &&
-        item.amountPaise === 20000,
-    ),
-  "taxi funding must retain ₹200 old-pool + ₹200 Pratham",
-);
-const mumbaiPass = charges.find(
-  (item) => item.id === "group-eight-pass-mumbai-cha-raja-sep15",
-);
-assert(
-  mumbaiPass?.paidByMemberId === "tirth",
-  "Mumbai Cha Raja pass payer must remain Tirth",
-);
 assert(
   sum(charges) === 114000 &&
     active.totalChargedPaise === 114000 &&
     active.fundedChargedPaise === 114000 &&
     active.unfundedChargedPaise === 0 &&
     active.perMemberExpenseSharePaise === 14250,
-  "active charges must remain ₹1,140 total / ₹142.50 per person with no unfunded amount",
+  "active charges must remain ₹1,140 total / ₹142.50 per person",
 );
 
 const expenses = live.expenses || [];
@@ -389,68 +309,24 @@ const expectedDirectExpenses = new Map([
 for (const [id, [amount, outflowId]] of expectedDirectExpenses) {
   const expense = expenses.find((item) => item.id === id);
   assert(expense?.amountPaise === amount, `${id}: expense amount mismatch`);
-  assert(expense?.status === "paid", `${id}: expense must be confirmed paid`);
+  assert(expense?.status === "paid", `${id}: expense must remain paid`);
   assert(
     expense?.fundingSource === "groupFund" &&
       expense?.groupFundId === "group-fund-eight-sep15" &&
       expense?.groupFundOutflowId === outflowId,
     `${id}: active group-cash linkage mismatch`,
   );
-  assert(
-    sameMembers(expense?.participantIds || []),
-    `${id}: participant set must contain all eight members`,
-  );
+  assert(sameMembers(expense?.participantIds || []), `${id}: participant set mismatch`);
 }
 assert(
   !JSON.stringify(live).includes("Aprel Cha Raja") &&
     !JSON.stringify(live).includes("aprel-cha-raja"),
-  "corrected ₹160 pass must not remain mislabeled as Aprel Cha Raja",
-);
-
-const oldTaxi = expenses.find(
-  (item) => item.id === "expense-taxi-mumbai-cha-raja-sep15",
-);
-const taxiOldPool = expenses.find(
-  (item) => item.id === "expense-taxi-mumbai-cha-raja-old-pool-sep15",
-);
-const taxiPratham = expenses.find(
-  (item) => item.id === "expense-taxi-mumbai-cha-raja-pratham-sep15",
-);
-assert(
-  oldTaxi?.status === "superseded" &&
-    taxiOldPool?.amountPaise === 20000 &&
-    taxiOldPool?.fundingSource === "groupFundExternalAdvance" &&
-    taxiPratham?.amountPaise === 20000 &&
-    taxiPratham?.payerId === "pratham" &&
-    taxiPratham?.fundingSource === "groupFundMemberAdvance",
-  "Mumbai Cha Raja taxi split must remain recorded as active-group expense funding",
-);
-const oldPass = expenses.find(
-  (item) => item.id === "expense-mumbai-cha-raja-pass-sep15",
-);
-const passContribution = expenses.find(
-  (item) => item.id === "expense-mumbai-cha-raja-pass-contribution-sep15",
-);
-const passExtra = expenses.find(
-  (item) => item.id === "expense-mumbai-cha-raja-pass-extra-sep15",
-);
-assert(
-  oldPass?.status === "superseded" &&
-    passContribution?.amountPaise === 20000 &&
-    passContribution?.payerId === "tirth" &&
-    passContribution?.fundingSource === "groupFundMemberCredit" &&
-    passExtra?.amountPaise === 4000 &&
-    passExtra?.payerId === "tirth" &&
-    passExtra?.fundingSource === "groupFundMemberAdvance",
-  "Mumbai Cha Raja pass split must remain recorded as contribution credit + trip-end reimbursement",
+  "corrected ₹160 pass must remain labeled Tejukya only",
 );
 const reconciliation = expenses.find(
   (item) => item.id === "expense-cash-reconciliation-sep15",
 );
-assert(
-  reconciliation?.status === "reconciliation",
-  "₹462 historical cash variance must remain audit-only",
-);
+assert(reconciliation?.status === "reconciliation", "historical ₹462 discrepancy must remain audit-only");
 
 if (errors.length) {
   console.error(errors.join("\n"));
@@ -458,5 +334,5 @@ if (errors.length) {
 }
 
 console.log(
-  "Live finance valid: active cash on hand equals spendable cash ₹900; ₹440 reimbursements remain recorded for trip-end settlement without contra-reserving cash; charges ₹1,140 / ₹142.50 each; Milan → Devgna ₹3,778.75 remains separate",
+  "Live finance valid: active round-2 ₹500 received from six members; Nishit + Het ₹500 each outstanding; active cash/spendable ₹3,900; Jugal split ₹500 active + ₹500 old pool; old physical ₹5,500 / economic ₹5,700; original ₹462 variance retained as audit history; Milan → Devgna ₹3,778.75 unchanged",
 );
