@@ -50,6 +50,10 @@ export default function Finance({ expenses, setSheet }) {
     settlement = snapshot.settlement,
     groupFund = data.finance?.groupFund,
     legacyGroupFund = data.finance?.legacyGroupFund,
+    interAccountLinks = data.finance?.interAccountLinks || [],
+    coveragePolicy = (data.finance?.memberCoveragePolicies || []).find(
+      (item) => item.id === "vyas-covers-milan-trip",
+    ),
     receivedFundContributions = (groupFund?.contributions || []).filter(
       (item) => item.status === "received",
     ),
@@ -166,16 +170,74 @@ export default function Finance({ expenses, setSheet }) {
       (item) =>
         (item.paidByMemberId || item.memberId) !== item.memberId,
     ),
-    groupFundExpensePaise = snapshot.paid
+    activeGroupFundExpensePaise = snapshot.paid
+      .filter(
+        (expense) =>
+          expense.fundingSource === "groupFund" &&
+          expense.groupFundId === groupFund?.id,
+      )
+      .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
+    allGroupFundExpensePaise = snapshot.paid
       .filter((expense) => expense.fundingSource === "groupFund")
       .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
-    memberCreditExpensePaise = snapshot.paid
-      .filter((expense) => expense.fundingSource === "groupFundMemberCredit")
+    activeMemberCreditExpensePaise = snapshot.paid
+      .filter(
+        (expense) =>
+          expense.fundingSource === "groupFundMemberCredit" &&
+          expense.groupFundId === groupFund?.id,
+      )
       .reduce((sum, expense) => sum + safeFundAmount(expense.amountPaise), 0),
     directlyFundedExpensePaise =
-      snapshot.recordedPaidPaise - groupFundExpensePaise,
-    groupFundReconciliationPaise = groupFundExpensePaise - groupFundSpentPaise,
-    memberCreditReconciliationPaise = memberCreditExpensePaise - groupFundCreditPaise,
+      snapshot.recordedPaidPaise - allGroupFundExpensePaise,
+    groupFundReconciliationPaise =
+      activeGroupFundExpensePaise - groupFundSpentPaise,
+    memberCreditReconciliationPaise =
+      activeMemberCreditExpensePaise - groupFundCreditPaise,
+    legacyContributions = (legacyGroupFund?.contributions || []).filter(
+      (item) => item.status === "received",
+    ),
+    legacyCredits = (legacyGroupFund?.credits || []).filter(
+      (item) => item.status === "applied",
+    ),
+    legacyOutflows = (legacyGroupFund?.outflows || []).filter(
+      (item) => item.status === "paid",
+    ),
+    legacyConfirmedOutflows = legacyOutflows.filter(
+      (item) => item.category !== "reconciliation",
+    ),
+    legacyCollectedPaise = legacyContributions.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    legacyCreditPaise = legacyCredits.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    legacyConfirmedSpentPaise = legacyConfirmedOutflows.reduce(
+      (sum, item) => sum + safeFundAmount(item.amountPaise),
+      0,
+    ),
+    legacyTargetPaise =
+      safeFundAmount(legacyGroupFund?.targetPerMemberPaise) *
+      (legacyGroupFund?.targetMemberIds || []).length,
+    legacyCurrentPhysicalPaise = Number.isSafeInteger(
+      legacyGroupFund?.currentPhysicalBalancePaise,
+    )
+      ? legacyGroupFund.currentPhysicalBalancePaise
+      : 0,
+    legacyReceivablePaise = safeFundAmount(
+      legacyGroupFund?.interPoolReceivablePaise,
+    ),
+    legacyEconomicBalancePaise = Number.isSafeInteger(
+      legacyGroupFund?.economicBalancePaise,
+    )
+      ? legacyGroupFund.economicBalancePaise
+      : legacyCurrentPhysicalPaise + legacyReceivablePaise,
+    legacyAuditVariancePaise = Number.isSafeInteger(
+      legacyGroupFund?.auditVariancePaise,
+    )
+      ? legacyGroupFund.auditVariancePaise
+      : 0,
     receivedPayments = (data.reimbursements || []).filter(
       (payment) => payment.status === "received",
     ),
@@ -239,8 +301,8 @@ export default function Finance({ expenses, setSheet }) {
         <DockAwarePanel className="panel finance-pool-panel finance-cash-first">
           <div className="finance-section-heading">
             <div>
-              <span>01 · CASH</span>
-              <h2>Shared cash</h2>
+              <span>01 · ACTIVE CASH</span>
+              <h2>8-person group cash</h2>
             </div>
             <b>{formatINR(groupFundSpendablePaise)}</b>
           </div>
@@ -253,7 +315,7 @@ export default function Finance({ expenses, setSheet }) {
             </small>
           </div>
 
-          <div className="finance-cash-equation" aria-label="Shared cash calculation">
+          <div className="finance-cash-equation" aria-label="Active shared cash calculation">
             <div>
               <span>CASH COLLECTED</span>
               <b>{formatINR(groupFundCollectedPaise)}</b>
@@ -272,22 +334,22 @@ export default function Finance({ expenses, setSheet }) {
 
           <div className="finance-pool-status">
             <span>
-              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)} · {formatINR(groupFundCreditPaise)} direct-expense credit already counted
+              Pool target {formatINR(groupFundTargetPerMemberPaise)} × {groupFundMembers.length} = {formatINR(groupFundTargetPaise)} · {formatINR(groupFundCreditPaise)} expense credit already counted
             </span>
             <b>{formatINR(groupFundOutstandingPaise)} still to collect</b>
           </div>
 
           {groupFundReservedPaise > 0 && (
             <div className="finance-callout">
-              <b>{formatINR(groupFundReservedPaise)} of current cash is already reserved.</b>
-              <span>{payableSummary}. These are liabilities of the active group account, so only {formatINR(groupFundSpendablePaise)} is presently free to spend.</span>
+              <b>{formatINR(groupFundReservedPaise)} of current cash is reserved.</b>
+              <span>{payableSummary}. These liabilities belong only to the active eight-person account, leaving {formatINR(groupFundSpendablePaise)} free to spend.</span>
             </div>
           )}
 
           {displayOutflows.length > 0 && (
             <div className="finance-cash-subsection">
               <div className="finance-subhead">
-                <b>Cash paid from the pool</b>
+                <b>Cash paid from active pool</b>
                 <span>{formatINR(groupFundSpentPaise)} total</span>
               </div>
               <div className="finance-spend-list finance-cash-outflows">
@@ -295,7 +357,7 @@ export default function Finance({ expenses, setSheet }) {
                   <div className="finance-spend-row" key={outflow.id}>
                     <div>
                       <b>{outflow.label || "Group expense"}</b>
-                      <small>{outflow.date} · paid from shared cash</small>
+                      <small>{outflow.date} · paid from active shared cash</small>
                     </div>
                     <strong>-{formatINR(outflow.amountPaise)}</strong>
                   </div>
@@ -306,8 +368,8 @@ export default function Finance({ expenses, setSheet }) {
 
           <div className="finance-cash-subsection">
             <div className="finance-subhead">
-              <b>Who has covered their pool target</b>
-              <span>{groupFundFullyFundedCount}/{groupFundMembers.length} targets complete</span>
+              <b>Who has covered the ₹200 target</b>
+              <span>{groupFundFullyFundedCount}/{groupFundMembers.length} complete</span>
             </div>
             <div className="finance-contribution-list">
               {groupFundMembers.map((memberId) => {
@@ -326,11 +388,11 @@ export default function Finance({ expenses, setSheet }) {
                       <small>
                         {outstanding > 0
                           ? `${formatINR(outstanding)} still needs to be covered`
-                          : "pool target complete"}
+                          : "group target complete"}
                       </small>
                       {credit > 0 && (
                         <small className="advance-note">
-                          {formatINR(collected)} cash + {formatINR(credit)} direct expense credit
+                          {formatINR(collected)} cash + {formatINR(credit)} expense credit
                         </small>
                       )}
                       {advances.map((advance, index) => (
@@ -353,47 +415,135 @@ export default function Finance({ expenses, setSheet }) {
 
           {appliedFundCredits.length > 0 && (
             <div className="finance-callout">
-              <b>Direct expense credits reduce pool dues without changing cash on hand.</b>
+              <b>Expense credits reduce contribution dues without adding cash.</b>
               <span>
                 {appliedFundCredits
                   .map(
                     (credit) =>
-                      `${firstName(credit.memberId)} paid ${formatINR(credit.amountPaise)} directly for a group expense`,
+                      `${firstName(credit.memberId)} paid ${formatINR(credit.amountPaise)} directly`,
                   )
-                  .join(" · ")}. The amount is counted toward that member's pool target, not added to the cash balance.
-              </span>
-            </div>
-          )}
-
-          {fundAdvances.length > 0 && (
-            <div className="finance-callout">
-              <b>Important: credited money and actual payer can differ.</b>
-              <span>
-                {fundAdvances
-                  .map(
-                    (advance) =>
-                      `${firstName(advance.paidByMemberId)} paid ${formatINR(advance.amountPaise)} for ${firstName(advance.memberId)}`,
-                  )
-                  .join(" · ")}. Those advances are handled later under settlements and do not change the cash balance above.
-              </span>
-            </div>
-          )}
-
-          {legacyGroupFund && Number.isSafeInteger(legacyGroupFund.currentPhysicalBalancePaise) && (
-            <div className="finance-callout">
-              <b>Previous 6-person pool is separate.</b>
-              <span>
-                {formatINR(legacyGroupFund.currentPhysicalBalancePaise)} physical cash + {formatINR(legacyGroupFund.interPoolReceivablePaise || 0)} receivable = {formatINR(legacyGroupFund.economicBalancePaise || 0)} economic balance. Historical cash variance remains {formatINR(Math.abs(legacyGroupFund.auditVariancePaise || 0))} unresolved.
+                  .join(" · ")}. These credits satisfy the named member's target but never enter the cash balance.
               </span>
             </div>
           )}
         </DockAwarePanel>
       )}
 
+      <DockAwarePanel className="panel">
+        <div className="finance-section-heading">
+          <div>
+            <span>02 · GROUP ACCOUNTS</span>
+            <h2>Two separate ledgers</h2>
+          </div>
+          <b>{interAccountLinks.length} LINKED RECORD</b>
+        </div>
+        <p className="finance-section-copy">
+          The previous six-person pool and active eight-person pool never share a balance. A transfer between them appears as a receivable in one ledger and the matching payable in the other.
+        </p>
+
+        <div className="finance-settlement-block">
+          <div className="finance-subhead">
+            <b>A · Active 8-person account</b>
+            <span>{groupFund?.status || "active"}</span>
+          </div>
+          <div className="finance-integrity-grid">
+            <div><span>PHYSICAL CASH</span><b>{formatINR(groupFundPhysicalCashPaise)}</b></div>
+            <div><span>RESERVED</span><b>{formatINR(groupFundReservedPaise)}</b></div>
+            <div><span>FREE TO SPEND</span><b>{formatINR(groupFundSpendablePaise)}</b></div>
+            <div><span>TARGET COVERED</span><b>{formatINR(groupFundCollectedPaise + groupFundCreditPaise)} / {formatINR(groupFundTargetPaise)}</b></div>
+            <div><span>CHARGES</span><b>{formatINR(groupFund?.totalChargedPaise || 0)}</b></div>
+            <div><span>PER PERSON COST</span><b>{formatINR(groupFund?.perMemberExpenseSharePaise || 0)}</b></div>
+          </div>
+          <details className="finance-details">
+            <summary>
+              <span><b>Active-account records</b><small>contributions, charges and payables</small></span>
+              <strong>OPEN</strong>
+            </summary>
+            <div className="finance-details-body">
+              <section className="finance-audit-section">
+                <div className="finance-subhead"><b>Current charges</b><span>{groupFund?.charges?.length || 0} records</span></div>
+                <div className="finance-audit-list">
+                  {(groupFund?.charges || []).map((charge) => (
+                    <div key={charge.id}>
+                      <span><b>{charge.label}</b><small>{charge.date} · {charge.participantIds?.length || 0} people</small></span>
+                      <strong>{formatINR(charge.amountPaise)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section className="finance-audit-section">
+                <div className="finance-subhead"><b>Reserved reimbursements</b><span>{formatINR(groupFundReservedPaise)}</span></div>
+                <div className="finance-audit-list">
+                  {interPoolPayables.map((item) => (
+                    <div key={item.id}><span><b>{item.label}</b><small>inter-account payable · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
+                  ))}
+                  {memberPayables.map((item) => (
+                    <div key={item.id}><span><b>{item.label}</b><small>member payable · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </details>
+        </div>
+
+        <div className="finance-settlement-block">
+          <div className="finance-subhead">
+            <b>B · Previous 6-person account</b>
+            <span>historical</span>
+          </div>
+          <div className="finance-integrity-grid">
+            <div><span>CASH CONTRIBUTED</span><b>{formatINR(legacyCollectedPaise)}</b></div>
+            <div><span>EXPENSE CREDITS</span><b>{formatINR(legacyCreditPaise)}</b></div>
+            <div><span>EFFECTIVE TARGET</span><b>{formatINR(legacyCollectedPaise + legacyCreditPaise)} / {formatINR(legacyTargetPaise)}</b></div>
+            <div><span>CONFIRMED SPEND</span><b>{formatINR(legacyConfirmedSpentPaise)}</b></div>
+            <div><span>CURRENT PHYSICAL CASH</span><b>{formatINR(legacyCurrentPhysicalPaise)}</b></div>
+            <div><span>RECEIVABLE</span><b>{formatINR(legacyReceivablePaise)}</b></div>
+            <div><span>ECONOMIC BALANCE</span><b>{formatINR(legacyEconomicBalancePaise)}</b></div>
+            <div><span>AUDIT VARIANCE</span><b>{legacyAuditVariancePaise < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariancePaise))}</b></div>
+          </div>
+          <details className="finance-details">
+            <summary>
+              <span><b>Historical-account records</b><small>confirmed outflows and post-close advance</small></span>
+              <strong>OPEN</strong>
+            </summary>
+            <div className="finance-details-body">
+              <section className="finance-audit-section">
+                <div className="finance-subhead"><b>Confirmed merchant outflows</b><span>{formatINR(legacyConfirmedSpentPaise)}</span></div>
+                <div className="finance-audit-list">
+                  {legacyConfirmedOutflows.map((item) => (
+                    <div key={item.id}><span><b>{item.label}</b><small>{item.date} · historical pool</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
+                  ))}
+                </div>
+              </section>
+              {(legacyGroupFund?.postCloseAdvances || []).length > 0 && (
+                <section className="finance-audit-section">
+                  <div className="finance-subhead"><b>Post-close advances</b><span>{formatINR(legacyReceivablePaise)} receivable</span></div>
+                  <div className="finance-audit-list">
+                    {(legacyGroupFund.postCloseAdvances || []).map((item) => (
+                      <div key={item.id}><span><b>{item.label}</b><small>{item.date} · {item.status}</small></span><strong>{formatINR(item.amountPaise)}</strong></div>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <p className="finance-footnote">
+                The ₹462 variance is an audit-control difference, not a merchant expense. The old pool's last observed boundary was {formatINR(legacyGroupFund?.closedObservedBalancePaise || 0)} before the post-close taxi advance.
+              </p>
+            </div>
+          </details>
+        </div>
+
+        {interAccountLinks.map((link) => (
+          <div className="finance-callout" key={link.id}>
+            <b>Inter-account link · {formatINR(link.amountPaise)} · {link.status}</b>
+            <span>Previous 6-person pool → active 8-person account for Taxi 1. The old ledger records a receivable and the active ledger records the matching payable. This amount is not counted twice.</span>
+          </div>
+        ))}
+      </DockAwarePanel>
+
       <DockAwarePanel className="panel finance-expenses-panel">
         <div className="finance-section-heading">
           <div>
-            <span>02 · EXPENSES</span>
+            <span>03 · EXPENSES</span>
             <h2>What the trip has actually cost</h2>
           </div>
           <button className="finance-secondary-button" onClick={() => setSheet("expense")}>
@@ -409,13 +559,13 @@ export default function Finance({ expenses, setSheet }) {
           </article>
           <article className="finance-overview-card cash">
             <span>FROM GROUP CASH</span>
-            <strong>{formatINR(groupFundExpensePaise)}</strong>
-            <small>merchant payments made from the active pooled cash</small>
+            <strong>{formatINR(allGroupFundExpensePaise)}</strong>
+            <small>confirmed merchant payments from either group cash ledger</small>
           </article>
           <article className="finance-overview-card">
-            <span>PAID DIRECTLY</span>
+            <span>OTHER FUNDING</span>
             <strong>{formatINR(directlyFundedExpensePaise)}</strong>
-            <small>paid personally or advanced by another account/member</small>
+            <small>personal payments, credits and advances</small>
           </article>
         </div>
 
@@ -424,9 +574,11 @@ export default function Finance({ expenses, setSheet }) {
             const payer = member(expense.payerId),
               payerLabel =
                 expense.fundingSource === "groupFund"
-                  ? "Active group cash"
+                  ? expense.groupFundId === groupFund?.id
+                    ? "Active 8-person group cash"
+                    : "Previous group cash"
                   : expense.fundingSource === "groupFundMemberCredit"
-                    ? `${payer?.name || "Member"} · credited to pool target`
+                    ? `${payer?.name || "Member"} · credited to active pool target`
                     : expense.fundingSource === "groupFundMemberAdvance"
                       ? `${payer?.name || "Member"} · paid for active group`
                       : expense.fundingSource === "groupFundExternalAdvance"
@@ -478,7 +630,7 @@ export default function Finance({ expenses, setSheet }) {
       <DockAwarePanel className="panel finance-action-panel">
         <div className="finance-section-heading">
           <div>
-            <span>03 · SETTLEMENTS</span>
+            <span>04 · SETTLEMENTS</span>
             <h2>Money still owed</h2>
           </div>
           <b>{formatINR(groupFundReservedPaise)} GROUP PAYABLES</b>
@@ -487,7 +639,7 @@ export default function Finance({ expenses, setSheet }) {
         <div className="finance-settlement-explainer">
           <b>Contribution dues, group-account reimbursements and friend balances are separate.</b>
           <span>
-            “To group cash” is the member's remaining contribution target. Group-account reimbursements are known liabilities already reserved from physical cash. “Between friends” covers personal settlement entries such as earlier advances.
+            “To group cash” is a member's contribution target. Group-account reimbursements are liabilities reserved from the active pool. “Between friends” is the personal settlement ledger, including money Vyas fronted for Milan.
           </span>
         </div>
 
@@ -500,7 +652,7 @@ export default function Finance({ expenses, setSheet }) {
 
         <div className="finance-settlement-block">
           <div className="finance-subhead">
-            <b>A · Still owed to group cash</b>
+            <b>A · Still owed to active group cash</b>
             <span>{formatINR(groupFundOutstandingPaise)} total</span>
           </div>
           {poolDebtors.length ? (
@@ -522,8 +674,8 @@ export default function Finance({ expenses, setSheet }) {
             </div>
           ) : (
             <div className="finance-empty-state">
-              <b>Pool is fully funded.</b>
-              <span>No contribution is currently outstanding.</span>
+              <b>Active pool is fully funded.</b>
+              <span>No contribution is currently outstanding to the eight-person account.</span>
             </div>
           )}
         </div>
@@ -569,9 +721,44 @@ export default function Finance({ expenses, setSheet }) {
         </div>
 
         <p className="finance-footnote">
-          Group-account payables are not merged into personal settlement. This prevents the ₹200 old-pool taxi advance, Pratham's ₹200 taxi payment and Tirth's ₹40 extra pass payment from being double-counted.
+          Group-account payables are never merged into personal settlement. This prevents the ₹200 old-pool taxi advance, Pratham's ₹200 taxi payment and Tirth's ₹40 extra pass payment from being double-counted.
         </p>
       </DockAwarePanel>
+
+      {coveragePolicy && (
+        <DockAwarePanel className="panel">
+          <div className="finance-section-heading">
+            <div>
+              <span>MILAN → DEVGNA</span>
+              <h2>Trip-end repayment</h2>
+            </div>
+            <b>{formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}</b>
+          </div>
+          <p className="finance-section-copy">
+            Vyas Devgna is the actual payer for Milan's trip costs. Milan remains the beneficiary in each original transaction, and repays Vyas after the trip. This personal liability is separate from both group-account cash balances.
+          </p>
+          <div className="finance-audit-list">
+            {(coveragePolicy.currentKnownLiabilityBreakdown || []).map((item) => (
+              <div key={item.id}>
+                <span>
+                  <b>{item.label}</b>
+                  <small>
+                    {item.sourceGroupFundId === "group-fund-six-sep14"
+                      ? "previous 6-person account"
+                      : item.sourceGroupFundId === "group-fund-eight-sep15"
+                        ? "active 8-person account"
+                        : "personal expense"}
+                  </small>
+                </span>
+                <strong>{formatINR(item.amountPaise)}</strong>
+              </div>
+            ))}
+          </div>
+          <p className="finance-footnote">
+            Current known total: {formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}. Any later Milan cost paid by Devgna should be added here once and only once.
+          </p>
+        </DockAwarePanel>
+      )}
 
       <DockAwarePanel className="panel">
         <div className="finance-section-heading">
@@ -579,10 +766,10 @@ export default function Finance({ expenses, setSheet }) {
             <span>MEMBER BALANCES</span>
             <h2>Friend-to-friend balance by person</h2>
           </div>
-          <b>EXCLUDES POOL DUES</b>
+          <b>EXCLUDES GROUP PAYABLES</b>
         </div>
         <p className="finance-section-copy">
-          This table is only the personal settlement side. Pool contributions, direct-expense credits and active group-account reimbursements are shown separately above.
+          This is the personal settlement ledger only. Group-account contributions, expense credits and active group reimbursements are shown separately above.
         </p>
 
         <div className="finance-balance-list">
@@ -598,13 +785,15 @@ export default function Finance({ expenses, setSheet }) {
                   <div className="finance-balance-person">
                     <b>{person.name}</b>
                     <small>
-                      {row.groupFundAdvanceCoveredPaise > 0
-                        ? `${formatINR(row.groupFundAdvanceCoveredPaise)} was fronted for them`
-                        : row.groupFundAdvancePaidPaise > 0
-                          ? `fronted ${formatINR(row.groupFundAdvancePaidPaise)} for others`
-                          : row.coverageCreditPaise > 0
-                            ? `${formatINR(row.coverageCreditPaise)} already covered`
-                            : `personal allocated share ${formatINR(row.sharePaise)}`}
+                      {person.id === "milan" && coveragePolicy
+                        ? `Devgna covers Milan; current known trip-end liability ${formatINR(coveragePolicy.currentKnownLiabilityPaise || 0)}`
+                        : row.groupFundAdvanceCoveredPaise > 0
+                          ? `${formatINR(row.groupFundAdvanceCoveredPaise)} was fronted for them`
+                          : row.groupFundAdvancePaidPaise > 0
+                            ? `fronted ${formatINR(row.groupFundAdvancePaidPaise)} for others`
+                            : row.coverageCreditPaise > 0
+                              ? `${formatINR(row.coverageCreditPaise)} already covered`
+                              : `personal allocated share ${formatINR(row.sharePaise)}`}
                     </small>
                   </div>
                   <div className={`finance-balance-value ${status.className}`}>
@@ -649,7 +838,7 @@ export default function Finance({ expenses, setSheet }) {
           </div>
         </div>
         <p className="finance-footnote">
-          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Pool contributions and expense credits are not expenses themselves; only actual merchant payments use this budget.
+          Budget = {formatINR(data.trip.budget.targetPerPersonPaise)} × {snapshot.budgetMembers.length} finance members. Contributions and expense credits are funding records, not extra expenses.
         </p>
       </DockAwarePanel>
 
@@ -666,7 +855,7 @@ export default function Finance({ expenses, setSheet }) {
         <summary>
           <span>
             <b>Audit & bookkeeping</b>
-            <small>Reimbursements, exact allocation and ledger checks</small>
+            <small>exact allocation and ledger checks</small>
           </span>
           <strong>{ledgerBalanced ? "BALANCED" : "CHECK"}</strong>
         </summary>
@@ -697,46 +886,22 @@ export default function Finance({ expenses, setSheet }) {
           <section className="finance-audit-section">
             <div className="finance-section-heading compact">
               <div>
-                <span>LEDGER CHECK</span>
+                <span>ACTIVE LEDGER CHECK</span>
                 <h3>{ledgerBalanced ? "Balanced to the paisa" : "Review required"}</h3>
               </div>
             </div>
             <div className="finance-integrity-grid">
-              <div>
-                <span>PERSONALLY SETTLED COSTS</span>
-                <b>{formatINR(settlement.merchantPaidPaise)}</b>
-              </div>
-              <div>
-                <span>GROUP-CASH COSTS</span>
-                <b>{formatINR(groupFundExpensePaise)}</b>
-              </div>
-              <div>
-                <span>POOL EXPENSE CREDITS</span>
-                <b>{formatINR(groupFundCreditPaise)}</b>
-              </div>
-              <div>
-                <span>PERSONAL ALLOCATION DIFFERENCE</span>
-                <b>{formatINR(Math.abs(allocationDifferencePaise))}</b>
-              </div>
-              <div>
-                <span>GROUP-CASH DIFFERENCE</span>
-                <b>{formatINR(Math.abs(groupFundReconciliationPaise))}</b>
-              </div>
-              <div>
-                <span>EXPENSE-CREDIT DIFFERENCE</span>
-                <b>{formatINR(Math.abs(memberCreditReconciliationPaise))}</b>
-              </div>
-              <div>
-                <span>NET BALANCE SUM</span>
-                <b>{formatINR(Math.abs(settlement.netBalancePaise))}</b>
-              </div>
-              <div>
-                <span>MEMBER ADVANCES</span>
-                <b>{formatINR(settlement.groupFundAdvancePaise)}</b>
-              </div>
+              <div><span>PERSONALLY SETTLED COSTS</span><b>{formatINR(settlement.merchantPaidPaise)}</b></div>
+              <div><span>ACTIVE GROUP-CASH COSTS</span><b>{formatINR(activeGroupFundExpensePaise)}</b></div>
+              <div><span>ACTIVE POOL CREDITS</span><b>{formatINR(groupFundCreditPaise)}</b></div>
+              <div><span>PERSONAL ALLOCATION DIFFERENCE</span><b>{formatINR(Math.abs(allocationDifferencePaise))}</b></div>
+              <div><span>ACTIVE CASH DIFFERENCE</span><b>{formatINR(Math.abs(groupFundReconciliationPaise))}</b></div>
+              <div><span>ACTIVE CREDIT DIFFERENCE</span><b>{formatINR(Math.abs(memberCreditReconciliationPaise))}</b></div>
+              <div><span>NET BALANCE SUM</span><b>{formatINR(Math.abs(settlement.netBalancePaise))}</b></div>
+              <div><span>MEMBER CONTRIBUTION ADVANCES</span><b>{formatINR(settlement.groupFundAdvancePaise)}</b></div>
             </div>
             <p className="finance-footnote">
-              All calculations use integer paise. Shared cash, direct expense credits, active group-account reimbursements and person-to-person balances are kept separate so nothing is counted twice.
+              The active-account audit is scoped only to the eight-person ledger. The historical six-person pool is audited separately above, so its spending cannot pollute the active cash check.
             </p>
           </section>
         </div>
