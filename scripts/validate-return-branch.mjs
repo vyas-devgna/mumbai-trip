@@ -114,13 +114,13 @@ assert(sep15Water?.amountPaise === 10000 && sep15Water?.fundingSource === "group
 const sep15TeaCoffee = merged.expenses.find((e) => e.id === "expense-tea-coffee-sep15");
 assert(sep15TeaCoffee?.amountPaise === 7000 && sep15TeaCoffee?.fundingSource === "groupFund", "15 Sep tea / coffee must total ₹70 from group cash");
 const sep15Reconciliation = merged.expenses.find((e) => e.id === "expense-cash-reconciliation-sep15");
-assert(sep15Reconciliation?.amountPaise === 44200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹442 unidentified variance");
+assert(sep15Reconciliation?.amountPaise === 46200 && sep15Reconciliation?.fundingSource === "groupFund", "15 Sep cash reconciliation must record the ₹462 unidentified variance");
 
 const cashCollected = contributions.reduce((sum, item) => sum + item.amountPaise, 0);
 const cashSpent = outflows.reduce((sum, item) => sum + item.amountPaise, 0);
 assert(cashCollected === 1740000, "group cash contributions must total ₹17,400 after final settlements");
-assert(cashSpent === 1218000, "group cash outflows must total ₹12,180 after Sep 15 reconciliation");
-assert(cashCollected - cashSpent === 522000, "group cash balance must match observed ₹5,220");
+assert(cashSpent === 1220000, "group cash outflows must total ₹12,200 after Sep 15 reconciliation");
+assert(cashCollected - cashSpent === 520000, "group cash balance must match observed ₹5,200");
 
 const finance = buildFinanceSnapshot(merged, merged.expenses);
 const paidTotal = merged.expenses.filter((expense) => expense.status === "paid").reduce((sum, expense) => sum + expense.amountPaise, 0);
