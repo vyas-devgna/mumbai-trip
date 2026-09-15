@@ -120,9 +120,15 @@ export default function Finance({ expenses, setSheet }) {
       (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
+    activeBookCash = Number.isSafeInteger(activeFund?.bookCashBalancePaise)
+      ? activeFund.bookCashBalancePaise
+      : activeCashCollected - activeCashOut,
     activePhysicalCash = Number.isSafeInteger(activeFund?.physicalCashBalancePaise)
       ? activeFund.physicalCashBalancePaise
-      : activeCashCollected - activeCashOut,
+      : activeBookCash,
+    activeCashVariance = Number.isSafeInteger(activeFund?.cashVariancePaise)
+      ? activeFund.cashVariancePaise
+      : activePhysicalCash - activeBookCash,
     activeEndSettlement = Number.isSafeInteger(activeFund?.endSettlementPayablesPaise)
       ? activeFund.endSettlementPayablesPaise
       : [...activePoolPayables, ...activeMemberPayables].reduce(
@@ -171,7 +177,7 @@ export default function Finance({ expenses, setSheet }) {
     legacyOutflows = (legacyFund?.outflows || []).filter(
       (item) => item.status === "paid",
     ),
-    legacyMerchantOutflows = legacyOutflows.filter(
+    legacyConfirmedOutflows = legacyOutflows.filter(
       (item) => item.category !== "reconciliation",
     ),
     legacyAuditRows = legacyOutflows.filter(
@@ -185,7 +191,7 @@ export default function Finance({ expenses, setSheet }) {
       (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
-    legacyConfirmedSpend = legacyMerchantOutflows.reduce(
+    legacyConfirmedSpend = legacyConfirmedOutflows.reduce(
       (sum, item) => sum + safeAmount(item.amountPaise),
       0,
     ),
@@ -267,11 +273,11 @@ export default function Finance({ expenses, setSheet }) {
       meta: `${item.date} · direct expense credit · no cash entered old pool`,
       note: item.note,
     })),
-    legacyOutflowRows = legacyMerchantOutflows.map((item) => ({
+    legacyOutflowRows = legacyConfirmedOutflows.map((item) => ({
       id: item.id,
       label: item.label || "Historical group expense",
       amountPaise: item.amountPaise,
-      meta: `${item.date} · confirmed merchant outflow${item.category ? ` · ${item.category}` : ""}`,
+      meta: `${item.date} · confirmed cash outflow${item.category ? ` · ${item.category}` : ""}`,
       note: item.note,
       sign: "−",
     })),
@@ -325,7 +331,8 @@ export default function Finance({ expenses, setSheet }) {
       allocationDifference === 0 &&
       settlement.netBalancePaise === 0 &&
       activeCashDifference === 0 &&
-      activeCreditDifference === 0,
+      activeCreditDifference === 0 &&
+      activeCashVariance === 0,
     budgetPercent = formatPercentFromBasisPoints(snapshot.forecastBudgetBasisPoints),
     budgetProgress = Math.min(
       100,
@@ -430,7 +437,7 @@ export default function Finance({ expenses, setSheet }) {
             <span>SPENDABLE NOW</span>
             <strong>{formatINR(activeSpendable)}</strong>
             <small>
-              All {formatINR(activePhysicalCash)} physical cash on hand is spendable during the trip. {formatINR(activeEndSettlement)} of reimbursements is tracked separately for trip-end settlement and is not held back as a reserve.
+              Physical count is {formatINR(activePhysicalCash)} versus {formatINR(activeBookCash)} book cash. {activeCashVariance > 0 ? "+" : activeCashVariance < 0 ? "−" : ""}{formatINR(Math.abs(activeCashVariance))} is under cash audit; it is not fabricated as income or expense. All physical cash remains spendable during the trip, while {formatINR(activeEndSettlement)} of reimbursements is tracked separately for trip end.
             </small>
           </div>
 
@@ -438,17 +445,17 @@ export default function Finance({ expenses, setSheet }) {
             <article className="finance-overview-card cash">
               <span>CASH ON HAND</span>
               <strong>{formatINR(activePhysicalCash)}</strong>
-              <small>physical active-group cash now</small>
+              <small>latest physical count</small>
             </article>
             <article className="finance-overview-card">
-              <span>END SETTLEMENT</span>
-              <strong>{formatINR(activeEndSettlement)}</strong>
-              <small>tracked separately · not withheld</small>
+              <span>BOOK CASH</span>
+              <strong>{formatINR(activeBookCash)}</strong>
+              <small>collections − recorded cash outflows</small>
             </article>
             <article className="finance-overview-card primary">
               <span>SPENDABLE</span>
               <strong>{formatINR(activeSpendable)}</strong>
-              <small>equals cash on hand during the trip</small>
+              <small>equals physical cash during the trip</small>
             </article>
           </div>
 
@@ -458,8 +465,19 @@ export default function Finance({ expenses, setSheet }) {
             <div><span>TARGET COVERED</span><b>{formatINR(activeCashCollected + activeCreditTotal)} / {formatINR(activeTarget)}</b></div>
             <div><span>CONTRIBUTION DUE</span><b>{formatINR(activeOutstanding)}</b></div>
             <div><span>ACCOUNT CHARGES</span><b>{formatINR(activeFund.totalChargedPaise || 0)}</b></div>
+            <div><span>END SETTLEMENT</span><b>{formatINR(activeEndSettlement)}</b></div>
+            <div><span>CASH AUDIT VARIANCE</span><b>{activeCashVariance > 0 ? "+" : activeCashVariance < 0 ? "−" : ""}{formatINR(Math.abs(activeCashVariance))}</b></div>
             <div><span>PER-PERSON CHARGE SHARE</span><b>{formatINR(activeFund.perMemberExpenseSharePaise || 0)}</b></div>
           </div>
+
+          {activeCashVariance !== 0 && (
+            <div className="finance-callout">
+              <b>Cash audit open · {activeCashVariance > 0 ? "+" : "−"}{formatINR(Math.abs(activeCashVariance))}</b>
+              <span>
+                Recorded cash math gives {formatINR(activeBookCash)}, while the latest physical count is {formatINR(activePhysicalCash)}. Keep this variance open until the missing source transaction, collection, denomination/count error, or other explanation is identified.
+              </span>
+            </div>
+          )}
 
           <div className="finance-cash-subsection">
             <div className="finance-subhead">
@@ -573,7 +591,7 @@ export default function Finance({ expenses, setSheet }) {
             <article className="finance-overview-card cash">
               <span>CASH ON HAND</span>
               <strong>{formatINR(legacyPhysicalCash)}</strong>
-              <small>after the post-close ₹200 taxi advance</small>
+              <small>latest physical count</small>
             </article>
             <article className="finance-overview-card">
               <span>RECEIVABLE</span>
@@ -591,7 +609,7 @@ export default function Finance({ expenses, setSheet }) {
             <div><span>CASH CONTRIBUTED</span><b>{formatINR(legacyContributionTotal)}</b></div>
             <div><span>EXPENSE CREDITS</span><b>{formatINR(legacyCreditTotal)}</b></div>
             <div><span>TARGET COVERED</span><b>{formatINR(legacyContributionTotal + legacyCreditTotal)} / {formatINR(legacyTarget)}</b></div>
-            <div><span>CONFIRMED MERCHANT SPEND</span><b>{formatINR(legacyConfirmedSpend)}</b></div>
+            <div><span>CONFIRMED CASH OUTFLOWS</span><b>{formatINR(legacyConfirmedSpend)}</b></div>
             <div><span>AUDIT CONTROL</span><b>{formatINR(legacyAuditControlTotal)}</b></div>
             <div><span>UNRESOLVED VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
           </div>
@@ -599,7 +617,7 @@ export default function Finance({ expenses, setSheet }) {
           <div className="finance-callout">
             <b>Cash checkpoint · {formatINR(legacyFund.closedObservedBalancePaise || 0)}</b>
             <span>
-              This was the last confirmed physical count before the ₹200 post-close taxi advance. The ₹462 variance is retained as an audit-control difference and is not presented as merchant spending.
+              This corrected checkpoint preserves the historical ₹462 audit-control variance. Jugal's ₹100 auto is shown as a cash reimbursement/outflow rather than a contribution credit, and the separate current old-pool variance remains {legacyAuditVariance < 0 ? "−" : "+"}{formatINR(Math.abs(legacyAuditVariance))}.
             </span>
           </div>
 
@@ -614,7 +632,7 @@ export default function Finance({ expenses, setSheet }) {
           </div>
 
           <div className="finance-settlement-block">
-            <div className="finance-subhead"><b>Confirmed merchant outflows</b><span>{formatINR(legacyConfirmedSpend)}</span></div>
+            <div className="finance-subhead"><b>Confirmed cash outflows</b><span>{formatINR(legacyConfirmedSpend)}</span></div>
             <LedgerRows rows={legacyOutflowRows} />
           </div>
 
@@ -907,14 +925,15 @@ export default function Finance({ expenses, setSheet }) {
             <div className="finance-subhead"><b>Active-account integrity</b><span>{ledgerBalanced ? "balanced" : "review"}</span></div>
             <div className="finance-integrity-grid">
               <div><span>PERSONAL ALLOCATION DIFFERENCE</span><b>{formatINR(Math.abs(allocationDifference))}</b></div>
-              <div><span>ACTIVE CASH DIFFERENCE</span><b>{formatINR(Math.abs(activeCashDifference))}</b></div>
+              <div><span>EXPENSE ↔ OUTFLOW DIFFERENCE</span><b>{formatINR(Math.abs(activeCashDifference))}</b></div>
+              <div><span>PHYSICAL VS BOOK CASH</span><b>{activeCashVariance > 0 ? "+" : activeCashVariance < 0 ? "−" : ""}{formatINR(Math.abs(activeCashVariance))}</b></div>
               <div><span>ACTIVE CREDIT DIFFERENCE</span><b>{formatINR(Math.abs(activeCreditDifference))}</b></div>
               <div><span>NET PERSONAL BALANCE SUM</span><b>{formatINR(Math.abs(settlement.netBalancePaise))}</b></div>
               <div><span>GROUP CONTRIBUTION ADVANCES</span><b>{formatINR(settlement.groupFundAdvancePaise)}</b></div>
-              <div><span>HISTORICAL VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
+              <div><span>OLD CURRENT VARIANCE</span><b>{legacyAuditVariance < 0 ? "−" : legacyAuditVariance > 0 ? "+" : ""}{formatINR(Math.abs(legacyAuditVariance))}</b></div>
             </div>
             <p className="finance-footnote">
-              Active cash on hand is fully spendable during the trip. End-of-trip reimbursements remain recorded as liabilities without reducing the live cash balance. Active and historical group cash are audited independently, and the historical ₹462 variance remains explicitly unresolved instead of being converted into fake merchant spending.
+              Active physical cash is fully spendable, but the current +₹130 physical-vs-book surplus stays open for audit until explained. End-of-trip reimbursements remain separate liabilities. The old account independently retains its current −₹500 variance and the earlier historical −₹462 audit-control variance; none of these differences are converted into fake merchant spending.
             </p>
           </section>
         </div>
