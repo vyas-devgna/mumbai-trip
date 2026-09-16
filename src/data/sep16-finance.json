@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "finance": {
+    "legacyGroupFundPatch": {
+      "id": "group-fund-six-sep14",
+      "currentMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
+      "currentPhysicalBalancePaise": 600000,
+      "currentObservedBalancePaise": 600000,
+      "expectedPhysicalBalancePaise": 600000,
+      "currentCashVariancePaise": 0,
+      "interPoolReceivablePaise": 20000,
+      "economicBalancePaise": 620000,
+      "expectedEconomicBalancePaise": 620000,
+      "sep16ContributionTargetPerMemberPaise": 50000,
+      "sep16ContributionTargetPaise": 250000,
+      "sep16ContributionReceivedPaise": 200000,
+      "sep16OutstandingContributionPaise": 50000,
+      "sep16OutstandingMemberIds": ["milan"],
+      "carBookingTotalPaise": 500000,
+      "carBookingAdvancePaidPaise": 50000,
+      "carBookingBalancePendingPaise": 450000,
+      "projectedPhysicalAfterCarBalancePaise": 150000,
+      "note": "Sep 16 update: Jugal is not joining and ₹500 was refunded to him. Neet and Pratham are not members of this old account. Vyas, Nishit, Het and Tirth each added ₹500 for Sep 16; Milan's ₹500 remains outstanding. Starting from ₹4,500 old-account cash after the car advance: −₹500 Jugal refund + ₹2,000 received = ₹6,000 physical cash. Car booking has ₹4,500 still payable, leaving ₹1,500 projected cash after payment. Historical ₹462 audit provenance remains unchanged and the earlier missing-note variance remains resolved.",
+      "contributions": [
+        {"id":"old-group-sep16-vyas-500","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
+        {"id":"old-group-sep16-tirth-500","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
+        {"id":"old-group-sep16-nishit-500","memberId":"nishit","paidByMemberId":"nishit","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
+        {"id":"old-group-sep16-het-500","memberId":"het","paidByMemberId":"het","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"}
+      ],
+      "outflows": [
+        {"id":"old-group-jugal-refund-500-sep16","expenseId":"expense-old-group-jugal-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"settlement","label":"Jugal refund · not joining Sep 16","status":"paid","note":"₹500 returned to Jugal because he is not joining the Sep 16 car day. This removes him from the Sep 16 car-cost cohort; it does not rewrite his historical old-account contribution record."}
+      ],
+      "currentCashCheckpoint": {
+        "date": "2026-09-16",
+        "observedBalancePaise": 600000,
+        "expectedBalancePaise": 600000,
+        "variancePaise": 0,
+        "status": "resolved",
+        "note": "₹4,500 opening cash after car advance − ₹500 Jugal refund + ₹2,000 Sep 16 contributions received = ₹6,000 current physical cash. Milan ₹500 remains outstanding."
+      }
+    }
+  },
+  "expenses": [
+    {"id":"expense-old-group-car-booking-advance-500-sep15","participantIds":["vyas","tirth","nishit","milan","het"],"note":"₹500 booking advance paid Sep 15. Jugal later opted out of Sep 16 and was refunded ₹500; final Sep 16 car cohort is Vyas, Tirth, Nishit, Milan and Het. ₹4,500 remains payable."},
+    {"id":"expense-old-group-jugal-refund-500-sep16","amountPaise":50000,"payerId":"vyas","participantIds":["jugal"],"category":"settlement","date":"2026-09-16","label":"Jugal refund · not joining Sep 16","status":"paid","budgetScope":"settlement","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-jugal-refund-500-sep16"}
+  ],
+  "signals": [
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account Sep 16: Jugal refunded ₹500 and is not joining. Vyas, Tirth, Nishit and Het added ₹500 each; Milan ₹500 remains outstanding. Physical cash ₹6,000; car balance ₹4,500 pending; projected ₹1,500 after car payment. Neet and Pratham are not members of this account.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
+  ]
+}
