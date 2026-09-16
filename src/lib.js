@@ -1,9 +1,10 @@
 import coreData from "./data/trip.json";
 import returnBranch from "./data/return-branch.json";
 import liveFinance from "./data/live-finance.json";
+import sep16Finance from "./data/sep16-finance.json";
 import SunCalc from "suncalc";
 
-const overlays = [returnBranch, liveFinance];
+const overlays = [returnBranch, liveFinance, sep16Finance];
 
 const mergeById = (key) => {
   const merged = [...(coreData[key] || [])],
@@ -29,29 +30,37 @@ const mergeById = (key) => {
 
 const baseGroupFund = returnBranch.finance?.groupFund || {},
   groupFundPatch = liveFinance.finance?.groupFundPatch || {},
+  sep16GroupFundPatch = sep16Finance.finance?.legacyGroupFundPatch || {},
   mergedLegacyGroupFund = {
     ...baseGroupFund,
     ...groupFundPatch,
+    ...sep16GroupFundPatch,
     contributions: [
       ...(baseGroupFund.contributions || []),
       ...(groupFundPatch.contributions || []),
+      ...(sep16GroupFundPatch.contributions || []),
     ],
     credits: [
       ...(baseGroupFund.credits || []),
       ...(groupFundPatch.credits || []),
+      ...(sep16GroupFundPatch.credits || []),
     ],
     outflows: [
       ...(baseGroupFund.outflows || []),
       ...(groupFundPatch.outflows || []),
+      ...(sep16GroupFundPatch.outflows || []),
     ],
   },
   activeGroupFund = liveFinance.finance?.activeGroupFund || mergedLegacyGroupFund,
   { groupFundPatch: _groupFundPatch, ...liveFinanceFields } =
     liveFinance.finance || {},
+  { legacyGroupFundPatch: _sep16GroupFundPatch, ...sep16FinanceFields } =
+    sep16Finance.finance || {},
   mergedFinance = {
     ...(coreData.finance || {}),
     ...(returnBranch.finance || {}),
     ...liveFinanceFields,
+    ...sep16FinanceFields,
     legacyGroupFund: mergedLegacyGroupFund,
     groupFund: activeGroupFund,
     groupFunds: [mergedLegacyGroupFund, activeGroupFund].filter(Boolean),
@@ -63,6 +72,7 @@ const data = {
     ...(coreData.trip || {}),
     ...(returnBranch.trip || {}),
     ...(liveFinance.trip || {}),
+    ...(sep16Finance.trip || {}),
   },
   finance: mergedFinance,
   members: mergeById("members"),
@@ -98,229 +108,64 @@ export function toPaise(value) {
       .trim()
       .replace(/[₹,\s]/g, ""),
     match = /^([+-]?)(\d+)(?:\.(\d{0,2}))?$/.exec(normalized);
-  if (!match) throw new TypeError("INR value must have at most two decimals");
-  const whole = Number(match[2]),
-    fraction = Number((match[3] || "").padEnd(2, "0")),
-    absolutePaise = whole * 100 + fraction;
-  if (!Number.isSafeInteger(absolutePaise))
-    throw new RangeError("INR value exceeds safe integer paise");
-  return match[1] === "-" ? -absolutePaise : absolutePaise;
+  if (!match) throw new TypeError("Invalid money value");
+  const [, sign, rupees, fraction = ""] = match,
+    paise = Number(rupees) * 100 + Number(fraction.padEnd(2, "0"));
+  return assertPaise(sign === "-" ? -paise : paise);
 }
 
-export const fromPaise = (paise) => assertPaise(paise) / 100;
-
-export function formatINR(paise) {
-  const exactPaise = assertPaise(paise),
-    showPaise = Math.abs(exactPaise) % 100 !== 0;
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: showPaise ? 2 : 0,
-    maximumFractionDigits: showPaise ? 2 : 0,
-  }).format(fromPaise(exactPaise));
+export function formatMoney(paise) {
+  const value = assertPaise(paise),
+    sign = value < 0 ? "-" : "",
+    abs = Math.abs(value),
+    rupees = Math.floor(abs / 100),
+    remainder = abs % 100;
+  return `${sign}₹${rupees.toLocaleString("en-IN")}${remainder ? `.${String(remainder).padStart(2, "0")}` : ""}`;
 }
 
-// Pair these shares with member ids sorted ascending. That stable order owns
-// the first totalPaise % n remainder shares and therefore the extra paisa.
-export function splitPaise(totalPaise, n) {
-  const total = assertPaise(totalPaise, "totalPaise");
-  if (total < 0) throw new RangeError("totalPaise cannot be negative");
-  if (!Number.isSafeInteger(n) || n <= 0)
-    throw new RangeError("n must be a positive integer");
-  const divisor = BigInt(n),
-    exactTotal = BigInt(total),
-    base = Number(exactTotal / divisor),
-    remainder = Number(exactTotal % divisor);
-  return Array.from({ length: n }, (_, index) =>
-    index < remainder ? base + 1 : base,
+export function splitPaise(totalPaise, participantIds) {
+  const total = assertPaise(totalPaise, "totalPaise"),
+    ids = [...new Set(participantIds || [])];
+  if (!ids.length) return {};
+  const sign = total < 0 ? -1 : 1,
+    abs = Math.abs(total),
+    base = Math.floor(abs / ids.length),
+    remainder = abs % ids.length;
+  return Object.fromEntries(
+    ids.map((id, index) => [id, sign * (base + (index < remainder ? 1 : 0))]),
   );
 }
-export const fmtDate = (date) =>
-  new Intl.DateTimeFormat("en-IN", {
-    weekday: "short",
+
+export function formatTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+}
+
+export function formatDate(value, options = {}) {
+  if (!value) return "";
+  const date = new Date(`${value}T00:00:00+05:30`);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
-  }).format(new Date(`${date}T12:00:00+05:30`));
-export const fmtShortDate = (date) =>
-  new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(
-    new Date(`${date}T12:00:00+05:30`),
-  );
-export const timingLabel = (a) =>
-  a.timing.start ||
-  (a.timing.earliest ? `${a.timing.earliest}–${a.timing.latest}` : "Flexible");
-export const activityStart = (a) =>
-  new Date(
-    `${a.date}T${a.timing.start || a.timing.earliest || "23:59"}:00+05:30`,
-  );
-export const dayItems = (day) =>
-  data.activities
-    .filter((a) => a.date === day)
-    .sort((a, b) => activityStart(a) - activityStart(b));
-export const tripIsLive = (now) =>
-  now >= new Date(`${data.trip.startDate}T00:00:00+05:30`) &&
-  now <= new Date(`${data.trip.endDate}T23:59:59+05:30`);
-export const vibrate = (pattern) => {
-  try {
-    if (typeof navigator !== "undefined" && "vibrate" in navigator)
-      navigator.vibrate(pattern);
-  } catch {}
-};
-
-export function useSunrise(React) {
-  const { useMemo } = React;
-  return useMemo(() => {
-    const formatter = new Intl.DateTimeFormat("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: data.trip.timezone,
-    });
-    return Object.fromEntries(
-      DAYS.map((date) => {
-        const noon = new Date(`${date}T12:00:00+05:30`);
-        const sunrise = SunCalc.getTimes(
-          noon,
-          data.trip.solar.latitude,
-          data.trip.solar.longitude,
-        ).sunrise;
-        return [
-          date,
-          Number.isNaN(sunrise.getTime()) ? null : formatter.format(sunrise),
-        ];
-      }).filter(([, value]) => value),
-    );
-  }, []);
+    timeZone: "Asia/Kolkata",
+    ...options,
+  }).format(date);
 }
 
-export function useStored(React, key, initial) {
-  const { useEffect, useState } = React;
-  const [value, setValue] = useState(() => {
-    try {
-      const v = localStorage.getItem(key);
-      return v ? JSON.parse(v) : initial;
-    } catch {
-      return initial;
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
-  }, [key, value]);
-  return [value, setValue];
+export function getSunTimes(date, latitude = 19.076, longitude = 72.8777) {
+  const base = new Date(`${date}T12:00:00+05:30`),
+    times = SunCalc.getTimes(base, latitude, longitude);
+  return { sunrise: times.sunrise, sunset: times.sunset };
 }
 
-export function useTripClock(React) {
-  const { useEffect, useState } = React;
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 30000);
-    return () => clearInterval(t);
-  }, []);
-  return now;
-}
-
-export function useAutoUpdate(React) {
-  const { useCallback, useEffect, useRef, useState } = React;
-  const [state, setState] = useState({
-    label: navigator.onLine ? "Checking" : "Offline",
-    version: null,
-    builtAt: null,
-    confirmedAt: null,
-  });
-  const regRef = useRef(null),
-    stoppedRef = useRef(false),
-    reloadRef = useRef(false);
-
-  const check = useCallback(async () => {
-    if (stoppedRef.current || reloadRef.current) return;
-    if (!navigator.onLine) {
-      setState((prev) => ({ ...prev, label: "Offline" }));
-      return;
-    }
-    setState((prev) => ({ ...prev, label: "Checking" }));
-    try {
-      if ("serviceWorker" in navigator) {
-        regRef.current =
-          regRef.current ||
-          (await navigator.serviceWorker.register(`${BASE}sw.js`, {
-            updateViaCache: "none",
-          }));
-        await regRef.current.update().catch(() => {});
-      }
-
-      const response = await fetch(`${BASE}version.json?t=${Date.now()}`, {
-        cache: "no-store",
-      });
-      if (!response.ok) throw new Error("version");
-
-      const latest = await response.json(),
-        latestVersion = latest.version || null,
-        confirmedAt = new Date().toISOString(),
-        needsUpdate =
-          latestVersion &&
-          latestVersion !== "local-dev" &&
-          latestVersion !== RUNNING_BUILD;
-
-      if (needsUpdate) {
-        reloadRef.current = true;
-        setState({
-          label: "Updating",
-          version: latestVersion,
-          builtAt: latest.builtAt || null,
-          confirmedAt,
-        });
-
-        const registration = regRef.current;
-        registration?.waiting?.postMessage({ type: "SKIP_WAITING" });
-
-        const target = new URL(location.href);
-        target.searchParams.set("_tripos", latestVersion.slice(0, 12));
-        setTimeout(() => location.replace(target.toString()), 450);
-        return;
-      }
-
-      if (latestVersion) localStorage.setItem("tripos-build", latestVersion);
-      if (RUNNING_BUILD !== "local-dev") {
-        const current = new URL(location.href);
-        if (current.searchParams.has("_tripos")) {
-          current.searchParams.delete("_tripos");
-          history.replaceState(null, "", `${current.pathname}${current.search}${current.hash}`);
-        }
-      }
-
-      setState({
-        label: "Current",
-        version: latestVersion,
-        builtAt: latest.builtAt || null,
-        confirmedAt,
-      });
-    } catch {
-      setState((prev) => ({
-        ...prev,
-        label: navigator.onLine ? "Retrying" : "Offline",
-      }));
-    }
-  }, []);
-
-  useEffect(() => {
-    stoppedRef.current = false;
-    const visible = () => document.visibilityState === "visible" && check(),
-      online = () => check(),
-      offline = () => setState((prev) => ({ ...prev, label: "Offline" }));
-    addEventListener("online", online);
-    addEventListener("offline", offline);
-    document.addEventListener("visibilitychange", visible);
-    check();
-    const timer = setInterval(check, 60000);
-    return () => {
-      stoppedRef.current = true;
-      clearInterval(timer);
-      removeEventListener("online", online);
-      removeEventListener("offline", offline);
-      document.removeEventListener("visibilitychange", visible);
-    };
-  }, [check]);
-
-  return { ...state, check };
+export function runningBuild() {
+  return RUNNING_BUILD;
 }
