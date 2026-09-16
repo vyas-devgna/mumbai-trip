@@ -4,13 +4,13 @@
     "legacyGroupFundPatch": {
       "id": "group-fund-six-sep14",
       "currentMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
-      "currentPhysicalBalancePaise": 641000,
-      "currentObservedBalancePaise": 641000,
-      "expectedPhysicalBalancePaise": 641000,
+      "currentPhysicalBalancePaise": 569500,
+      "currentObservedBalancePaise": 569500,
+      "expectedPhysicalBalancePaise": 569500,
       "currentCashVariancePaise": 0,
       "interPoolReceivablePaise": 0,
-      "economicBalancePaise": 641000,
-      "expectedEconomicBalancePaise": 641000,
+      "economicBalancePaise": 569500,
+      "expectedEconomicBalancePaise": 569500,
       "sep16ContributionTargetPerMemberPaise": 50000,
       "sep16ContributionTargetPaise": 250000,
       "sep16ContributionReceivedPaise": 200000,
@@ -21,9 +21,9 @@
       "carBookingRefundReceivedPaise": 50000,
       "carBookingBalancePendingPaise": 0,
       "carBookingStatus": "cancelled-refunded",
-      "projectedPhysicalAfterCarBalancePaise": 641000,
+      "projectedPhysicalAfterCarBalancePaise": 569500,
       "sep16MemberPayablePaise": 199000,
-      "note": "Sep 16: old account cohort is Vyas, Tirth, Nishit, Milan and Het; Jugal was refunded ₹500 and is not participating, while Neet and Pratham are not old-account members. Car booking was cancelled and ₹500 advance refunded. The prior ₹200 old-to-new taxi advance was reimbursed by a ₹200 transfer from the new account to the old account, clearing the inter-pool receivable. Nishit's ₹100 CST taxi reimbursement was then paid from old-group cash. ₹40 water and ₹150 taxi to Nariman Point were paid directly from old-group cash. Current physical cash is ₹6,410. Het's ₹1,990 Rameshwaram lunch remains payable. Milan ₹500 contribution remains outstanding.",
+      "note": "Sep 16 old account. Current cohort: Vyas, Tirth, Nishit, Milan and Het. Jugal is not participating; Neet and Pratham are not old-account members. Car booking cancelled/refunded and inter-pool ₹200 reimbursement settled. Nishit's ₹100 CST taxi was reimbursed. Direct old-group cash expenses include ₹40 water, ₹150 taxi to Nariman Point, snacks ₹100 + ₹120 + ₹60, another ₹150 taxi, and ₹285 snacks. Current physical cash is ₹5,695. Het's ₹1,990 Rameshwaram lunch remains payable. Milan ₹500 contribution remains outstanding.",
       "contributions": [
         {"id":"old-group-sep16-vyas-500","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
         {"id":"old-group-sep16-tirth-500","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
@@ -34,13 +34,18 @@
         {"id":"old-group-jugal-refund-500-sep16","expenseId":"expense-old-group-jugal-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"settlement","label":"Jugal refund · not joining Sep 16","status":"paid"},
         {"id":"old-group-reimburse-nishit-taxi-cst-100-sep16","expenseId":"expense-old-group-taxi-cst-100-sep16","amountPaise":10000,"date":"2026-09-16","category":"settlement","label":"Reimburse Nishit · taxi to CST","status":"paid"},
         {"id":"old-group-water-40-sep16","expenseId":"expense-old-group-water-40-sep16","amountPaise":4000,"date":"2026-09-16","category":"food","label":"Water bottle","status":"paid"},
-        {"id":"old-group-taxi-nariman-point-150-sep16","expenseId":"expense-old-group-taxi-nariman-point-150-sep16","amountPaise":15000,"date":"2026-09-16","category":"transport","label":"Taxi to Nariman Point","status":"paid"}
+        {"id":"old-group-taxi-nariman-point-150-sep16","expenseId":"expense-old-group-taxi-nariman-point-150-sep16","amountPaise":15000,"date":"2026-09-16","category":"transport","label":"Taxi to Nariman Point","status":"paid"},
+        {"id":"old-group-snacks-100-sep16","expenseId":"expense-old-group-snacks-100-sep16","amountPaise":10000,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
+        {"id":"old-group-snacks-120-sep16","expenseId":"expense-old-group-snacks-120-sep16","amountPaise":12000,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
+        {"id":"old-group-snacks-60-sep16","expenseId":"expense-old-group-snacks-60-sep16","amountPaise":6000,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
+        {"id":"old-group-taxi-150-late-sep16","expenseId":"expense-old-group-taxi-150-late-sep16","amountPaise":15000,"date":"2026-09-16","category":"transport","label":"Taxi","status":"paid"},
+        {"id":"old-group-snacks-285-sep16","expenseId":"expense-old-group-snacks-285-sep16","amountPaise":28500,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"}
       ],
       "refunds": [
         {"id":"old-group-car-booking-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"transport","label":"Cancelled car booking · advance refunded","status":"received","relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15"}
       ],
       "interPoolSettlements": [
-        {"id":"new-to-old-reimburse-taxi-200-sep16","fromGroupFundId":"group-fund-eight-sep15","toGroupFundId":"group-fund-six-sep14","amountPaise":20000,"date":"2026-09-16","status":"settled","relatedInterAccountId":"inter-account-old-to-active-taxi-sep15","label":"New account reimbursed old account · Mumbai Cha Raja taxi advance","note":"₹200 transferred from new group account to old group account, settling the old account's ₹200 receivable from the prior taxi advance."}
+        {"id":"new-to-old-reimburse-taxi-200-sep16","fromGroupFundId":"group-fund-eight-sep15","toGroupFundId":"group-fund-six-sep14","amountPaise":20000,"date":"2026-09-16","status":"settled","relatedInterAccountId":"inter-account-old-to-active-taxi-sep15","label":"New account reimbursed old account · Mumbai Cha Raja taxi advance"}
       ],
       "memberPayables": [
         {"id":"old-group-payable-het-rameshwaram-lunch-sep16","memberId":"het","amountPaise":199000,"date":"2026-09-16","expenseId":"expense-old-group-rameshwaram-lunch-1990-sep16","status":"due","label":"Reimburse Het · Rameshwaram lunch"},
@@ -48,11 +53,11 @@
       ],
       "currentCashCheckpoint": {
         "date": "2026-09-16",
-        "observedBalancePaise": 641000,
-        "expectedBalancePaise": 641000,
+        "observedBalancePaise": 569500,
+        "expectedBalancePaise": 569500,
         "variancePaise": 0,
         "status": "resolved",
-        "note": "₹6,500 previous old cash + ₹200 received from new account − ₹100 Nishit reimbursement − ₹40 water − ₹150 Nariman Point taxi = ₹6,410. Het ₹1,990 lunch remains payable. Milan ₹500 contribution remains outstanding."
+        "note": "Previous ₹6,410 − ₹100 − ₹120 − ₹60 snacks − ₹150 taxi − ₹285 snacks = ₹5,695 current old-group physical cash. New expenses total ₹715. Het ₹1,990 lunch remains payable; Milan ₹500 contribution remains outstanding."
       }
     },
     "activeGroupFundPatch": {
@@ -60,18 +65,23 @@
       "interPoolPayablePaise": 0,
       "interPoolSettlementPaidPaise": 20000,
       "cashAdjustmentPaise": -20000,
-      "note": "₹200 transferred from the new account to the old account on Sep 16 to settle the prior Mumbai Cha Raja taxi advance. This clears the new account's ₹200 inter-pool payable and reduces new-account physical/spendable cash by ₹200 relative to its prior checkpoint."
+      "note": "₹200 transferred from the new account to the old account on Sep 16 to settle the prior Mumbai Cha Raja taxi advance."
     }
   },
   "expenses": [
     {"id":"expense-old-group-car-booking-advance-500-sep15","participantIds":["vyas","tirth","nishit","milan","het"],"status":"refunded","note":"₹500 booking advance paid Sep 15 and fully refunded Sep 16 after cancellation."},
     {"id":"expense-old-group-jugal-refund-500-sep16","amountPaise":50000,"payerId":"vyas","participantIds":["jugal"],"category":"settlement","date":"2026-09-16","label":"Jugal refund · not joining Sep 16","status":"paid","budgetScope":"settlement","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-jugal-refund-500-sep16"},
     {"id":"expense-old-group-rameshwaram-lunch-1990-sep16","amountPaise":199000,"payerId":"het","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Lunch · Rameshwaram · Churchgate","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","note":"Het paid personally; ₹1,990 remains payable to Het."},
-    {"id":"expense-old-group-taxi-cst-100-sep16","amountPaise":10000,"payerId":"nishit","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to CST","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","reimbursementStatus":"paid","reimbursedPaise":10000,"note":"₹100 taxi paid personally by Nishit; fully reimbursed from old-group cash Sep 16."},
+    {"id":"expense-old-group-taxi-cst-100-sep16","amountPaise":10000,"payerId":"nishit","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to CST","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","reimbursementStatus":"paid","reimbursedPaise":10000},
     {"id":"expense-old-group-water-40-sep16","amountPaise":4000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-water-40-sep16"},
-    {"id":"expense-old-group-taxi-nariman-point-150-sep16","amountPaise":15000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to Nariman Point","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-taxi-nariman-point-150-sep16"}
+    {"id":"expense-old-group-taxi-nariman-point-150-sep16","amountPaise":15000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to Nariman Point","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-taxi-nariman-point-150-sep16"},
+    {"id":"expense-old-group-snacks-100-sep16","amountPaise":10000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-100-sep16"},
+    {"id":"expense-old-group-snacks-120-sep16","amountPaise":12000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-120-sep16"},
+    {"id":"expense-old-group-snacks-60-sep16","amountPaise":6000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-60-sep16"},
+    {"id":"expense-old-group-taxi-150-late-sep16","amountPaise":15000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-taxi-150-late-sep16"},
+    {"id":"expense-old-group-snacks-285-sep16","amountPaise":28500,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-285-sep16"}
   ],
   "signals": [
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account Sep 16: ₹200 inter-pool reimbursement received from new account; Nishit ₹100 CST taxi reimbursed; ₹40 water and ₹150 Nariman Point taxi paid from old cash. Current old cash ₹6,410. Het ₹1,990 remains payable; Milan ₹500 contribution remains outstanding. Inter-pool balance cleared.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account Sep 16: added snacks ₹100 + ₹120 + ₹60, taxi ₹150 and snacks ₹285 = ₹715 new spend. Current physical cash ₹5,695. Het ₹1,990 remains payable; Milan ₹500 contribution remains outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
   ]
 }
