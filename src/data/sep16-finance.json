@@ -4,8 +4,8 @@
     "legacyGroupFundPatch": {
       "id": "group-fund-six-sep14",
       "currentMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
-      "currentPhysicalBalancePaise": 177000,
-      "expectedPhysicalBalancePaise": 171500,
+      "currentPhysicalBalancePaise": 154500,
+      "expectedPhysicalBalancePaise": 149000,
       "currentObservedNotesPaise": null,
       "currentObservedCoinsPaise": null,
       "currentObservedBalancePaise": null,
@@ -13,8 +13,8 @@
       "currentCashVarianceStatus": "carried-unreconciled-55",
       "interPoolReceivablePaise": 0,
       "memberReceivablePaise": 50000,
-      "economicBalancePaise": 227000,
-      "expectedEconomicBalancePaise": 221500,
+      "economicBalancePaise": 204500,
+      "expectedEconomicBalancePaise": 199000,
       "sep16ContributionTargetPerMemberPaise": 50000,
       "sep16ContributionTargetPaise": 250000,
       "sep16ContributionReceivedPaise": 200000,
@@ -28,7 +28,7 @@
       "carBookingBalancePendingPaise": 0,
       "carBookingStatus": "cancelled-refunded-to-devgna-upi",
       "sep16MemberPayablePaise": 0,
-      "note": "Sep 16 old account. At 23:58, ₹1,100 + ₹380 = ₹1,480 dinner was paid from old-group physical cash for the current five-member cohort. The last user-confirmed physical cash was ₹3,250, therefore transactional cash-on-hand becomes ₹1,770. Independent ledger expectation was ₹3,195 before dinner and is ₹1,715 after dinner. The pre-existing ₹55 difference remains unreconciled because the earlier count excluded coins; no fake expense or adjustment is created. ₹500 car refund remains in Devgna UPI for the old group. Milan ₹500 contribution remains outstanding.",
+      "note": "Sep 17 old account. At about 01:06, ₹125 + ₹100 = ₹225 auto expense was paid from old-group physical cash for the current five-member cohort. Transactional cash from the last confirmed ₹3,250 is now ₹1,545 after the ₹1,480 dinner and ₹225 auto expense. Independent ledger expectation is ₹1,490. The pre-existing ₹55 difference remains unreconciled because the earlier physical count excluded coins; no fake expense or adjustment is created. ₹500 car refund remains in Devgna UPI for the old group. Milan ₹500 contribution remains outstanding.",
       "contributions": [
         {"id":"old-group-sep16-vyas-500","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
         {"id":"old-group-sep16-tirth-500","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
@@ -47,7 +47,9 @@
         {"id":"old-group-snacks-285-sep16","expenseId":"expense-old-group-snacks-285-sep16","amountPaise":28500,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
         {"id":"old-group-reimburse-het-rameshwaram-2000-sep16","expenseId":"expense-old-group-rameshwaram-lunch-2000-sep16","amountPaise":200000,"date":"2026-09-16","category":"settlement","label":"Reimburse Het · Rameshwaram lunch","status":"paid"},
         {"id":"old-group-dinner-part1-1100-sep16","expenseId":"expense-old-group-dinner-part1-1100-sep16","amountPaise":110000,"date":"2026-09-16","category":"food","label":"Dinner · payment 1","status":"paid"},
-        {"id":"old-group-dinner-part2-380-sep16","expenseId":"expense-old-group-dinner-part2-380-sep16","amountPaise":38000,"date":"2026-09-16","category":"food","label":"Dinner · payment 2","status":"paid"}
+        {"id":"old-group-dinner-part2-380-sep16","expenseId":"expense-old-group-dinner-part2-380-sep16","amountPaise":38000,"date":"2026-09-16","category":"food","label":"Dinner · payment 2","status":"paid"},
+        {"id":"old-group-auto-part1-125-sep17","expenseId":"expense-old-group-auto-part1-125-sep17","amountPaise":12500,"date":"2026-09-17","category":"transport","label":"Auto · payment 1","status":"paid"},
+        {"id":"old-group-auto-part2-100-sep17","expenseId":"expense-old-group-auto-part2-100-sep17","amountPaise":10000,"date":"2026-09-17","category":"transport","label":"Auto · payment 2","status":"paid"}
       ],
       "refunds": [
         {"id":"old-group-car-booking-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"transport","label":"Cancelled car booking · refund to Devgna UPI","status":"received-by-member","receivedByMemberId":"vyas","destination":"UPI","physicalCashImpactPaise":0,"relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","note":"₹500 refund landed in Devgna's UPI and was never reimbursed into old-group cash."}
@@ -63,16 +65,16 @@
         {"id":"old-group-receivable-devgna-car-refund-500-sep16","memberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"due","relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","label":"Car refund held in Devgna UPI","note":"₹500 old-group car-booking refund was received digitally by Devgna and has not been reimbursed to the old group."}
       ],
       "currentCashCheckpoint": {
-        "date": "2026-09-16",
-        "asOfLocalTime": "23:58",
-        "expectedBalancePaise": 171500,
-        "transactionalBalanceFromLastConfirmedCashPaise": 177000,
+        "date": "2026-09-17",
+        "asOfLocalTime": "01:06",
+        "expectedBalancePaise": 149000,
+        "transactionalBalanceFromLastConfirmedCashPaise": 154500,
         "observedNotesPaise": null,
         "observedCoinsPaise": null,
         "observedBalancePaise": null,
         "variancePaise": null,
-        "status": "needs-recount-after-dinner",
-        "note": "Last confirmed cash ₹3,250 minus dinner ₹1,480 = ₹1,770 transactional cash. Independent ledger expectation: ₹3,195 minus ₹1,480 = ₹1,715. The ₹55 pre-existing difference is preserved as unresolved because coins were not counted. Recount after dinner would establish the new observed balance."
+        "status": "needs-recount-after-auto",
+        "note": "Last confirmed cash ₹3,250 minus dinner ₹1,480 minus auto ₹225 = ₹1,545 transactional cash. Independent ledger expectation: ₹3,195 − ₹1,480 − ₹225 = ₹1,490. The pre-existing ₹55 difference remains unresolved because coins were not counted."
       }
     },
     "activeGroupFundPatch": {
@@ -96,9 +98,11 @@
     {"id":"expense-old-group-taxi-150-late-sep16","amountPaise":15000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-taxi-150-late-sep16"},
     {"id":"expense-old-group-snacks-285-sep16","amountPaise":28500,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-285-sep16"},
     {"id":"expense-old-group-dinner-part1-1100-sep16","amountPaise":110000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Dinner · payment 1","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-dinner-part1-1100-sep16"},
-    {"id":"expense-old-group-dinner-part2-380-sep16","amountPaise":38000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Dinner · payment 2","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-dinner-part2-380-sep16"}
+    {"id":"expense-old-group-dinner-part2-380-sep16","amountPaise":38000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Dinner · payment 2","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-dinner-part2-380-sep16"},
+    {"id":"expense-old-group-auto-part1-125-sep17","amountPaise":12500,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-17","label":"Auto · payment 1","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-auto-part1-125-sep17"},
+    {"id":"expense-old-group-auto-part2-100-sep17","amountPaise":10000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-17","label":"Auto · payment 2","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-auto-part2-100-sep17"}
   ],
   "signals": [
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account 23:58 Sep 16: ₹1,480 dinner recorded (₹1,100 + ₹380). Transactional cash from last confirmed ₹3,250 is ₹1,770; ledger expectation ₹1,715. Pre-existing ₹55 difference remains unresolved because coins were not counted. ₹500 car refund remains in Devgna UPI; Milan ₹500 contribution outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account 01:06 Sep 17: ₹225 auto recorded (₹125 + ₹100). Transactional cash from last confirmed ₹3,250 is ₹1,545 after dinner and auto; ledger expectation ₹1,490. Pre-existing ₹55 difference remains unresolved because coins were not counted. ₹500 car refund remains in Devgna UPI; Milan ₹500 contribution outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-17"}
   ]
 }
