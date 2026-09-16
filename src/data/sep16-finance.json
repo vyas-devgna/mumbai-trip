@@ -12,9 +12,9 @@
       "currentCashVariancePaise": null,
       "currentCashVarianceStatus": "partial-count-coins-untracked",
       "interPoolReceivablePaise": 0,
-      "memberReceivablePaise": 51000,
-      "economicBalancePaise": 376000,
-      "expectedEconomicBalancePaise": 370500,
+      "memberReceivablePaise": 50000,
+      "economicBalancePaise": 375000,
+      "expectedEconomicBalancePaise": 369500,
       "sep16ContributionTargetPerMemberPaise": 50000,
       "sep16ContributionTargetPaise": 250000,
       "sep16ContributionReceivedPaise": 200000,
@@ -28,7 +28,7 @@
       "carBookingBalancePendingPaise": 0,
       "carBookingStatus": "cancelled-refunded-to-devgna-upi",
       "sep16MemberPayablePaise": 0,
-      "note": "Correction: the cancelled car booking ₹500 refund was received into Devgna's UPI and was never transferred back into old-group physical cash. It is therefore an old-group receivable from Devgna, not a physical-cash receipt. Expected physical cash is ₹3,195. User counted ₹3,250 in notes/bills; coins were not counted, and small ₹5/₹10 denominations in the transaction arithmetic may be coin-related, so no definitive physical-cash variance is asserted from the note count alone. Het was reimbursed ₹2,000 against ₹1,990 due; ₹10 overpayment remains separately receivable. Milan ₹500 contribution remains outstanding.",
+      "note": "Sep 16 old account. The Rameshwaram lunch is treated as a final ₹2,000 old-group expense and Het's reimbursement is fully settled at ₹2,000; no ₹10 receivable or overpayment is tracked. The cancelled car booking ₹500 refund was received into Devgna's UPI and never entered physical cash, so ₹500 remains held by Devgna for the old group. Expected physical cash is ₹3,195. ₹3,250 in notes/bills was counted; coins were not counted, so exact cash variance remains open. Milan ₹500 contribution remains outstanding.",
       "contributions": [
         {"id":"old-group-sep16-vyas-500","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
         {"id":"old-group-sep16-tirth-500","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
@@ -45,21 +45,20 @@
         {"id":"old-group-snacks-60-sep16","expenseId":"expense-old-group-snacks-60-sep16","amountPaise":6000,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
         {"id":"old-group-taxi-150-late-sep16","expenseId":"expense-old-group-taxi-150-late-sep16","amountPaise":15000,"date":"2026-09-16","category":"transport","label":"Taxi","status":"paid"},
         {"id":"old-group-snacks-285-sep16","expenseId":"expense-old-group-snacks-285-sep16","amountPaise":28500,"date":"2026-09-16","category":"food","label":"Snacks","status":"paid"},
-        {"id":"old-group-reimburse-het-rameshwaram-2000-sep16","expenseId":"expense-old-group-rameshwaram-lunch-1990-sep16","amountPaise":200000,"date":"2026-09-16","category":"settlement","label":"Reimburse Het · Rameshwaram lunch","status":"paid"}
+        {"id":"old-group-reimburse-het-rameshwaram-2000-sep16","expenseId":"expense-old-group-rameshwaram-lunch-2000-sep16","amountPaise":200000,"date":"2026-09-16","category":"settlement","label":"Reimburse Het · Rameshwaram lunch","status":"paid"}
       ],
       "refunds": [
-        {"id":"old-group-car-booking-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"transport","label":"Cancelled car booking · refund to Devgna UPI","status":"received-by-member","receivedByMemberId":"vyas","destination":"UPI","physicalCashImpactPaise":0,"relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","note":"₹500 refund landed in Devgna's UPI and was never reimbursed into old-group cash. Track as amount held by Devgna for the old group."}
+        {"id":"old-group-car-booking-refund-500-sep16","amountPaise":50000,"date":"2026-09-16","category":"transport","label":"Cancelled car booking · refund to Devgna UPI","status":"received-by-member","receivedByMemberId":"vyas","destination":"UPI","physicalCashImpactPaise":0,"relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","note":"₹500 refund landed in Devgna's UPI and was never reimbursed into old-group cash."}
       ],
       "interPoolSettlements": [
         {"id":"new-to-old-reimburse-taxi-200-sep16","fromGroupFundId":"group-fund-eight-sep15","toGroupFundId":"group-fund-six-sep14","amountPaise":20000,"date":"2026-09-16","status":"settled","relatedInterAccountId":"inter-account-old-to-active-taxi-sep15","label":"New account reimbursed old account · Mumbai Cha Raja taxi advance"}
       ],
       "memberPayables": [
-        {"id":"old-group-payable-het-rameshwaram-lunch-sep16","memberId":"het","amountPaise":199000,"date":"2026-09-16","expenseId":"expense-old-group-rameshwaram-lunch-1990-sep16","status":"paid","settledDate":"2026-09-16","paidPaise":200000,"overpaymentPaise":1000,"label":"Reimburse Het · Rameshwaram lunch"},
+        {"id":"old-group-payable-het-rameshwaram-lunch-sep16","memberId":"het","amountPaise":200000,"date":"2026-09-16","expenseId":"expense-old-group-rameshwaram-lunch-2000-sep16","status":"paid","settledDate":"2026-09-16","paidPaise":200000,"label":"Reimburse Het · Rameshwaram lunch"},
         {"id":"old-group-payable-nishit-taxi-cst-sep16","memberId":"nishit","amountPaise":10000,"date":"2026-09-16","expenseId":"expense-old-group-taxi-cst-100-sep16","status":"paid","settledDate":"2026-09-16","label":"Reimburse Nishit · taxi to CST"}
       ],
       "memberReceivables": [
-        {"id":"old-group-receivable-devgna-car-refund-500-sep16","memberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"due","relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","label":"Car refund held in Devgna UPI","note":"₹500 old-group car-booking refund was received digitally by Devgna and has not been reimbursed to the old group."},
-        {"id":"old-group-receivable-het-overpayment-10-sep16","memberId":"het","amountPaise":1000,"date":"2026-09-16","status":"due","relatedExpenseId":"expense-old-group-rameshwaram-lunch-1990-sep16","label":"Het reimbursement overpayment"}
+        {"id":"old-group-receivable-devgna-car-refund-500-sep16","memberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"due","relatedExpenseId":"expense-old-group-car-booking-advance-500-sep15","label":"Car refund held in Devgna UPI","note":"₹500 old-group car-booking refund was received digitally by Devgna and has not been reimbursed to the old group."}
       ],
       "currentCashCheckpoint": {
         "date": "2026-09-16",
@@ -69,7 +68,7 @@
         "observedBalancePaise": null,
         "variancePaise": null,
         "status": "partial-count-coins-untracked",
-        "note": "Corrected expected physical cash excludes the ₹500 car refund because it went to Devgna UPI: prior expected ₹3,695 − ₹500 = ₹3,195. ₹3,250 in notes/bills is physically confirmed. Coins were not counted; ₹5/₹10-level differences may involve coins, so exact total physical cash and audit variance remain open rather than fabricating a shortage or surplus."
+        "note": "Expected physical cash ₹3,195 after excluding the ₹500 car refund held in Devgna UPI. ₹3,250 notes/bills confirmed; coins not counted, so exact variance remains open. Rameshwaram lunch is finalized as ₹2,000 with no overpayment balance."
       }
     },
     "activeGroupFundPatch": {
@@ -77,13 +76,13 @@
       "interPoolPayablePaise": 0,
       "interPoolSettlementPaidPaise": 20000,
       "cashAdjustmentPaise": -20000,
-      "note": "₹200 transferred from the new account to the old account on Sep 16 to settle the prior Mumbai Cha Raja taxi advance."
+      "note": "₹200 transferred from new account to old account on Sep 16 to settle the prior Mumbai Cha Raja taxi advance."
     }
   },
   "expenses": [
-    {"id":"expense-old-group-car-booking-advance-500-sep15","participantIds":["vyas","tirth","nishit","milan","het"],"status":"refunded","refundReceivedByMemberId":"vyas","refundDestination":"UPI","refundPhysicalCashImpactPaise":0,"note":"₹500 advance was refunded to Devgna UPI, not old-group physical cash; amount remains held by Devgna for old group."},
+    {"id":"expense-old-group-car-booking-advance-500-sep15","participantIds":["vyas","tirth","nishit","milan","het"],"status":"refunded","refundReceivedByMemberId":"vyas","refundDestination":"UPI","refundPhysicalCashImpactPaise":0,"note":"₹500 advance refunded to Devgna UPI, not old-group physical cash."},
     {"id":"expense-old-group-jugal-refund-500-sep16","amountPaise":50000,"payerId":"vyas","participantIds":["jugal"],"category":"settlement","date":"2026-09-16","label":"Jugal refund · not joining Sep 16","status":"paid","budgetScope":"settlement","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-jugal-refund-500-sep16"},
-    {"id":"expense-old-group-rameshwaram-lunch-1990-sep16","amountPaise":199000,"payerId":"het","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Lunch · Rameshwaram · Churchgate","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","reimbursementStatus":"paid","reimbursedPaise":200000,"reimbursementOverpaymentPaise":1000},
+    {"id":"expense-old-group-rameshwaram-lunch-2000-sep16","amountPaise":200000,"payerId":"het","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Lunch · Rameshwaram · Churchgate","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","reimbursementStatus":"paid","reimbursedPaise":200000,"note":"Final recorded expense ₹2,000. Het paid and was fully reimbursed ₹2,000 from old-group cash."},
     {"id":"expense-old-group-taxi-cst-100-sep16","amountPaise":10000,"payerId":"nishit","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to CST","status":"paid","budgetScope":"core","fundingSource":"groupFundMemberAdvance","groupFundId":"group-fund-six-sep14","reimbursementStatus":"paid","reimbursedPaise":10000},
     {"id":"expense-old-group-water-40-sep16","amountPaise":4000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Water bottle","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-water-40-sep16"},
     {"id":"expense-old-group-taxi-nariman-point-150-sep16","amountPaise":15000,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"transport","date":"2026-09-16","label":"Taxi to Nariman Point","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-taxi-nariman-point-150-sep16"},
@@ -94,6 +93,6 @@
     {"id":"expense-old-group-snacks-285-sep16","amountPaise":28500,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-285-sep16"}
   ],
   "signals": [
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account correction: ₹500 car refund went to Devgna UPI and never entered physical cash. Expected physical cash ₹3,195; ₹3,250 notes/bills counted, coins uncounted, so exact variance remains open. ₹500 is receivable from Devgna; Het ₹10 overpayment receivable; Milan ₹500 contribution outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account: Rameshwaram lunch finalized at ₹2,000 and fully settled with Het; no ₹10 overpayment receivable. ₹500 car refund remains held in Devgna UPI. ₹3,250 notes counted, coins uncounted; Milan ₹500 contribution outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
   ]
 }
