@@ -4,16 +4,16 @@
     "legacyGroupFundPatch": {
       "id": "group-fund-six-sep14",
       "currentMemberIds": ["vyas", "tirth", "nishit", "milan", "het"],
-      "currentPhysicalBalancePaise": 369500,
+      "currentPhysicalBalancePaise": 325000,
       "expectedPhysicalBalancePaise": 369500,
       "currentObservedNotesPaise": 325000,
-      "currentObservedCoinsPaise": null,
-      "currentObservedBalancePaise": null,
-      "currentCashVariancePaise": null,
-      "currentCashVarianceStatus": "partial-count-coins-pending",
+      "currentObservedCoinsPaise": 0,
+      "currentObservedBalancePaise": 325000,
+      "currentCashVariancePaise": -44500,
+      "currentCashVarianceStatus": "unresolved-shortage",
       "interPoolReceivablePaise": 0,
       "memberReceivablePaise": 1000,
-      "economicBalancePaise": 370500,
+      "economicBalancePaise": 326000,
       "expectedEconomicBalancePaise": 370500,
       "sep16ContributionTargetPerMemberPaise": 50000,
       "sep16ContributionTargetPaise": 250000,
@@ -25,9 +25,9 @@
       "carBookingRefundReceivedPaise": 50000,
       "carBookingBalancePendingPaise": 0,
       "carBookingStatus": "cancelled-refunded",
-      "projectedPhysicalAfterCarBalancePaise": 369500,
+      "projectedPhysicalAfterCarBalancePaise": 325000,
       "sep16MemberPayablePaise": 0,
-      "note": "Sep 16 old account. After prior transactions, expected cash was ₹5,695. ₹2,000 was actually reimbursed to Het against the ₹1,990 Rameshwaram lunch payable, leaving expected physical cash ₹3,695. The extra ₹10 is tracked as receivable from Het rather than silently changing the lunch expense. A physical count found ₹3,250 in notes/bills only; coins were explicitly not counted, so total observed cash and variance remain unresolved until coins are counted. Milan ₹500 contribution remains outstanding.",
+      "note": "Sep 16 old account. User confirmed total cash on hand is exactly ₹3,250, not a partial notes-only count. Ledger-expected cash after the ₹2,000 Het reimbursement is ₹3,695, therefore there is an unresolved ₹445 cash shortage/variance. Do not fabricate an expense to explain it. Het's ₹1,990 payable is settled via ₹2,000 actual reimbursement; ₹10 overpayment remains receivable from Het. Milan ₹500 contribution remains outstanding.",
       "contributions": [
         {"id":"old-group-sep16-vyas-500","memberId":"vyas","paidByMemberId":"vyas","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
         {"id":"old-group-sep16-tirth-500","memberId":"tirth","paidByMemberId":"tirth","amountPaise":50000,"date":"2026-09-16","status":"received","phase":"sep16-car-topup"},
@@ -63,11 +63,11 @@
         "date": "2026-09-16",
         "expectedBalancePaise": 369500,
         "observedNotesPaise": 325000,
-        "observedCoinsPaise": null,
-        "observedBalancePaise": null,
-        "variancePaise": null,
-        "status": "partial-count",
-        "note": "Expected after ₹2,000 Het reimbursement: ₹5,695 − ₹2,000 = ₹3,695. Physical count currently confirms ₹3,250 in notes/bills only. Coins were not counted, so do not treat ₹445 as a shortage; total observed cash and variance remain pending coin count."
+        "observedCoinsPaise": 0,
+        "observedBalancePaise": 325000,
+        "variancePaise": -44500,
+        "status": "unresolved-shortage",
+        "note": "User confirmed ₹3,250 is the entire old-group cash on hand. Ledger expectation is ₹3,695, so the current audit variance is −₹445. This is retained as an unresolved cash variance, not converted into a fabricated expense."
       }
     },
     "activeGroupFundPatch": {
@@ -92,6 +92,6 @@
     {"id":"expense-old-group-snacks-285-sep16","amountPaise":28500,"payerId":"vyas","participantIds":["vyas","tirth","nishit","milan","het"],"category":"food","date":"2026-09-16","label":"Snacks","status":"paid","budgetScope":"core","fundingSource":"groupFund","groupFundId":"group-fund-six-sep14","groupFundOutflowId":"old-group-snacks-285-sep16"}
   ],
   "signals": [
-    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account Sep 16: Het actually reimbursed ₹2,000 against ₹1,990 due; ₹10 overpayment tracked receivable. Expected cash ₹3,695. Physical note/bill count ₹3,250; coins not counted, so variance is pending rather than declaring a ₹445 shortage. Milan ₹500 contribution remains outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
+    {"id":"six-person-group-fund-closed-sep15","type":"finance","label":"Old account Sep 16: actual total cash on hand confirmed ₹3,250 versus ledger-expected ₹3,695, leaving unresolved −₹445 cash variance. Het reimbursement settled; ₹10 overpayment receivable remains. Milan ₹500 contribution remains outstanding.","severity":"attention","status":"needs-refresh","lastVerifiedAt":"2026-09-16"}
   ]
 }
